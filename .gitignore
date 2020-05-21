@@ -1,0 +1,8 @@
+**/node_modules
+**/*.zip
+**/.env
+**/build
+.DS_Store
+
+!client/.env
+mongodb_data

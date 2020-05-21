@@ -1,0 +1,20 @@
+{
+  "name": "app",
+  "main": "index.js",
+  "scripts": {
+    "pre-commit": "lint-staged"
+  },
+  "pre-commit": [
+    "pre-commit"
+  ],
+  "lint-staged": {
+      "*.{ts,tsx,js}":[
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "lint-staged": "^10.2.2",
+    "pre-commit": "^1.2.2",
+    "prettier": "^2.0.5"
+  }
+}

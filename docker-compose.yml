@@ -1,0 +1,45 @@
+version: "3.7"
+
+volumes:
+  mongodb_data:
+
+# networks:
+#   default:
+#     external:
+#       name: parity-connect_default
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    working_dir: /usr/local/app/server
+    volumes:
+      - ./server/src:/usr/local/app/server/src
+      - ./server/node_modules:/usr/local/app/server/node_modules
+    command: npm run dev
+    ports:
+      - 8000:8000
+    environment:
+      - PORT=8000
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    working_dir: /usr/local/app/client
+    volumes:
+      - ./client/src:/usr/local/app/client/src
+      - ./client/public:/usr/local/app/client/public
+      - ./client/node_modules:/usr/local/app/client/node_modules
+    command: npm start
+    ports:
+      - 3000:3000
+    environment:
+      - DOCKER_IMAGE=true
+  # mongo:
+  #   image: mongo
+  #   ports:
+  #     - 27017:27017
+  #   volumes:
+  #     - ./mongodb_data:/data/db
