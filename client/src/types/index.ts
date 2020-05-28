@@ -12,6 +12,7 @@ export interface UserFiles {
 
 export const ItemTypes = {
   BOX: "box",
+  TRACK: "TRACK",
 };
 
 export interface DragItem {
@@ -19,4 +20,10 @@ export interface DragItem {
   id: string;
   top: number;
   left: number;
+}
+
+export interface DragItemTrack {
+  index: number;
+  id: string;
+  type: string;
 }
