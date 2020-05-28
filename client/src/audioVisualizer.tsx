@@ -6,6 +6,7 @@ import update from "immutability-helper";
 
 interface IAudioVisualizerProps {
   userFiles: UserFiles;
+  style?: React.CSSProperties;
 }
 
 export const AudioVisualizer = (props: IAudioVisualizerProps) => {
@@ -35,8 +36,8 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
       const { waveformData, id } = userFile;
       if (!boxes[id])
         newBoxes[id] = {
-          top: 300,
-          left: 100,
+          top: 0,
+          left: 0,
         };
       const scaleY = (amplitude: number, height: number) => {
         const range = 256;
@@ -73,7 +74,6 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
       ctx.stroke();
       ctx.fill();
     });
-    // setBoxes(newBoxes);
     setBoxes(update(boxes, { $merge: newBoxes }));
   }, [props.userFiles]);
 
@@ -108,10 +108,8 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     <div
       ref={drop}
       style={{
-        width: "100%",
-        height: "100%",
-        border: "5px solid black",
-        boxSizing: "border-box",
+        ...props.style,
+        position: "relative",
       }}
     >
       {Object.values(props.userFiles).map((userFile, index) => {

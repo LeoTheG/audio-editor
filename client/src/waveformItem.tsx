@@ -40,9 +40,6 @@ export const WaveformItem = React.forwardRef(
             width={200}
             height={150}
             style={{ border: "1px solid black" }}
-            onClick={(e) => {
-              alert(e.clientX);
-            }}
           />
         </>
       </div>
