@@ -170,6 +170,8 @@ const AudioTrackList = () => {
         width: "100%",
         height: 170,
         border: "2px dotted black",
+        display: "flex",
+        flexDirection: "row",
       }}
     >
       {tracks.map((track, i) => (
@@ -211,27 +213,26 @@ const AudioTrack = (props: IAudioTrackProps) => {
       // Determine rectangle on screen
       const hoverBoundingRect = ref.current?.getBoundingClientRect();
 
-      // Get vertical middle
-      const hoverMiddleY =
-        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      // Get horizontal middle
+      const hoverMiddleX =
+        (hoverBoundingRect.left - hoverBoundingRect.right) / 2;
 
       // Determine mouse position
       const clientOffset = monitor.getClientOffset();
 
-      // Get pixels to the top
-      const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
+      // Get pixels to the right
+      const hoverClientX =
+        (clientOffset as XYCoord).x - hoverBoundingRect.right;
 
-      // Only perform the move when the mouse has crossed half of the items height
-      // When dragging downwards, only move when the cursor is below 50%
-      // When dragging upwards, only move when the cursor is above 50%
+      // Only perform the move when the mouse has crossed half of the items width
 
-      // Dragging downwards
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+      // Dragging left
+      if (dragIndex > hoverIndex && hoverClientX > hoverMiddleX) {
         return;
       }
 
-      // Dragging upwards
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+      // Dragging right
+      if (dragIndex < hoverIndex && hoverClientX < hoverMiddleX) {
         return;
       }
 
@@ -256,7 +257,15 @@ const AudioTrack = (props: IAudioTrackProps) => {
   const opacity = isDragging ? 0 : 1;
   drag(drop(ref));
   return (
-    <div ref={ref} style={{ opacity }}>
+    <div
+      ref={ref}
+      style={{
+        opacity,
+        border: "1px solid green",
+        padding: 10,
+        marginRight: 5,
+      }}
+    >
       {/* <div ref={ref} style={{ ...style, opacity }}> */}
       {id}
     </div>
