@@ -5,6 +5,9 @@ import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
 import update from "immutability-helper";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
+import { IconButton } from "@material-ui/core";
+import { GetApp } from "@material-ui/icons";
+import audioBufferToWav from "./audioBufferToWav";
 
 interface IAudioVisualizerProps {
   userFiles: UserFiles;
@@ -109,6 +112,22 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     );
   };
 
+  const onClickDownload = (tracks: ITrack[]) => {
+    const toConcatFiles: AudioBuffer[] = tracks.map(
+      (track) => props.userFiles[track.referenceId].audioBuffer
+    );
+    const concat = concatBuffer(toConcatFiles);
+    const buff = concat.getChannelData(1);
+
+    const blob = new Blob([audioBufferToWav(concat)], {
+      type: "audio/wav",
+    });
+
+    const newAudioUrl = URL.createObjectURL(blob);
+
+    downloadFromUrl(newAudioUrl);
+  };
+
   return (
     <div
       ref={drop}
@@ -131,7 +150,11 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         );
       })}
       <div style={{ flex: 1 }} />
-      <AudioTrackList userFiles={props.userFiles} />
+      {/* <audio src={audioUrl} play /> */}
+      <AudioTrackList
+        userFiles={props.userFiles}
+        onClickDownload={onClickDownload}
+      />
     </div>
   );
 };
@@ -139,9 +162,11 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
 interface ITrack {
   id: string;
   waveformData: WaveformData;
+  referenceId: string;
 }
 interface IAudioTrackListProps {
   userFiles: UserFiles;
+  onClickDownload: (tracks: ITrack[]) => void;
 }
 
 const AudioTrackList = (props: IAudioTrackListProps) => {
@@ -235,7 +260,9 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
 
   const onDrop = (item: DragItem, monitor: DropTargetMonitor) => {
     const newTrack = props.userFiles[item.id];
-    setTracks(tracks.concat({ ...newTrack, id: uuidv4() }));
+    setTracks(
+      tracks.concat({ ...newTrack, id: uuidv4(), referenceId: item.id })
+    );
   };
 
   const [{ canDrop, isOver }, drop] = useDrop({
@@ -253,7 +280,23 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
   const isActive = canDrop && isOver;
 
   return (
-    <>
+    <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <IconButton
+          style={{ width: "fit-content" }}
+          onClick={() => props.onClickDownload(tracks)}
+        >
+          <GetApp style={{ width: 30 }} />
+        </IconButton>
+        Download Song
+      </div>
       {isActive && (
         <div
           style={{
@@ -286,7 +329,7 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
           />
         ))}
       </div>
-    </>
+    </div>
   );
 };
 
@@ -379,3 +422,51 @@ const AudioTrack = React.forwardRef(
     );
   }
 );
+
+const audioContext = new AudioContext();
+
+function concatBuffer(_buffers: AudioBuffer[]) {
+  // _buffers[] is an array containig our audiobuffer list
+
+  var buflengh = _buffers.length;
+  var channels = [];
+  var totalDuration = 0;
+
+  for (var a = 0; a < buflengh; a++) {
+    channels.push(_buffers[a].numberOfChannels); // Store all number of channels to choose the lowest one after
+    totalDuration += _buffers[a].duration; // Get the total duration of the new buffer when every buffer will be added/concatenated
+  }
+
+  var numberOfChannels = channels.reduce(function (a, b) {
+    return Math.min(a, b);
+  }); // The lowest value contained in the array channels
+  var tmp = audioContext.createBuffer(
+    numberOfChannels,
+    audioContext.sampleRate * totalDuration,
+    audioContext.sampleRate
+  ); // Create new buffer
+
+  for (var b = 0; b < numberOfChannels; b++) {
+    var channel = tmp.getChannelData(b);
+    var dataIndex = 0;
+
+    for (var c = 0; c < buflengh; c++) {
+      channel.set(_buffers[c].getChannelData(b), dataIndex);
+      dataIndex += _buffers[c].length; // Next position where we should store the next buffer values
+    }
+  }
+  return tmp;
+}
+
+function downloadFromUrl(url: string) {
+  // Construct the <a> element
+  var link = document.createElement("a");
+  link.download = "adventure-audio.wav";
+  // Construct the uri
+  //   var uri = 'data:text/csv;charset=utf-8;base64,' + someb64data
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  // Cleanup the DOM
+  document.body.removeChild(link);
+}

@@ -12,7 +12,9 @@ import { UserFiles } from "./types";
 
 const audioContext = new AudioContext();
 
-const createWaveform = async (file: File): Promise<WaveformData> => {
+const createWaveform = async (
+  file: File
+): Promise<{ waveform: WaveformData; audioBuffer: AudioBuffer }> => {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -26,15 +28,17 @@ const createWaveform = async (file: File): Promise<WaveformData> => {
         };
 
         resolve(
-          new Promise<WaveformData>((resolve, reject) => {
-            WaveformData.createFromAudio(options, (err, waveform) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve(waveform);
-              }
-            });
-          })
+          new Promise<{ waveform: WaveformData; audioBuffer: AudioBuffer }>(
+            (resolve, reject) => {
+              WaveformData.createFromAudio(options, (err, waveform) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve({ waveform, audioBuffer });
+                }
+              });
+            }
+          )
         );
       });
     };
@@ -65,7 +69,8 @@ export const FileDropper: React.FC = () => {
               const newId = uuidv4();
               acc[newId] = {
                 file,
-                waveformData: waveformDataArr[index],
+                waveformData: waveformDataArr[index].waveform,
+                audioBuffer: waveformDataArr[index].audioBuffer,
                 id: newId,
               };
               return acc;

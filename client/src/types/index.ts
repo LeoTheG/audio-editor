@@ -4,6 +4,7 @@ export interface UserFile {
   file: File;
   waveformData: WaveformData;
   id: string;
+  audioBuffer: AudioBuffer;
 }
 
 export interface UserFiles {
