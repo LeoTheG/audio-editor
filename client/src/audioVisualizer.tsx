@@ -6,7 +6,7 @@ import update from "immutability-helper";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
 import { IconButton } from "@material-ui/core";
-import { GetApp } from "@material-ui/icons";
+import { GetApp, PlayArrow, Pause } from "@material-ui/icons";
 import audioBufferToWav from "./audioBufferToWav";
 
 interface IAudioVisualizerProps {
@@ -171,6 +171,8 @@ interface IAudioTrackListProps {
 
 const AudioTrackList = (props: IAudioTrackListProps) => {
   const [tracks, setTracks] = useState<ITrack[]>([]);
+  const [isPlayingSong, setPlayingSong] = useState(false)
+  const [audio, setAudio] = useState(new Audio())
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -278,6 +280,30 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
   });
 
   const isActive = canDrop && isOver;
+  const isEmptyTracklist = !tracks.length
+
+  useEffect(()=> {
+    if(isPlayingSong){
+
+    const toConcatFiles: AudioBuffer[] = tracks.map(
+      (track) => props.userFiles[track.referenceId].audioBuffer
+    );
+    const concat = concatBuffer(toConcatFiles);
+
+    const blob = new Blob([audioBufferToWav(concat)], {
+      type: "audio/wav",
+    });
+
+    const newAudioUrl = URL.createObjectURL(blob);
+
+    const newAudio = new Audio(newAudioUrl)
+    setAudio(newAudio)
+    newAudio.play()
+    }
+    else {
+      audio.pause()
+    }
+  }, [isPlayingSong])
 
   return (
     <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
@@ -287,8 +313,11 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          visibility: isEmptyTracklist ? 'hidden' : 'visible'
         }}
       >
+        <div>
+
         <IconButton
           style={{ width: "fit-content" }}
           onClick={() => props.onClickDownload(tracks)}
@@ -296,7 +325,21 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
           <GetApp style={{ width: 30 }} />
         </IconButton>
         Download Song
+        </div>
+
+        <IconButton
+          style={{ width: "fit-content" }}
+          onClick={() => setPlayingSong(!isPlayingSong)}
+        >
+          {
+            isPlayingSong ? <Pause style={{width: 30}} /> : <PlayArrow style={{width: 30}} />
+          }
+        </IconButton>
+
       </div>
+
+
+    
       {isActive && (
         <div
           style={{
