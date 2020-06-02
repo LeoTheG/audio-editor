@@ -123,6 +123,7 @@ export const AudioEditor: React.FC = () => {
         width: "100%",
         height: "100%",
         position: "relative",
+        flexDirection: "column",
       }}
     >
       {isActive && (
@@ -134,8 +135,9 @@ export const AudioEditor: React.FC = () => {
             background: "lightblue",
             opacity: 0.7,
           }}
-        ></div>
+        />
       )}
+
       <AudioVisualizer
         style={{
           width: "100%",
@@ -145,6 +147,12 @@ export const AudioEditor: React.FC = () => {
         userFiles={userFiles}
         onAddFile={onAddFile}
       />
+
+      <div className="adventure-logo">
+        adventure
+        <br />
+        corporation
+      </div>
     </div>
   );
 };
@@ -155,7 +163,6 @@ function App() {
       <DndProvider backend={Backend}>
         <AudioEditor />
       </DndProvider>
-      <img style={{ width: 200 }} src={"/adventure-logo.png"} />
     </div>
   );
 }

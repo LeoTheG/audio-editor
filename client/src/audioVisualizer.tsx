@@ -591,6 +591,4 @@ const ActionLinks = (props: IActionLinksProps) => {
 enum ACTIONS {
   dragAndDropFile = "drag and drop file",
   selectFromFolder = "select from folder",
-  url = "url",
-  search = "search",
 }
