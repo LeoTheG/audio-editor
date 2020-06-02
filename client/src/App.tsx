@@ -1,10 +1,9 @@
-import React, { FormEvent } from "react";
+import React from "react";
 import { useState, useCallback } from "react";
 import "./App.css";
 import { DndProvider } from "react-dnd";
 import Backend from "react-dnd-html5-backend";
 import { DropTargetMonitor, DragObjectWithType, useDrop } from "react-dnd";
-import TargetBox from "./fileUpload/TargetBox";
 import { AudioVisualizer } from "./audioVisualizer";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
@@ -14,7 +13,7 @@ import { PlayCircleFilledRounded } from "@material-ui/icons";
 import { IconButton, Tooltip } from "@material-ui/core";
 
 const audioContext = new AudioContext();
-const adventureText = `version 0.0.2. Credits: Leo, Mike`;
+const adventureText = `version 0.0.2. credits: leo, mike`;
 
 const createWaveform = async (
   file: File

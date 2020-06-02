@@ -18,11 +18,11 @@ body {
   margin: 0;
   font-family: "Oswald", sans-serif;
   font-size: 1.3rem;
+  color: #666;
 }
 
 .adventure-logo {
-  margin-left: 5px;
-  color: #666;
+  margin-left: 20px;
   width: fit-content;
 }
 
