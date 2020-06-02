@@ -10,8 +10,11 @@ import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
 import { UserFiles } from "./types";
 import { NativeTypes } from "react-dnd-html5-backend";
+import { PlayCircleFilledRounded } from "@material-ui/icons";
+import { IconButton, Tooltip } from "@material-ui/core";
 
 const audioContext = new AudioContext();
+const adventureText = `version 0.0.2. Credits: Leo, Mike`;
 
 const createWaveform = async (
   file: File
@@ -126,6 +129,14 @@ export const AudioEditor: React.FC = () => {
         flexDirection: "column",
       }}
     >
+      <div className="player-logo">
+        <IconButton style={{ width: 50, height: 50 }} disabled={true}>
+          <PlayCircleFilledRounded
+            style={{ color: "orange", width: 50, height: 50 }}
+          />
+        </IconButton>
+        player
+      </div>
       {isActive && (
         <div
           style={{
@@ -148,11 +159,13 @@ export const AudioEditor: React.FC = () => {
         onAddFile={onAddFile}
       />
 
-      <div className="adventure-logo">
-        adventure
-        <br />
-        corporation
-      </div>
+      <Tooltip title={adventureText}>
+        <div className="adventure-logo">
+          adventure
+          <br />
+          corporation
+        </div>
+      </Tooltip>
     </div>
   );
 };
