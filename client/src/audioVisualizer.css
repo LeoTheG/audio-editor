@@ -1,0 +1,7 @@
+.audio-tracklist-container {
+  margin-top: 5%;
+}
+
+.audio-tracklist-container > * {
+  margin-bottom: 60px;
+}

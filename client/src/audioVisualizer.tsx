@@ -6,12 +6,14 @@ import update from "immutability-helper";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
 import { IconButton } from "@material-ui/core";
-import { GetApp, PlayArrow, Pause } from "@material-ui/icons";
+import { CloudDownload, PlayArrow, Pause, Share } from "@material-ui/icons";
 import audioBufferToWav from "./audioBufferToWav";
+import "./audioVisualizer.css";
 
 interface IAudioVisualizerProps {
   userFiles: UserFiles;
   style?: React.CSSProperties;
+  onAddFile: (file: File) => void;
 }
 
 // todo create context with user files
@@ -149,11 +151,10 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
           />
         );
       })}
-      <div style={{ flex: 1 }} />
-      {/* <audio src={audioUrl} play /> */}
       <AudioTrackList
         userFiles={props.userFiles}
         onClickDownload={onClickDownload}
+        onAddFile={props.onAddFile}
       />
     </div>
   );
@@ -167,12 +168,13 @@ interface ITrack {
 interface IAudioTrackListProps {
   userFiles: UserFiles;
   onClickDownload: (tracks: ITrack[]) => void;
+  onAddFile: (file: File) => void;
 }
 
 const AudioTrackList = (props: IAudioTrackListProps) => {
   const [tracks, setTracks] = useState<ITrack[]>([]);
-  const [isPlayingSong, setPlayingSong] = useState(false)
-  const [audio, setAudio] = useState(new Audio())
+  const [isPlayingSong, setPlayingSong] = useState(false);
+  const [audio, setAudio] = useState(new Audio());
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -280,97 +282,142 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
   });
 
   const isActive = canDrop && isOver;
-  const isEmptyTracklist = !tracks.length
+  const isEmptyTracklist = !tracks.length;
 
-  useEffect(()=> {
-    if(isPlayingSong){
+  useEffect(() => {
+    if (isPlayingSong && tracks.length) {
+      const toConcatFiles: AudioBuffer[] = tracks.map(
+        (track) => props.userFiles[track.referenceId].audioBuffer
+      );
+      const concat = concatBuffer(toConcatFiles);
 
-    const toConcatFiles: AudioBuffer[] = tracks.map(
-      (track) => props.userFiles[track.referenceId].audioBuffer
-    );
-    const concat = concatBuffer(toConcatFiles);
+      const blob = new Blob([audioBufferToWav(concat)], {
+        type: "audio/wav",
+      });
 
-    const blob = new Blob([audioBufferToWav(concat)], {
-      type: "audio/wav",
-    });
+      const newAudioUrl = URL.createObjectURL(blob);
 
-    const newAudioUrl = URL.createObjectURL(blob);
-
-    const newAudio = new Audio(newAudioUrl)
-    setAudio(newAudio)
-    newAudio.play()
+      const newAudio = new Audio(newAudioUrl);
+      setAudio(newAudio);
+      newAudio.play();
+    } else {
+      audio.pause();
     }
-    else {
-      audio.pause()
+  }, [isPlayingSong]);
+
+  const onActionClick = (action: ACTIONS) => {
+    switch (action) {
+      case ACTIONS.selectFromFolder:
+        const input = document.createElement("input");
+        input.type = "file";
+
+        input.onchange = (e: Event) => {
+          if (!e.target) return;
+          //@ts-ignore
+          const file = e.target.files[0];
+          props.onAddFile(file);
+        };
+
+        input.click();
     }
-  }, [isPlayingSong])
+  };
 
   return (
-    <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "0 50px",
+        boxSizing: "border-box",
+      }}
+      className="audio-tracklist-container"
+    >
+      <ActionLinks onActionClick={onActionClick} />
+
+      <div>arrange</div>
+
+      <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+        <div
+          style={{
+            fontSize: "1em",
+            textAlign: "center",
+            color: "blue",
+            visibility: isActive ? "visible" : "hidden",
+          }}
+        >
+          copy track
+        </div>
+        <div
+          style={{
+            width: "100%",
+            height: 154,
+            border: "2px dashed orange",
+            display: "flex",
+            flexDirection: "row",
+            backgroundColor: isActive ? "lightblue" : "inherit",
+            boxSizing: "border-box",
+          }}
+          ref={drop}
+        >
+          {isEmptyTracklist && (
+            <div
+              style={{
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+                display: "flex",
+              }}
+            >
+              edit
+            </div>
+          )}
+          {tracks.map((track, i) => (
+            <AudioTrack
+              id={track.id}
+              key={track.id}
+              index={i}
+              moveTrack={moveTrack}
+              ref={canvasRefs[i]}
+            />
+          ))}
+        </div>
+      </div>
+
       <div
         style={{
           width: "100%",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          visibility: isEmptyTracklist ? 'hidden' : 'visible'
         }}
       >
-        <div>
-
         <IconButton
           style={{ width: "fit-content" }}
           onClick={() => props.onClickDownload(tracks)}
         >
-          <GetApp style={{ width: 30 }} />
+          <CloudDownload style={{ width: 30 }} />
         </IconButton>
-        Download Song
-        </div>
 
         <IconButton
           style={{ width: "fit-content" }}
           onClick={() => setPlayingSong(!isPlayingSong)}
         >
-          {
-            isPlayingSong ? <Pause style={{width: 30}} /> : <PlayArrow style={{width: 30}} />
-          }
+          {isPlayingSong ? (
+            <Pause style={{ width: 30 }} />
+          ) : (
+            <PlayArrow style={{ width: 30 }} />
+          )}
         </IconButton>
 
-      </div>
-
-
-    
-      {isActive && (
-        <div
-          style={{
-            fontSize: "1em",
-            textAlign: "center",
-            color: "blue",
-          }}
+        <IconButton
+          style={{ width: "fit-content" }}
+          onClick={() => alert("Sharing coming soon")}
         >
-          copy track
-        </div>
-      )}
-      <div
-        style={{
-          width: "100%",
-          height: 150,
-          border: "2px dotted black",
-          display: "flex",
-          flexDirection: "row",
-          backgroundColor: isActive ? "lightblue" : "inherit",
-        }}
-        ref={drop}
-      >
-        {tracks.map((track, i) => (
-          <AudioTrack
-            id={track.id}
-            key={track.id}
-            index={i}
-            moveTrack={moveTrack}
-            ref={canvasRefs[i]}
-          />
-        ))}
+          <Share style={{ width: 30 }} />
+        </IconButton>
       </div>
     </div>
   );
@@ -512,4 +559,38 @@ function downloadFromUrl(url: string) {
   link.click();
   // Cleanup the DOM
   document.body.removeChild(link);
+}
+
+interface IActionLinksProps {
+  onActionClick: (action: ACTIONS) => void;
+}
+
+const ActionLinks = (props: IActionLinksProps) => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "fit-content",
+        alignItems: "center",
+      }}
+    >
+      {Object.values(ACTIONS).map((action) => (
+        <div
+          key={action}
+          style={{ cursor: "pointer", marginBottom: 7 }}
+          onClick={() => props.onActionClick(action)}
+        >
+          {action}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+enum ACTIONS {
+  dragAndDropFile = "drag and drop file",
+  selectFromFolder = "select from folder",
+  url = "url",
+  search = "search",
 }

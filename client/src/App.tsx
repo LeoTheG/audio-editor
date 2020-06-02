@@ -1,14 +1,15 @@
-import React from "react";
+import React, { FormEvent } from "react";
 import { useState, useCallback } from "react";
 import "./App.css";
 import { DndProvider } from "react-dnd";
 import Backend from "react-dnd-html5-backend";
-import { DropTargetMonitor, DragObjectWithType } from "react-dnd";
+import { DropTargetMonitor, DragObjectWithType, useDrop } from "react-dnd";
 import TargetBox from "./fileUpload/TargetBox";
 import { AudioVisualizer } from "./audioVisualizer";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
 import { UserFiles } from "./types";
+import { NativeTypes } from "react-dnd-html5-backend";
 
 const audioContext = new AudioContext();
 
@@ -46,8 +47,24 @@ const createWaveform = async (
   });
 };
 
-export const FileDropper: React.FC = () => {
+export const AudioEditor: React.FC = () => {
   const [userFiles, setUserFiles] = useState<UserFiles>({});
+
+  const onAddFile = async (file: File) => {
+    const waveForm = await createWaveform(file);
+    const newId = uuidv4();
+    const newUserFiles = {
+      ...userFiles,
+      [newId]: {
+        file,
+        waveformData: waveForm.waveform,
+        audioBuffer: waveForm.audioBuffer,
+        id: newId,
+      },
+    };
+
+    setUserFiles(newUserFiles);
+  };
 
   const handleFileDrop = useCallback(
     (item: DragObjectWithType, monitor: DropTargetMonitor) => {
@@ -85,29 +102,60 @@ export const FileDropper: React.FC = () => {
     [userFiles]
   );
 
+  const [{ canDrop, isOver }, drop] = useDrop({
+    accept: [NativeTypes.FILE],
+    drop(item, monitor) {
+      handleFileDrop(item, monitor);
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  });
+
+  const isActive = canDrop && isOver;
+
   return (
-    <>
-      <TargetBox onDrop={handleFileDrop} />
-      <div style={{ display: "flex", width: "100%", height: "100%" }}>
-        <AudioVisualizer
+    <div
+      ref={drop}
+      style={{
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        position: "relative",
+      }}
+    >
+      {isActive && (
+        <div
           style={{
             width: "100%",
-            height: 600,
-            border: "5px solid black",
-            boxSizing: "border-box",
+            height: "100%",
+            position: "absolute",
+            background: "lightblue",
+            opacity: 0.7,
           }}
-          userFiles={userFiles}
-        />
-      </div>
-    </>
+        ></div>
+      )}
+      <AudioVisualizer
+        style={{
+          width: "100%",
+          height: "100%",
+          boxSizing: "border-box",
+        }}
+        userFiles={userFiles}
+        onAddFile={onAddFile}
+      />
+    </div>
   );
 };
+
 function App() {
   return (
     <div className="App">
       <DndProvider backend={Backend}>
-        <FileDropper />
+        <AudioEditor />
       </DndProvider>
+      <img style={{ width: 200 }} src={"/adventure-logo.png"} />
     </div>
   );
 }
