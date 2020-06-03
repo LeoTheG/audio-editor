@@ -513,6 +513,8 @@ const AudioTrack = React.forwardRef(
   }
 );
 
+// @ts-ignore
+const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
 
 function concatBuffer(_buffers: AudioBuffer[]) {

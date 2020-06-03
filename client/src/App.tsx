@@ -12,6 +12,8 @@ import { NativeTypes } from "react-dnd-html5-backend";
 import { PlayCircleFilledRounded } from "@material-ui/icons";
 import { IconButton, Tooltip } from "@material-ui/core";
 
+// @ts-ignore
+const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
 const adventureText = `version 0.0.2. credits: leo, mike`;
 
