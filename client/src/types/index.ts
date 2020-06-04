@@ -1,7 +1,7 @@
 import WaveformData from "waveform-data";
 
 export interface UserFile {
-  file: File;
+  file: File | { name: string };
   waveformData: WaveformData;
   id: string;
   audioBuffer: AudioBuffer;

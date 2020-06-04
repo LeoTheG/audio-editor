@@ -4,5 +4,16 @@
 
 .audio-tracklist-container > * {
   margin-bottom: 60px;
-  color: #666;
+}
+
+.action-link,
+.library-item {
+  cursor: pointer;
+  margin-bottom: 7px;
+  color: var(--lightItem);
+}
+
+.action-link:hover,
+.library-item:hover {
+  color: var(--hoverItem);
 }

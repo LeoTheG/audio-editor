@@ -5,23 +5,36 @@ import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
 import update from "immutability-helper";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
-import { IconButton, Button } from "@material-ui/core";
+import { IconButton, Button, Drawer } from "@material-ui/core";
 import { CloudDownload, PlayArrow, Pause, Share } from "@material-ui/icons";
+import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import audioBufferToWav from "./audioBufferToWav";
 import "./audioVisualizer.css";
+import { bucketData } from "./util";
 
 const TRACK_LENGTH_MODIFIDER = 3;
+
+// const useStyles = makeStyles((theme: Theme) =>
+//   createStyles({
+//     drawer: {
+//       width: 200,
+//     },
+//   })
+// );
 
 interface IAudioVisualizerProps {
   userFiles: UserFiles;
   style?: React.CSSProperties;
   onAddFile: (file: File) => void;
+  onClickLibraryItem: (key: string, url: string) => void;
 }
 
 // todo create context with user files
 
 export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const userFilesArr = Object.values(props.userFiles);
+  const [isLibraryOpen, setLibraryOpen] = useState(false);
+  //   const classes = useStyles();
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -132,6 +145,32 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     downloadFromUrl(newAudioUrl);
   };
 
+  const onActionClick = (action: ACTIONS) => {
+    switch (action) {
+      case ACTIONS.selectFromFolder:
+        const input = document.createElement("input");
+        input.type = "file";
+
+        input.onchange = (e: Event) => {
+          if (!e.target) return;
+          //@ts-ignore
+          const file = e.target.files[0];
+          props.onAddFile(file);
+        };
+
+        input.click();
+        break;
+
+      case ACTIONS.selectFromLibrary:
+        setLibraryOpen(true);
+        break;
+    }
+  };
+
+  const onClickLibraryItem = (key: string, url: string) => () => {
+    props.onClickLibraryItem(key, url);
+  };
+
   return (
     <div
       ref={drop}
@@ -157,7 +196,47 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         userFiles={props.userFiles}
         onClickDownload={onClickDownload}
         onAddFile={props.onAddFile}
+        onActionClick={onActionClick}
       />
+      <Drawer
+        // className={classes.drawer}
+        variant="persistent"
+        anchor="right"
+        open={isLibraryOpen}
+        onClose={() => setLibraryOpen(false)}
+      >
+        <div style={{ width: 400 }}>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button
+              style={{
+                minWidth: 20,
+                color: "red",
+              }}
+              variant="contained"
+              onClick={() => setLibraryOpen(false)}
+            >
+              x
+            </Button>
+          </div>
+          {bucketData.map(({ key, url }) => {
+            return (
+              <div
+                key={key}
+                onClick={onClickLibraryItem(key, url)}
+                className="library-item"
+              >
+                {key}
+              </div>
+            );
+          })}
+        </div>
+      </Drawer>
     </div>
   );
 };
@@ -171,6 +250,8 @@ interface IAudioTrackListProps {
   userFiles: UserFiles;
   onClickDownload: (tracks: ITrack[]) => void;
   onAddFile: (file: File) => void;
+
+  onActionClick: (action: ACTIONS) => void;
 }
 
 const AudioTrackList = (props: IAudioTrackListProps) => {
@@ -313,23 +394,6 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
     }
   }, [isPlayingSong]);
 
-  const onActionClick = (action: ACTIONS) => {
-    switch (action) {
-      case ACTIONS.selectFromFolder:
-        const input = document.createElement("input");
-        input.type = "file";
-
-        input.onchange = (e: Event) => {
-          if (!e.target) return;
-          //@ts-ignore
-          const file = e.target.files[0];
-          props.onAddFile(file);
-        };
-
-        input.click();
-    }
-  };
-
   return (
     <div
       style={{
@@ -343,7 +407,7 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
       }}
       className="audio-tracklist-container"
     >
-      <ActionLinks onActionClick={onActionClick} />
+      <ActionLinks onActionClick={props.onActionClick} />
 
       <div>arrange</div>
 
@@ -685,8 +749,8 @@ const ActionLinks = (props: IActionLinksProps) => {
       {Object.values(ACTIONS).map((action) => (
         <div
           key={action}
-          style={{ cursor: "pointer", marginBottom: 7 }}
           onClick={() => props.onActionClick(action)}
+          className="action-link"
         >
           {action}
         </div>
@@ -698,6 +762,7 @@ const ActionLinks = (props: IActionLinksProps) => {
 enum ACTIONS {
   dragAndDropFile = "drag and drop file",
   selectFromFolder = "select from folder",
+  selectFromLibrary = "select from library",
 }
 
 interface IPlayLineProps {

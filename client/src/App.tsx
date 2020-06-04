@@ -15,7 +15,27 @@ import { IconButton, Tooltip } from "@material-ui/core";
 // @ts-ignore
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
-const adventureText = `version 0.0.3. credits: leo, mike`;
+const adventureText = `version 0.1.0. credits: leo, mike`;
+
+const convertBufferToWaveformData = (audioBuffer: AudioBuffer) => {
+  const options = {
+    audio_context: audioContext,
+    audio_buffer: audioBuffer,
+    scale: 128,
+  };
+
+  return new Promise<{ waveform: WaveformData; audioBuffer: AudioBuffer }>(
+    (resolve, reject) => {
+      WaveformData.createFromAudio(options, (err, waveform) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({ waveform, audioBuffer });
+        }
+      });
+    }
+  );
+};
 
 const createWaveform = async (
   file: File
@@ -25,26 +45,9 @@ const createWaveform = async (
     reader.onloadend = () => {
       const buffer = reader.result as Buffer;
 
-      audioContext.decodeAudioData(buffer).then((audioBuffer) => {
-        const options = {
-          audio_context: audioContext,
-          audio_buffer: audioBuffer,
-          scale: 128,
-        };
-
-        resolve(
-          new Promise<{ waveform: WaveformData; audioBuffer: AudioBuffer }>(
-            (resolve, reject) => {
-              WaveformData.createFromAudio(options, (err, waveform) => {
-                if (err) {
-                  reject(err);
-                } else {
-                  resolve({ waveform, audioBuffer });
-                }
-              });
-            }
-          )
-        );
+      audioContext.decodeAudioData(buffer).then(async (audioBuffer) => {
+        const waveformData = await convertBufferToWaveformData(audioBuffer);
+        resolve(waveformData);
       });
     };
     reader.readAsArrayBuffer(file);
@@ -68,6 +71,35 @@ export const AudioEditor: React.FC = () => {
     };
 
     setUserFiles(newUserFiles);
+  };
+
+  const onClickLibraryItem = (key: string, url: string) => {
+    const request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.responseType = "arraybuffer";
+    request.onload = function () {
+      var audioData = request.response;
+      audioContext.decodeAudioData(
+        audioData,
+        async (buffer) => {
+          const waveForm = await convertBufferToWaveformData(buffer);
+          const newId = uuidv4();
+          const newUserFiles = {
+            ...userFiles,
+            [newId]: {
+              file: { name: key },
+              waveformData: waveForm.waveform,
+              audioBuffer: waveForm.audioBuffer,
+              id: newId,
+            },
+          };
+
+          setUserFiles(newUserFiles);
+        },
+        console.error
+      );
+    };
+    request.send();
   };
 
   const handleFileDrop = useCallback(
@@ -158,6 +190,7 @@ export const AudioEditor: React.FC = () => {
         }}
         userFiles={userFiles}
         onAddFile={onAddFile}
+        onClickLibraryItem={onClickLibraryItem}
       />
 
       <Tooltip title={adventureText}>

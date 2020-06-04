@@ -1,3 +1,8 @@
+:root {
+  --lightItem: #888;
+  --hoverItem: #111;
+}
+
 html,
 body,
 #root,
@@ -18,7 +23,7 @@ body {
   margin: 0;
   font-family: "Oswald", sans-serif;
   font-size: 1.3rem;
-  color: #666;
+  color: var(--lightItem);
 }
 
 .adventure-logo {
