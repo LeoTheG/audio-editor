@@ -178,6 +178,7 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
   const [isPlayingSong, setPlayingSong] = useState(false);
   const [audio, setAudio] = useState(new Audio());
   const [isHoveringId, setIsHoveringId] = useState<string | null>(null);
+  const timeListRef = React.createRef<HTMLDivElement>();
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -371,6 +372,10 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
             position: "relative",
           }}
           ref={drop}
+          onScroll={(evt) => {
+            // @ts-ignore
+            timeListRef.current.scrollLeft = evt.target.scrollLeft;
+          }}
         >
           <PlayLine
             pixelsPerSecond={
@@ -417,6 +422,40 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
             );
           })}
         </div>
+
+        {tracks.length && (
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              overflowX: "hidden",
+            }}
+            ref={timeListRef}
+          >
+            {Array.from({ length: 100 }).map((_, index) => {
+              // eventually calculate this, don't set to 100
+              return (
+                <div
+                  key={index}
+                  style={{
+                    width: 30,
+                    marginRight: 40,
+                    marginTop: 10,
+                    borderLeft: "1px solid black",
+                  }}
+                >
+                  {(
+                    tracks[0].waveformData.seconds_per_pixel *
+                    70 *
+                    TRACK_LENGTH_MODIFIDER *
+                    index
+                  ).toFixed(1)}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div
@@ -670,7 +709,10 @@ const PlayLine = (props: IPlayLineProps) => {
   const [position, setPosition] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => {
-      setPosition(props.audio.currentTime);
+      setPosition(
+        (props.audio.currentTime * props.pixelsPerSecond) /
+          TRACK_LENGTH_MODIFIDER
+      );
     }, 50);
 
     return () => {
@@ -685,7 +727,7 @@ const PlayLine = (props: IPlayLineProps) => {
         background: "lightgreen",
         height: "100%",
         position: "absolute",
-        left: (position * props.pixelsPerSecond) / TRACK_LENGTH_MODIFIDER,
+        left: position,
         zIndex: 1,
         opacity: 0.7,
       }}
