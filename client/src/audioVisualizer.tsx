@@ -5,7 +5,7 @@ import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
 import update from "immutability-helper";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
-import { IconButton } from "@material-ui/core";
+import { IconButton, Button } from "@material-ui/core";
 import { CloudDownload, PlayArrow, Pause, Share } from "@material-ui/icons";
 import audioBufferToWav from "./audioBufferToWav";
 import "./audioVisualizer.css";
@@ -175,6 +175,7 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
   const [tracks, setTracks] = useState<ITrack[]>([]);
   const [isPlayingSong, setPlayingSong] = useState(false);
   const [audio, setAudio] = useState(new Audio());
+  const [isHoveringId, setIsHoveringId] = useState<string | null>(null);
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -359,6 +360,8 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
             flexDirection: "row",
             backgroundColor: isActive ? "lightblue" : "inherit",
             boxSizing: "border-box",
+            overflowX: "auto",
+            overflowY: "hidden",
           }}
           ref={drop}
         >
@@ -381,6 +384,22 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
               index={i}
               moveTrack={moveTrack}
               ref={canvasRefs[i]}
+              songDuration={
+                props.userFiles[track.referenceId].waveformData.length / 3
+              }
+              setIsHovering={(isHovering) => {
+                if (isHovering) {
+                  setIsHoveringId(track.id);
+                } else setIsHoveringId(null);
+              }}
+              isHovering={isHoveringId === track.id}
+              onClickDelete={() => {
+                const newTracks = [
+                  ...tracks.slice(0, i),
+                  ...tracks.slice(i + 1),
+                ];
+                setTracks(newTracks);
+              }}
             />
           ))}
         </div>
@@ -427,6 +446,10 @@ interface IAudioTrackProps {
   index: number;
   id: string;
   moveTrack: (dragIndex: number, hoverIndex: number) => void;
+  songDuration: number;
+  isHovering: boolean;
+  setIsHovering: (isHovering: boolean) => void;
+  onClickDelete: () => void;
 }
 
 const AudioTrack = React.forwardRef(
@@ -499,15 +522,38 @@ const AudioTrack = React.forwardRef(
         ref={ref}
         style={{
           opacity,
-          //   margin: 5,
+          position: "relative",
+          background: props.isHovering ? "lightgrey" : "transparent",
         }}
       >
         <canvas
           ref={canvasRef}
-          width={200}
+          width={props.songDuration}
           height={150}
           style={{ border: "1px solid black" }}
+          onMouseOver={() => props.setIsHovering(true)}
+          onMouseLeave={() => props.setIsHovering(false)}
         />
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+          }}
+        >
+          <Button
+            style={{
+              minWidth: 20,
+              display: props.isHovering ? "block" : "none",
+              color: "red",
+            }}
+            onMouseOver={() => props.setIsHovering(true)}
+            variant="contained"
+            onClick={props.onClickDelete}
+          >
+            x
+          </Button>
+        </div>
       </div>
     );
   }
@@ -517,16 +563,14 @@ const AudioTrack = React.forwardRef(
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
 
-function concatBuffer(_buffers: AudioBuffer[]) {
-  // _buffers[] is an array containig our audiobuffer list
+function concatBuffer(buffers: AudioBuffer[]) {
+  const buffLength = buffers.length;
+  const channels = [];
+  let totalDuration = 0;
 
-  var buflengh = _buffers.length;
-  var channels = [];
-  var totalDuration = 0;
-
-  for (var a = 0; a < buflengh; a++) {
-    channels.push(_buffers[a].numberOfChannels); // Store all number of channels to choose the lowest one after
-    totalDuration += _buffers[a].duration; // Get the total duration of the new buffer when every buffer will be added/concatenated
+  for (var a = 0; a < buffLength; a++) {
+    channels.push(buffers[a].numberOfChannels); // Store all number of channels to choose the lowest one after
+    totalDuration += buffers[a].duration; // Get the total duration of the new buffer when every buffer will be added/concatenated
   }
 
   var numberOfChannels = channels.reduce(function (a, b) {
@@ -542,9 +586,17 @@ function concatBuffer(_buffers: AudioBuffer[]) {
     var channel = tmp.getChannelData(b);
     var dataIndex = 0;
 
-    for (var c = 0; c < buflengh; c++) {
-      channel.set(_buffers[c].getChannelData(b), dataIndex);
-      dataIndex += _buffers[c].length; // Next position where we should store the next buffer values
+    for (var c = 0; c < buffers.length; c++) {
+      try {
+        channel.set(buffers[c].getChannelData(b), dataIndex);
+      } catch (e) {
+        console.log(buffers[c].getChannelData(b));
+        console.log(dataIndex);
+        console.log(buffers.length);
+        console.log(c);
+        console.error(e);
+      }
+      dataIndex += buffers[c].length; // Next position where we should store the next buffer values
     }
   }
   return tmp;
