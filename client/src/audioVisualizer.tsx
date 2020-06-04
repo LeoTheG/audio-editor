@@ -673,6 +673,7 @@ const PlayLine = (props: IPlayLineProps) => {
       clearInterval(interval);
     };
   }, [props.audio]);
+
   return (
     <div
       style={{
