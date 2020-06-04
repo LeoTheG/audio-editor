@@ -303,6 +303,10 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
       const newAudio = new Audio(newAudioUrl);
       setAudio(newAudio);
       newAudio.play();
+
+      newAudio.onended = () => {
+        setPlayingSong(false);
+      };
     } else {
       audio.pause();
     }
