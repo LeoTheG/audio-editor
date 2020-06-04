@@ -10,6 +10,8 @@ import { CloudDownload, PlayArrow, Pause, Share } from "@material-ui/icons";
 import audioBufferToWav from "./audioBufferToWav";
 import "./audioVisualizer.css";
 
+const TRACK_LENGTH_MODIFIDER = 3;
+
 interface IAudioVisualizerProps {
   userFiles: UserFiles;
   style?: React.CSSProperties;
@@ -362,9 +364,17 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
             boxSizing: "border-box",
             overflowX: "auto",
             overflowY: "hidden",
+            position: "relative",
           }}
           ref={drop}
         >
+          <PlayLine
+            pixelsPerSecond={
+              tracks.length ? tracks[0].waveformData.pixels_per_second : 0
+            }
+            audio={audio}
+          />
+
           {isEmptyTracklist && (
             <div
               style={{
@@ -377,31 +387,31 @@ const AudioTrackList = (props: IAudioTrackListProps) => {
               edit
             </div>
           )}
-          {tracks.map((track, i) => (
-            <AudioTrack
-              id={track.id}
-              key={track.id}
-              index={i}
-              moveTrack={moveTrack}
-              ref={canvasRefs[i]}
-              songDuration={
-                props.userFiles[track.referenceId].waveformData.length / 3
-              }
-              setIsHovering={(isHovering) => {
-                if (isHovering) {
-                  setIsHoveringId(track.id);
-                } else setIsHoveringId(null);
-              }}
-              isHovering={isHoveringId === track.id}
-              onClickDelete={() => {
-                const newTracks = [
-                  ...tracks.slice(0, i),
-                  ...tracks.slice(i + 1),
-                ];
-                setTracks(newTracks);
-              }}
-            />
-          ))}
+          {tracks.map((track, i) => {
+            return (
+              <AudioTrack
+                id={track.id}
+                key={track.id}
+                index={i}
+                moveTrack={moveTrack}
+                ref={canvasRefs[i]}
+                waveformData={track.waveformData}
+                setIsHovering={(isHovering) => {
+                  if (isHovering) {
+                    setIsHoveringId(track.id);
+                  } else setIsHoveringId(null);
+                }}
+                isHovering={isHoveringId === track.id}
+                onClickDelete={() => {
+                  const newTracks = [
+                    ...tracks.slice(0, i),
+                    ...tracks.slice(i + 1),
+                  ];
+                  setTracks(newTracks);
+                }}
+              />
+            );
+          })}
         </div>
       </div>
 
@@ -446,7 +456,7 @@ interface IAudioTrackProps {
   index: number;
   id: string;
   moveTrack: (dragIndex: number, hoverIndex: number) => void;
-  songDuration: number;
+  waveformData: WaveformData;
   isHovering: boolean;
   setIsHovering: (isHovering: boolean) => void;
   onClickDelete: () => void;
@@ -528,7 +538,7 @@ const AudioTrack = React.forwardRef(
       >
         <canvas
           ref={canvasRef}
-          width={props.songDuration}
+          width={props.waveformData.length / TRACK_LENGTH_MODIFIDER}
           height={150}
           style={{ border: "1px solid black" }}
           onMouseOver={() => props.setIsHovering(true)}
@@ -646,3 +656,34 @@ enum ACTIONS {
   dragAndDropFile = "drag and drop file",
   selectFromFolder = "select from folder",
 }
+
+interface IPlayLineProps {
+  audio: HTMLAudioElement;
+  pixelsPerSecond: number;
+}
+
+const PlayLine = (props: IPlayLineProps) => {
+  const [position, setPosition] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPosition(props.audio.currentTime);
+    }, 50);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [props.audio]);
+  return (
+    <div
+      style={{
+        width: 5,
+        background: "lightgreen",
+        height: "100%",
+        position: "absolute",
+        left: (position * props.pixelsPerSecond) / TRACK_LENGTH_MODIFIDER,
+        zIndex: 1,
+        opacity: 0.7,
+      }}
+    />
+  );
+};
