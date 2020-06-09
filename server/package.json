@@ -1,5 +1,5 @@
 {
-  "name": "sonnet-server",
+  "name": "server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,6 +8,7 @@
     "build": "tsc",
     "prod": "tsc && node ./build/index.js"
   },
+  "private": true,
   "keywords": [],
   "author": "",
   "license": "ISC",

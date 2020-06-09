@@ -1,7 +1,7 @@
 import React from "react";
 import { Tooltip } from "@material-ui/core";
 
-const adventureText = `version 0.1.0. credits: leo, mike`;
+const adventureText = `version 0.2.0. credits: leo, mike, vaish`;
 
 export const AdventureLogo = () => (
   <Tooltip title={adventureText}>
