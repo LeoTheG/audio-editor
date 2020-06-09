@@ -1,16 +1,8 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import {
-  UserFiles,
-  ItemTypes,
-  DragItem,
-  DragItemTrack,
-  ITrack,
-  ACTIONS,
-} from "../types";
+import React, { useRef } from "react";
+import { ItemTypes, DragItemTrack } from "../types";
 import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
 import WaveformData from "waveform-data";
 import { Button } from "@material-ui/core";
-import "../audioVisualizer.css";
 import { TRACK_LENGTH_MODIFIDER } from "../util";
 
 interface IAudioTrackProps {

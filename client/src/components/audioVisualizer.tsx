@@ -6,21 +6,21 @@ import {
   DragItemTrack,
   ITrack,
   ACTIONS,
-} from "./types";
+} from "../types";
 import { WaveformItem } from "./waveformItem";
 import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
 import update from "immutability-helper";
 import WaveformData from "waveform-data";
 import { Button, Drawer, Modal, TextField } from "@material-ui/core";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import "./audioVisualizer.css";
+import "./css/audioVisualizer.css";
 import {
   bucketData,
   concatBuffer,
   convertTracksToBlob,
   downloadFromUrl,
-} from "./util";
-import { AudioTrackList } from "./components/AudioTrackList";
+} from "../util";
+import { AudioTrackList } from "./AudioTrackList";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

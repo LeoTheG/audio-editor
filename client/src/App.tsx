@@ -1,10 +1,10 @@
 import React from "react";
 import { useState, useCallback } from "react";
-import "./App.css";
+import "./css/App.css";
 import { DndProvider } from "react-dnd";
 import Backend from "react-dnd-html5-backend";
 import { DropTargetMonitor, DragObjectWithType, useDrop } from "react-dnd";
-import { AudioVisualizer } from "./audioVisualizer";
+import { AudioVisualizer } from "./components/audioVisualizer";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
 import { UserFiles } from "./types";

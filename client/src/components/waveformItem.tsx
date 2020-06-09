@@ -1,5 +1,5 @@
 import React from "react";
-import { UserFile, ItemTypes } from "./types";
+import { UserFile, ItemTypes } from "../types";
 import { useDrag } from "react-dnd";
 
 interface IWaveFormItemProps {
