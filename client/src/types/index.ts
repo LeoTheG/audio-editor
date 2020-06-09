@@ -28,3 +28,15 @@ export interface DragItemTrack {
   id: string;
   type: string;
 }
+
+export interface ITrack {
+  id: string;
+  waveformData: WaveformData;
+  referenceId: string;
+}
+
+export enum ACTIONS {
+  dragAndDropFile = "drag and drop file",
+  selectFromFolder = "select from folder",
+  selectFromLibrary = "select from library",
+}

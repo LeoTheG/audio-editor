@@ -17,3 +17,18 @@
 .library-item:hover {
   color: var(--hoverItem);
 }
+
+.share-modal-container {
+  width: 400px;
+  height: 300px;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-direction: column;
+}
+
+.share-modal-textfield-container {
+  display: flex;
+  flex-direction: column;
+}

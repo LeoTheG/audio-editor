@@ -1,26 +1,36 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { UserFiles, ItemTypes, DragItem, DragItemTrack } from "./types";
+import {
+  UserFiles,
+  ItemTypes,
+  DragItem,
+  DragItemTrack,
+  ITrack,
+  ACTIONS,
+} from "./types";
 import { WaveformItem } from "./waveformItem";
 import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
 import update from "immutability-helper";
 import WaveformData from "waveform-data";
-import { v4 as uuidv4 } from "uuid";
-import { IconButton, Button, Drawer } from "@material-ui/core";
-import { CloudDownload, PlayArrow, Pause, Share } from "@material-ui/icons";
+import { Button, Drawer, Modal, TextField } from "@material-ui/core";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import audioBufferToWav from "./audioBufferToWav";
 import "./audioVisualizer.css";
-import { bucketData } from "./util";
+import {
+  bucketData,
+  concatBuffer,
+  convertTracksToBlob,
+  downloadFromUrl,
+} from "./util";
+import { AudioTrackList } from "./components/AudioTrackList";
 
-const TRACK_LENGTH_MODIFIDER = 3;
-
-// const useStyles = makeStyles((theme: Theme) =>
-//   createStyles({
-//     drawer: {
-//       width: 200,
-//     },
-//   })
-// );
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    modal: {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+  })
+);
 
 interface IAudioVisualizerProps {
   userFiles: UserFiles;
@@ -34,7 +44,11 @@ interface IAudioVisualizerProps {
 export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const userFilesArr = Object.values(props.userFiles);
   const [isLibraryOpen, setLibraryOpen] = useState(false);
-  //   const classes = useStyles();
+  const [isShareOpen, setShareOpen] = useState(false);
+  const classes = useStyles();
+  const [authorName, setAuthorName] = useState("");
+  const [songName, setSongName] = useState("");
+  const [tracks, setTracks] = useState<ITrack[]>([]);
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -48,6 +62,8 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   }).map((_) => {
     return React.createRef();
   });
+
+  const onClickUpload = () => {};
 
   const renderCanvas = useCallback(() => {
     const newBoxes: {
@@ -130,15 +146,7 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   };
 
   const onClickDownload = (tracks: ITrack[]) => {
-    const toConcatFiles: AudioBuffer[] = tracks.map(
-      (track) => props.userFiles[track.referenceId].audioBuffer
-    );
-    const concat = concatBuffer(toConcatFiles);
-    const buff = concat.getChannelData(1);
-
-    const blob = new Blob([audioBufferToWav(concat)], {
-      type: "audio/wav",
-    });
+    const blob = convertTracksToBlob(tracks, props.userFiles);
 
     const newAudioUrl = URL.createObjectURL(blob);
 
@@ -171,6 +179,11 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     props.onClickLibraryItem(key, url);
   };
 
+  const onClickShare = (tracks: ITrack[]) => {
+    setTracks(tracks);
+    setShareOpen(true);
+  };
+
   return (
     <div
       ref={drop}
@@ -197,6 +210,7 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         onClickDownload={onClickDownload}
         onAddFile={props.onAddFile}
         onActionClick={onActionClick}
+        onClickShare={onClickShare}
       />
       <Drawer
         // className={classes.drawer}
@@ -237,566 +251,58 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
           })}
         </div>
       </Drawer>
-    </div>
-  );
-};
-
-interface ITrack {
-  id: string;
-  waveformData: WaveformData;
-  referenceId: string;
-}
-interface IAudioTrackListProps {
-  userFiles: UserFiles;
-  onClickDownload: (tracks: ITrack[]) => void;
-  onAddFile: (file: File) => void;
-
-  onActionClick: (action: ACTIONS) => void;
-}
-
-const AudioTrackList = (props: IAudioTrackListProps) => {
-  const [tracks, setTracks] = useState<ITrack[]>([]);
-  const [isPlayingSong, setPlayingSong] = useState(false);
-  const [audio, setAudio] = useState(new Audio());
-  const [isHoveringId, setIsHoveringId] = useState<string | null>(null);
-  const timeListRef = React.createRef<HTMLDivElement>();
-
-  const [boxes, setBoxes] = useState<{
-    [key: string]: {
-      top: number;
-      left: number;
-    };
-  }>({});
-
-  const canvasRefs: React.Ref<HTMLCanvasElement>[] = Array.from({
-    length: tracks.length,
-  }).map((_) => {
-    return React.createRef();
-  });
-
-  useEffect(() => {
-    if (tracks.length) {
-      renderCanvas();
-    }
-  }, [tracks]);
-
-  const renderCanvas = useCallback(() => {
-    const newBoxes: {
-      [key: string]: {
-        top: number;
-        left: number;
-      };
-    } = {};
-    tracks.forEach((track, index) => {
-      const { waveformData, id } = track;
-      if (!boxes[id])
-        newBoxes[id] = {
-          top: 0,
-          left: 0,
-        };
-      const scaleY = (amplitude: number, height: number) => {
-        const range = 256;
-        const offset = 128;
-
-        return height - ((amplitude + offset) * height) / range;
-      };
-
-      //@ts-ignore
-      const canvas = canvasRefs[index].current;
-      if (!canvas) return;
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.beginPath();
-
-      const channel = waveformData.channel(0);
-
-      // Loop forwards, drawing the upper half of the waveform
-      for (let x = 0; x < waveformData.length; x++) {
-        const val = channel.max_sample(x);
-
-        ctx.lineTo(x + 0.5, scaleY(val, canvas.height) + 0.5);
-      }
-
-      // Loop backwards, drawing the lower half of the waveform
-      for (let x = waveformData.length - 1; x >= 0; x--) {
-        const val = channel.min_sample(x);
-
-        ctx.lineTo(x + 0.5, scaleY(val, canvas.height) + 0.5);
-      }
-
-      ctx.closePath();
-      ctx.stroke();
-      ctx.fill();
-    });
-    setBoxes(update(boxes, { $merge: newBoxes }));
-  }, [tracks]);
-
-  const moveTrack = useCallback(
-    (dragIndex: number, hoverIndex: number) => {
-      const dragTicket = tracks[dragIndex];
-      setTracks(
-        update(tracks, {
-          $splice: [
-            [dragIndex, 1],
-            [hoverIndex, 0, dragTicket],
-          ],
-        })
-      );
-    },
-    [tracks]
-  );
-
-  const onDrop = (item: DragItem, monitor: DropTargetMonitor) => {
-    const newTrack = props.userFiles[item.id];
-    setTracks(
-      tracks.concat({ ...newTrack, id: uuidv4(), referenceId: item.id })
-    );
-  };
-
-  const [{ canDrop, isOver }, drop] = useDrop({
-    accept: ItemTypes.BOX,
-    drop(item, monitor) {
-      //@ts-ignore
-      onDrop(item, monitor);
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-  });
-
-  const isActive = canDrop && isOver;
-  const isEmptyTracklist = !tracks.length;
-
-  useEffect(() => {
-    if (isPlayingSong && tracks.length) {
-      const toConcatFiles: AudioBuffer[] = tracks.map(
-        (track) => props.userFiles[track.referenceId].audioBuffer
-      );
-      const concat = concatBuffer(toConcatFiles);
-
-      const blob = new Blob([audioBufferToWav(concat)], {
-        type: "audio/wav",
-      });
-
-      const newAudioUrl = URL.createObjectURL(blob);
-
-      const newAudio = new Audio(newAudioUrl);
-      setAudio(newAudio);
-      newAudio.play();
-
-      newAudio.onended = () => {
-        setPlayingSong(false);
-      };
-    } else {
-      audio.pause();
-    }
-  }, [isPlayingSong]);
-
-  return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "0 50px",
-        boxSizing: "border-box",
-      }}
-      className="audio-tracklist-container"
-    >
-      <ActionLinks onActionClick={props.onActionClick} />
-
-      <div>arrange</div>
-
-      <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-        <div
-          style={{
-            fontSize: "1em",
-            textAlign: "center",
-            color: "blue",
-            visibility: isActive ? "visible" : "hidden",
-          }}
-        >
-          copy track
-        </div>
-        <div
-          style={{
-            width: "100%",
-            height: 154,
-            border: "2px dashed orange",
-            display: "flex",
-            flexDirection: "row",
-            backgroundColor: isActive ? "lightblue" : "inherit",
-            boxSizing: "border-box",
-            overflowX: "auto",
-            overflowY: "hidden",
-            position: "relative",
-          }}
-          ref={drop}
-          onScroll={(evt) => {
-            // @ts-ignore
-            timeListRef.current.scrollLeft = evt.target.scrollLeft;
-          }}
-        >
-          <PlayLine
-            pixelsPerSecond={
-              tracks.length ? tracks[0].waveformData.pixels_per_second : 0
-            }
-            audio={audio}
-          />
-
-          {isEmptyTracklist && (
-            <div
-              style={{
-                width: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-                display: "flex",
-              }}
-            >
-              edit
-            </div>
-          )}
-          {tracks.map((track, i) => {
-            return (
-              <AudioTrack
-                id={track.id}
-                key={track.id}
-                index={i}
-                moveTrack={moveTrack}
-                ref={canvasRefs[i]}
-                waveformData={track.waveformData}
-                setIsHovering={(isHovering) => {
-                  if (isHovering) {
-                    setIsHoveringId(track.id);
-                  } else setIsHoveringId(null);
-                }}
-                isHovering={isHoveringId === track.id}
-                onClickDelete={() => {
-                  const newTracks = [
-                    ...tracks.slice(0, i),
-                    ...tracks.slice(i + 1),
-                  ];
-                  setTracks(newTracks);
-                }}
-              />
-            );
-          })}
-        </div>
-
-        {tracks.length && (
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              overflowX: "hidden",
-            }}
-            ref={timeListRef}
-          >
-            {Array.from({ length: 100 }).map((_, index) => {
-              // eventually calculate this, don't set to 100
-              return (
-                <div
-                  key={index}
-                  style={{
-                    width: 30,
-                    marginRight: 40,
-                    marginTop: 10,
-                    borderLeft: "1px solid black",
-                  }}
-                >
-                  {(
-                    tracks[0].waveformData.seconds_per_pixel *
-                    70 *
-                    TRACK_LENGTH_MODIFIDER *
-                    index
-                  ).toFixed(1)}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
+      <Modal
+        className={classes.modal}
+        open={isShareOpen}
+        onClose={() => setShareOpen(false)}
       >
-        <IconButton
-          style={{ width: "fit-content" }}
-          onClick={() => props.onClickDownload(tracks)}
-        >
-          <CloudDownload style={{ width: 30 }} />
-        </IconButton>
-
-        <IconButton
-          style={{ width: "fit-content" }}
-          onClick={() => setPlayingSong(!isPlayingSong)}
-        >
-          {isPlayingSong ? (
-            <Pause style={{ width: 30 }} />
-          ) : (
-            <PlayArrow style={{ width: 30 }} />
-          )}
-        </IconButton>
-
-        <IconButton
-          style={{ width: "fit-content" }}
-          onClick={() => alert("Sharing coming soon")}
-        >
-          <Share style={{ width: 30 }} />
-        </IconButton>
-      </div>
-    </div>
-  );
-};
-
-interface IAudioTrackProps {
-  index: number;
-  id: string;
-  moveTrack: (dragIndex: number, hoverIndex: number) => void;
-  waveformData: WaveformData;
-  isHovering: boolean;
-  setIsHovering: (isHovering: boolean) => void;
-  onClickDelete: () => void;
-}
-
-const AudioTrack = React.forwardRef(
-  (props: IAudioTrackProps, canvasRef: React.Ref<HTMLCanvasElement>) => {
-    const { index, id, moveTrack } = props;
-
-    const ref = useRef<HTMLDivElement>(null);
-    const [, drop] = useDrop({
-      accept: ItemTypes.TRACK,
-      hover(item: DragItemTrack, monitor: DropTargetMonitor) {
-        if (!ref.current) {
-          return;
-        }
-        const dragIndex = item.index;
-        const hoverIndex = index;
-
-        // Don't replace items with themselves
-        if (dragIndex === hoverIndex) {
-          return;
-        }
-
-        // Determine rectangle on screen
-        const hoverBoundingRect = ref.current?.getBoundingClientRect();
-
-        // Get horizontal middle
-        const hoverMiddleX =
-          (hoverBoundingRect.left - hoverBoundingRect.right) / 2;
-
-        // Determine mouse position
-        const clientOffset = monitor.getClientOffset();
-
-        // Get pixels to the right
-        const hoverClientX =
-          (clientOffset as XYCoord).x - hoverBoundingRect.right;
-
-        // Only perform the move when the mouse has crossed half of the items width
-
-        // Dragging left
-        if (dragIndex > hoverIndex && hoverClientX > hoverMiddleX) {
-          return;
-        }
-
-        // Dragging right
-        if (dragIndex < hoverIndex && hoverClientX < hoverMiddleX) {
-          return;
-        }
-
-        // Time to actually perform the action
-        moveTrack(dragIndex, hoverIndex);
-
-        // Note: we're mutating the monitor item here!
-        // Generally it's better to avoid mutations,
-        // but it's good here for the sake of performance
-        // to avoid expensive index searches.
-        item.index = hoverIndex;
-      },
-    });
-
-    const [{ isDragging }, drag] = useDrag({
-      item: { type: ItemTypes.TRACK, id, index },
-      collect: (monitor: any) => ({
-        isDragging: monitor.isDragging(),
-      }),
-    });
-
-    const opacity = isDragging ? 0 : 1;
-    drag(drop(ref));
-    return (
-      <div
-        ref={ref}
-        style={{
-          opacity,
-          position: "relative",
-          background: props.isHovering ? "lightgrey" : "transparent",
-          cursor: "move",
-        }}
-      >
-        <canvas
-          ref={canvasRef}
-          width={props.waveformData.length / TRACK_LENGTH_MODIFIDER}
-          height={150}
-          style={{ border: "1px solid black" }}
-          onMouseOver={() => props.setIsHovering(true)}
-          onMouseLeave={() => props.setIsHovering(false)}
+        <ShareSong
+          songName={songName}
+          authorName={authorName}
+          onChangeSongName={(val) => setSongName(val)}
+          onChangeAuthorName={(val) => setAuthorName(val)}
+          onClickUpload={onClickUpload}
         />
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-          }}
-        >
-          <Button
-            style={{
-              minWidth: 20,
-              display: props.isHovering ? "block" : "none",
-              color: "red",
-            }}
-            onMouseOver={() => props.setIsHovering(true)}
-            variant="contained"
-            onClick={props.onClickDelete}
-          >
-            x
-          </Button>
-        </div>
-      </div>
-    );
-  }
-);
-
-// @ts-ignore
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-const audioContext = new AudioContext();
-
-function concatBuffer(buffers: AudioBuffer[]) {
-  const buffLength = buffers.length;
-  const channels = [];
-  let totalDuration = 0;
-
-  for (var a = 0; a < buffLength; a++) {
-    channels.push(buffers[a].numberOfChannels); // Store all number of channels to choose the lowest one after
-    totalDuration += buffers[a].duration; // Get the total duration of the new buffer when every buffer will be added/concatenated
-  }
-
-  var numberOfChannels = channels.reduce(function (a, b) {
-    return Math.min(a, b);
-  }); // The lowest value contained in the array channels
-  var tmp = audioContext.createBuffer(
-    numberOfChannels,
-    audioContext.sampleRate * totalDuration,
-    audioContext.sampleRate
-  ); // Create new buffer
-
-  for (var b = 0; b < numberOfChannels; b++) {
-    var channel = tmp.getChannelData(b);
-    var dataIndex = 0;
-
-    for (var c = 0; c < buffers.length; c++) {
-      try {
-        channel.set(buffers[c].getChannelData(b), dataIndex);
-      } catch (e) {
-        console.log(buffers[c].getChannelData(b));
-        console.log(dataIndex);
-        console.log(buffers.length);
-        console.log(c);
-        console.error(e);
-      }
-      dataIndex += buffers[c].length; // Next position where we should store the next buffer values
-    }
-  }
-  return tmp;
-}
-
-function downloadFromUrl(url: string) {
-  // Construct the <a> element
-  var link = document.createElement("a");
-  link.download = "adventure-audio.wav";
-  // Construct the uri
-  //   var uri = 'data:text/csv;charset=utf-8;base64,' + someb64data
-  link.href = url;
-  document.body.appendChild(link);
-  link.click();
-  // Cleanup the DOM
-  document.body.removeChild(link);
-}
-
-interface IActionLinksProps {
-  onActionClick: (action: ACTIONS) => void;
-}
-
-const ActionLinks = (props: IActionLinksProps) => {
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "fit-content",
-        alignItems: "center",
-      }}
-    >
-      {Object.values(ACTIONS).map((action) => (
-        <div
-          key={action}
-          onClick={() => props.onActionClick(action)}
-          className="action-link"
-        >
-          {action}
-        </div>
-      ))}
+      </Modal>
     </div>
   );
 };
 
-enum ACTIONS {
-  dragAndDropFile = "drag and drop file",
-  selectFromFolder = "select from folder",
-  selectFromLibrary = "select from library",
+interface IShareSongProps {
+  songName: string;
+  onChangeSongName: (value: string) => void;
+  onChangeAuthorName: (value: string) => void;
+  authorName: string;
+  onClickUpload: () => void;
 }
-
-interface IPlayLineProps {
-  audio: HTMLAudioElement;
-  pixelsPerSecond: number;
-}
-
-const PlayLine = (props: IPlayLineProps) => {
-  const [position, setPosition] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPosition(
-        (props.audio.currentTime * props.pixelsPerSecond) /
-          TRACK_LENGTH_MODIFIDER
-      );
-    }, 50);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [props.audio]);
-
-  return (
-    <div
-      style={{
-        width: 5,
-        background: "lightgreen",
-        height: "100%",
-        position: "absolute",
-        left: position,
-        zIndex: 1,
-        opacity: 0.7,
-      }}
-    />
-  );
-};
+const ShareSong = React.forwardRef(
+  (
+    {
+      songName,
+      onChangeSongName,
+      authorName,
+      onChangeAuthorName,
+      onClickUpload,
+    }: IShareSongProps,
+    ref
+  ) => (
+    <div className="share-modal-container">
+      <div>Share song</div>
+      <div className="share-modal-textfield-container">
+        <TextField
+          value={songName}
+          onChange={(evt) => onChangeSongName(evt.target.value)}
+          label="Song name"
+        />
+        <TextField
+          value={authorName}
+          onChange={(evt) => onChangeAuthorName(evt.target.value)}
+          label="Author name"
+        />
+      </div>
+      <Button onClick={onClickUpload} variant="contained">
+        Upload
+      </Button>
+    </div>
+  )
+);

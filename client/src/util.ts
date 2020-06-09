@@ -1,3 +1,83 @@
+import { ITrack, UserFiles } from "./types";
+import audioBufferToWav from "./audioBufferToWav";
+// @ts-ignore
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioContext = new AudioContext();
+
+export function concatBuffer(buffers: AudioBuffer[]) {
+  const buffLength = buffers.length;
+  const channels = [];
+  let totalDuration = 0;
+
+  for (var a = 0; a < buffLength; a++) {
+    channels.push(buffers[a].numberOfChannels); // Store all number of channels to choose the lowest one after
+    totalDuration += buffers[a].duration; // Get the total duration of the new buffer when every buffer will be added/concatenated
+  }
+
+  var numberOfChannels = channels.reduce(function (a, b) {
+    return Math.min(a, b);
+  }); // The lowest value contained in the array channels
+  var tmp = audioContext.createBuffer(
+    numberOfChannels,
+    audioContext.sampleRate * totalDuration,
+    audioContext.sampleRate
+  ); // Create new buffer
+
+  for (var b = 0; b < numberOfChannels; b++) {
+    var channel = tmp.getChannelData(b);
+    var dataIndex = 0;
+
+    for (var c = 0; c < buffers.length; c++) {
+      try {
+        channel.set(buffers[c].getChannelData(b), dataIndex);
+      } catch (e) {
+        console.log(buffers[c].getChannelData(b));
+        console.log(dataIndex);
+        console.log(buffers.length);
+        console.log(c);
+        console.error(e);
+      }
+      dataIndex += buffers[c].length; // Next position where we should store the next buffer values
+    }
+  }
+  return tmp;
+}
+
+export const convertAudioBufferToBlob = (buffers: AudioBuffer[]) => {
+  const concat = concatBuffer(buffers);
+  // const buff = concat.getChannelData(1);
+
+  const blob = new Blob([audioBufferToWav(concat)], {
+    type: "audio/wav",
+  });
+
+  return blob;
+};
+
+export const convertTracksToBlob = (tracks: ITrack[], userFiles: UserFiles) => {
+  const toConcatFiles: AudioBuffer[] = tracks.map(
+    (track) => userFiles[track.referenceId].audioBuffer
+  );
+  const blob = convertAudioBufferToBlob(toConcatFiles);
+
+  return blob;
+};
+
+export function downloadFromUrl(url: string) {
+  // Construct the <a> element
+  var link = document.createElement("a");
+  link.download = "adventure-audio.wav";
+  // Construct the uri
+  //   var uri = 'data:text/csv;charset=utf-8;base64,' + someb64data
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  // Cleanup the DOM
+  document.body.removeChild(link);
+}
+
+export const TRACK_LENGTH_MODIFIDER = 3;
+
 export const bucketData = [
   {
     key: "Ain't No Mountain High Enough_Chorus.wav",
