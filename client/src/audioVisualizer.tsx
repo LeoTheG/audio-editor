@@ -641,6 +641,7 @@ const AudioTrack = React.forwardRef(
           opacity,
           position: "relative",
           background: props.isHovering ? "lightgrey" : "transparent",
+          cursor: "move",
         }}
       >
         <canvas
