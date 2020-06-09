@@ -40,3 +40,10 @@ export enum ACTIONS {
   selectFromFolder = "select from folder",
   selectFromLibrary = "select from library",
 }
+
+export interface IUserUpload {
+  _id: string;
+  songName: string;
+  authorName: string;
+  url: string;
+}

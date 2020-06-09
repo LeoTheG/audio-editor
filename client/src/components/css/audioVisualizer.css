@@ -26,6 +26,7 @@
   justify-content: space-around;
   align-items: center;
   flex-direction: column;
+  padding: 20px;
 }
 
 .share-modal-textfield-container {

@@ -1,5 +1,6 @@
 import { ITrack, UserFiles } from "./types";
 import audioBufferToWav from "./audioBufferToWav";
+import { useLocation } from "react-router-dom";
 // @ts-ignore
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
@@ -77,6 +78,12 @@ export function downloadFromUrl(url: string) {
 }
 
 export const TRACK_LENGTH_MODIFIDER = 3;
+
+export function useParam(paramName: string) {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  return params.get(paramName);
+}
 
 export const bucketData = [
   {

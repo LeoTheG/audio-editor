@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState, useCallback } from "react";
 import "./css/App.css";
 import { DndProvider } from "react-dnd";
@@ -7,15 +7,17 @@ import { DropTargetMonitor, DragObjectWithType, useDrop } from "react-dnd";
 import { AudioVisualizer } from "./components/audioVisualizer";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
-import { UserFiles } from "./types";
+import { UserFiles, IUserUpload } from "./types";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { PlayCircleFilledRounded } from "@material-ui/icons";
-import { IconButton, Tooltip } from "@material-ui/core";
+import { IconButton } from "@material-ui/core";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { PlayerPage } from "./components/PlayerPage";
+import { AdventureLogo } from "./components/AdventureLogo";
 
 // @ts-ignore
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
-const adventureText = `version 0.1.0. credits: leo, mike`;
 
 const convertBufferToWaveformData = (audioBuffer: AudioBuffer) => {
   const options = {
@@ -193,24 +195,36 @@ export const AudioEditor: React.FC = () => {
         onAddFile={onAddFile}
         onClickLibraryItem={onClickLibraryItem}
       />
-
-      <Tooltip title={adventureText}>
-        <div className="adventure-logo">
-          adventure
-          <br />
-          corporation
-        </div>
-      </Tooltip>
+      <AdventureLogo />
     </div>
   );
 };
-
 function App() {
+  const [songList, setSongList] = useState<IUserUpload[]>([]);
+  useEffect(() => {
+    fetch("/user-uploads")
+      // .then(console.log);
+      .then((res) => res.json())
+      .then((_res) => {
+        console.log(_res);
+        const res = _res as { uploads: IUserUpload[] };
+        setSongList(res.uploads);
+      });
+  }, []);
   return (
     <div className="App">
-      <DndProvider backend={Backend}>
-        <AudioEditor />
-      </DndProvider>
+      <Router>
+        <Switch>
+          <Route path="/player">
+            <PlayerPage uploadList={songList} />
+          </Route>
+          <Route path="/">
+            <DndProvider backend={Backend}>
+              <AudioEditor />
+            </DndProvider>
+          </Route>
+        </Switch>
+      </Router>
     </div>
   );
 }

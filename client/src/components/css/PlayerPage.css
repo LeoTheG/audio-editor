@@ -1,0 +1,30 @@
+.music-controller-container {
+  background: gray;
+  color: white;
+  width: 500px;
+  height: fit-content;
+}
+
+.player-page-container {
+  display: flex;
+  /* align-items: center; */
+  justify-content: center;
+  min-height: 100vh;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.player-body {
+  /* width: 100%;
+  height: 100%; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+@media screen and (max-width: 400px) {
+  .music-controller-container {
+    max-width: 100%;
+  }
+}
