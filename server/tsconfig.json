@@ -1,14 +1,10 @@
 {
-    "compilerOptions": {
-        "types": [
-            "node"
-        ],
-        "outDir": "server-build",
-        "allowJs": true,
-        "skipLibCheck": true
-    },
-    "exclude": [
-        "**/node_modules",
-        "server-build"
-    ]
+  "compilerOptions": {
+    "types": ["node"],
+    "outDir": "server-build",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true
+  },
+  "exclude": ["**/node_modules", "server-build"]
 }

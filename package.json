@@ -8,7 +8,7 @@
     "pre-commit"
   ],
   "lint-staged": {
-      "*.{ts,tsx,js}":[
+    "*.{ts,tsx,js}": [
       "prettier --write"
     ]
   },

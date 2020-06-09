@@ -63,7 +63,24 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     return React.createRef();
   });
 
-  const onClickUpload = () => {};
+  const onClickUpload = (songName: string, authorName: string) => {
+    const blob = convertTracksToBlob(tracks, props.userFiles);
+    const formData = new FormData();
+    console.log(blob);
+    formData.append("audioBlob", blob, "upload.wav");
+    formData.append("songName", songName);
+    formData.append("authorName", authorName);
+    console.log(formData);
+    fetch("/upload-song", {
+      method: "POST",
+      body: formData,
+      //   headers: {
+      //     "Content-Type": "multipart/form-data",
+      //   },
+    })
+      .then(console.log)
+      .catch(console.error);
+  };
 
   const renderCanvas = useCallback(() => {
     const newBoxes: {
@@ -273,7 +290,7 @@ interface IShareSongProps {
   onChangeSongName: (value: string) => void;
   onChangeAuthorName: (value: string) => void;
   authorName: string;
-  onClickUpload: () => void;
+  onClickUpload: (songName: string, authorName: string) => void;
 }
 const ShareSong = React.forwardRef(
   (
@@ -300,7 +317,10 @@ const ShareSong = React.forwardRef(
           label="Author name"
         />
       </div>
-      <Button onClick={onClickUpload} variant="contained">
+      <Button
+        onClick={() => onClickUpload(songName, authorName)}
+        variant="contained"
+      >
         Upload
       </Button>
     </div>

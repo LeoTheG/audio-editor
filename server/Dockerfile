@@ -4,3 +4,4 @@ WORKDIR /usr/local/app/server
 
 COPY package.json .
 COPY tsconfig.json .
+COPY .env .
