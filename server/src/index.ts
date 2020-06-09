@@ -28,6 +28,14 @@ app.use(
 
 app.use(bodyParser.json());
 app.use(express.static(resolve(__dirname, "..", "build")));
+// app.use(bodyParser.json({ limit: "50mb" }));
+app.use(
+  bodyParser.urlencoded({
+    limit: "200mb",
+    extended: true,
+    // parameterLimit: 50000,
+  })
+);
 
 app.listen(port, () => {
   console.log("Listening on port ", port);
@@ -35,6 +43,8 @@ app.listen(port, () => {
 
 app.post("/upload-song", upload.any(), (req, res) => {
   const file = req.files[0];
+  //   console.log("got file ", file);
+  //   return res.status(200).send({ id: "abcd-efgh" });
   const { songName, authorName } = req.body;
   const base64data = Buffer.from(file.buffer, "binary");
   const fileId = uuidv4();
