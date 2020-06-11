@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import { useState, useCallback } from "react";
 import "./css/App.css";
-import { DndProvider } from "react-dnd";
-import Backend from "react-dnd-html5-backend";
+
+import { DndProvider } from "react-dnd-multi-backend";
+import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
+
 import { DropTargetMonitor, DragObjectWithType, useDrop } from "react-dnd";
 import { AudioVisualizer } from "./components/audioVisualizer";
 import WaveformData from "waveform-data";
@@ -219,7 +221,7 @@ function App() {
             <PlayerPage uploadList={songList} />
           </Route>
           <Route path="/">
-            <DndProvider backend={Backend}>
+            <DndProvider options={HTML5toTouch}>
               <AudioEditor />
             </DndProvider>
           </Route>
