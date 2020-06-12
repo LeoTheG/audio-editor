@@ -38,7 +38,7 @@ export interface ITrack {
 export enum ACTIONS {
   dragAndDropFile = "drag and drop file",
   selectFromFolder = "select from folder",
-  selectFromLibrary = "select from library",
+  //   selectFromLibrary = "select from library",
 }
 
 export interface IUserUpload {

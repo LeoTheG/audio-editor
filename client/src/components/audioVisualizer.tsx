@@ -1,32 +1,36 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import "./css/audioVisualizer.css";
+
 import {
-  UserFiles,
-  ItemTypes,
+  ACTIONS,
   DragItem,
   DragItemTrack,
   ITrack,
-  ACTIONS,
+  ItemTypes,
+  UserFiles,
 } from "../types";
-import { WaveformItem } from "./waveformItem";
-import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
-import update from "immutability-helper";
-import WaveformData from "waveform-data";
 import {
   Button,
+  CircularProgress,
   Drawer,
   Modal,
   TextField,
-  CircularProgress,
 } from "@material-ui/core";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import "./css/audioVisualizer.css";
+import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
+import { LibraryMusic, MusicNote, MusicNoteOutlined } from "@material-ui/icons";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 import {
   bucketData,
   concatBuffer,
   convertTracksToBlob,
   downloadFromUrl,
 } from "../util";
+
 import { AudioTrackList } from "./AudioTrackList";
+import { IconButton } from "@material-ui/core";
+import WaveformData from "waveform-data";
+import { WaveformItem } from "./waveformItem";
+import update from "immutability-helper";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -212,9 +216,9 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         input.click();
         break;
 
-      case ACTIONS.selectFromLibrary:
-        setLibraryOpen(true);
-        break;
+      //   case ACTIONS.selectFromLibrary:
+      //     setLibraryOpen(true);
+      //     break;
     }
   };
 
@@ -237,6 +241,12 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         flexDirection: "column",
       }}
     >
+      <div
+        style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
+      >
+        <LibraryButton onClick={() => setLibraryOpen(true)} />
+      </div>
+
       {Object.values(props.userFiles).map((userFile, index) => {
         const box = boxes[userFile.id];
         return (
@@ -387,4 +397,24 @@ const ShareSong = React.forwardRef(
 
     return <div className="share-modal-container">{render}</div>;
   }
+);
+
+interface ILibraryButtonProps {
+  onClick: () => void;
+}
+
+const LibraryButton = ({ onClick }: ILibraryButtonProps) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      marginRight: 10,
+    }}
+  >
+    <IconButton onClick={onClick}>
+      <MusicNoteOutlined style={{ height: 40, width: 40 }} />
+    </IconButton>
+    library
+  </div>
 );

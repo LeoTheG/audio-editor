@@ -2,7 +2,6 @@ import "./css/App.css";
 
 import { DragObjectWithType, DropTargetMonitor, useDrop } from "react-dnd";
 import { IUserUpload, UserFiles } from "./types";
-import { PlayerButton, PlayerLogo } from "./components/PlayerButton";
 import React, { useEffect } from "react";
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import { useCallback, useState } from "react";
@@ -12,6 +11,7 @@ import { AudioVisualizer } from "./components/audioVisualizer";
 import { DndProvider } from "react-dnd-multi-backend";
 import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
 import { NativeTypes } from "react-dnd-html5-backend";
+import { PlayerLogo } from "./components/PlayerButton";
 import { PlayerPage } from "./components/PlayerPage";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
