@@ -1,21 +1,20 @@
-import React, { useEffect } from "react";
-import { useState, useCallback } from "react";
 import "./css/App.css";
 
+import { DragObjectWithType, DropTargetMonitor, useDrop } from "react-dnd";
+import { IUserUpload, UserFiles } from "./types";
+import { PlayerButton, PlayerLogo } from "./components/PlayerButton";
+import React, { useEffect } from "react";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
+import { useCallback, useState } from "react";
+
+import { AdventureLogo } from "./components/AdventureLogo";
+import { AudioVisualizer } from "./components/audioVisualizer";
 import { DndProvider } from "react-dnd-multi-backend";
 import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
-
-import { DropTargetMonitor, DragObjectWithType, useDrop } from "react-dnd";
-import { AudioVisualizer } from "./components/audioVisualizer";
+import { NativeTypes } from "react-dnd-html5-backend";
+import { PlayerPage } from "./components/PlayerPage";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
-import { UserFiles, IUserUpload } from "./types";
-import { NativeTypes } from "react-dnd-html5-backend";
-import { PlayCircleFilledRounded } from "@material-ui/icons";
-import { IconButton } from "@material-ui/core";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import { PlayerPage } from "./components/PlayerPage";
-import { AdventureLogo } from "./components/AdventureLogo";
 
 // @ts-ignore
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -166,14 +165,8 @@ export const AudioEditor: React.FC = () => {
         flexDirection: "column",
       }}
     >
-      <div className="player-logo">
-        <IconButton style={{ width: 50, height: 50 }} disabled={true}>
-          <PlayCircleFilledRounded
-            style={{ color: "orange", width: 50, height: 50 }}
-          />
-        </IconButton>
-        player
-      </div>
+      <PlayerLogo />
+
       {isActive && (
         <div
           style={{

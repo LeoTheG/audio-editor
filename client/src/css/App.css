@@ -39,3 +39,9 @@ body {
   margin: 20px 0 0 20px;
   user-select: none;
 }
+
+.player-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

@@ -1,22 +1,24 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { CloudDownload, PlayArrow, Pause, Share } from "@material-ui/icons";
-import { IconButton } from "@material-ui/core";
 import {
-  UserFiles,
-  ITrack,
   ACTIONS,
   DragItem,
+  ITrack,
   ItemTypes,
+  UserFiles,
 } from "../types/index";
-import { v4 as uuidv4 } from "uuid";
-import update from "immutability-helper";
-import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
+import { CloudDownload, Pause, PlayArrow, Share } from "@material-ui/icons";
+import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  TRACK_LENGTH_MODIFIDER,
   concatBuffer,
   convertAudioBufferToBlob,
-  TRACK_LENGTH_MODIFIDER,
 } from "../util";
+
 import { AudioTrack } from "./AudioTrack";
+import { IconButton } from "@material-ui/core";
+import { PlayerButton } from "./PlayerButton";
+import update from "immutability-helper";
+import { v4 as uuidv4 } from "uuid";
 
 interface IAudioTrackListProps {
   userFiles: UserFiles;
@@ -297,32 +299,28 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
           width: "100%",
           display: "flex",
           justifyContent: "center",
-          alignItems: "center",
+          alignItems: "flex-start",
         }}
       >
         <IconButton
           style={{ width: "fit-content" }}
           onClick={() => props.onClickDownload(tracks)}
         >
-          <CloudDownload style={{ width: 30 }} />
+          <CloudDownload style={{ width: 50, color: "#36ade3", height: 30 }} />
         </IconButton>
 
-        <IconButton
-          style={{ width: "fit-content" }}
-          onClick={() => setPlayingSong(!isPlayingSong)}
-        >
-          {isPlayingSong ? (
-            <Pause style={{ width: 30 }} />
-          ) : (
-            <PlayArrow style={{ width: 30 }} />
-          )}
-        </IconButton>
+        <div style={{ height: 105 }}>
+          <PlayerButton
+            isPlaying={isPlayingSong}
+            onClick={() => setPlayingSong(!isPlayingSong)}
+          />
+        </div>
 
         <IconButton
           style={{ width: "fit-content" }}
           onClick={() => props.onClickShare(tracks)}
         >
-          <Share style={{ width: 30 }} />
+          <Share style={{ width: 50, color: "#75d56c", height: 30 }} />
         </IconButton>
       </div>
     </div>
