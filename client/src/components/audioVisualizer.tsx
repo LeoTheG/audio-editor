@@ -12,7 +12,9 @@ import {
   Button,
   CircularProgress,
   Drawer,
+  Menu,
   Modal,
+  Popover,
   TextField,
 } from "@material-ui/core";
 import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
@@ -39,6 +41,9 @@ const useStyles = makeStyles((theme: Theme) =>
       justifyContent: "center",
       alignItems: "center",
     },
+    popover: {
+      pointerEvents: "none",
+    },
   })
 );
 
@@ -59,6 +64,9 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const [authorName, setAuthorName] = useState("");
   const [songName, setSongName] = useState("");
   const [tracks, setTracks] = useState<ITrack[]>([]);
+  //   const [infoAnchorEl, setInfoAnchorEl] = React.useState<HTMLElement | null>(
+  //     null
+  //   );
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -66,6 +74,20 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
       left: number;
     };
   }>({});
+
+  //   const handlePopoverOpen = (
+  //     event: React.MouseEvent<HTMLElement, MouseEvent>
+  //   ) => {
+  //     console.log("setting to ", event.currentTarget);
+  //     setInfoAnchorEl(event.currentTarget);
+  //   };
+
+  //   const handlePopoverClose = () => {
+  //     console.log("CLOSED");
+  //     setInfoAnchorEl(null);
+  //   };
+
+  //   const open = Boolean(infoAnchorEl);
 
   const canvasRefs: React.Ref<HTMLCanvasElement>[] = Array.from({
     length: userFilesArr.length,
@@ -264,6 +286,9 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         onAddFile={props.onAddFile}
         onActionClick={onActionClick}
         onClickShare={onClickShare}
+        //@ts-ignore
+        // onMouseEnterInfo={handlePopoverOpen}
+        // onMouseLeaveInfo={handlePopoverClose}
       />
       <Drawer
         // className={classes.drawer}
@@ -272,7 +297,7 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         open={isLibraryOpen}
         onClose={() => setLibraryOpen(false)}
       >
-        <div style={{ width: 400 }}>
+        <div style={{ width: 400, padding: 10 }}>
           <div
             style={{
               width: "100%",
@@ -350,7 +375,6 @@ const ShareSong = React.forwardRef(
     };
 
     const songUrl = `${document.location.href}player?id=${uploadId}`;
-    // const songUrl = `https://audio-player-clips.s3.amazonaws.com/${uploadId}`;
     let render = null;
 
     if (isLoading) {

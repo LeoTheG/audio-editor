@@ -5,20 +5,29 @@ import {
   ItemTypes,
   UserFiles,
 } from "../types/index";
-import { CloudDownload, Pause, PlayArrow, Share } from "@material-ui/icons";
+import { CloudDownload, Info, Share } from "@material-ui/icons";
 import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
+import { IconButton, Popover, Tooltip } from "@material-ui/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   TRACK_LENGTH_MODIFIDER,
   concatBuffer,
   convertAudioBufferToBlob,
 } from "../util";
+import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 
 import { AudioTrack } from "./AudioTrack";
-import { IconButton } from "@material-ui/core";
 import { PlayerButton } from "./PlayerButton";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    popover: {
+      pointerEvents: "none",
+    },
+  })
+);
 
 interface IAudioTrackListProps {
   userFiles: UserFiles;
@@ -35,6 +44,24 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
   const [audio, setAudio] = useState(new Audio());
   const [isHoveringId, setIsHoveringId] = useState<string | null>(null);
   const timeListRef = React.createRef<HTMLDivElement>();
+  const classes = useStyles();
+
+  const [infoAnchorEl, setInfoAnchorEl] = React.useState<HTMLElement | null>(
+    null
+  );
+
+  const handlePopoverOpen = (
+    event: React.MouseEvent<HTMLElement, MouseEvent>
+  ) => {
+    //@ts-ignore
+    setInfoAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setInfoAnchorEl(null);
+  };
+
+  const open = Boolean(infoAnchorEl);
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -230,6 +257,12 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
               }}
             >
               edit
+              <div
+                onMouseEnter={handlePopoverOpen}
+                onMouseLeave={handlePopoverClose}
+              >
+                <Info style={{ width: 20, marginBottom: 5 }} />
+              </div>
             </div>
           )}
           {tracks.map((track, i) => {
@@ -302,12 +335,16 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
           alignItems: "flex-start",
         }}
       >
-        <IconButton
-          style={{ width: "fit-content" }}
-          onClick={() => props.onClickDownload(tracks)}
-        >
-          <CloudDownload style={{ width: 50, color: "#36ade3", height: 30 }} />
-        </IconButton>
+        <Tooltip title="Download">
+          <IconButton
+            style={{ width: "fit-content" }}
+            onClick={() => props.onClickDownload(tracks)}
+          >
+            <CloudDownload
+              style={{ width: 50, color: "#36ade3", height: 30 }}
+            />
+          </IconButton>
+        </Tooltip>
 
         <div style={{ height: 105 }}>
           <PlayerButton
@@ -316,13 +353,25 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
           />
         </div>
 
-        <IconButton
-          style={{ width: "fit-content" }}
-          onClick={() => props.onClickShare(tracks)}
-        >
-          <Share style={{ width: 50, color: "#75d56c", height: 30 }} />
-        </IconButton>
+        <Tooltip title="Share">
+          <IconButton
+            style={{ width: "fit-content" }}
+            onClick={() => props.onClickShare(tracks)}
+          >
+            <Share style={{ width: 50, color: "#75d56c", height: 30 }} />
+          </IconButton>
+        </Tooltip>
       </div>
+      <Popover
+        id="mouse-over-popover"
+        className={classes.popover}
+        open={open}
+        anchorEl={infoAnchorEl}
+        onClose={handlePopoverClose}
+        disableRestoreFocus
+      >
+        <img style={{ width: "100%" }} src="/audio-editor-info.gif" />
+      </Popover>
     </div>
   );
 };
