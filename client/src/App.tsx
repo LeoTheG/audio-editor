@@ -1,7 +1,9 @@
 import "./css/App.css";
 
+import { Button, Drawer } from "@material-ui/core";
 import { DragObjectWithType, DropTargetMonitor, useDrop } from "react-dnd";
-import { IUserUpload, UserFiles } from "./types";
+import { IUserUpload, UserFiles, WidgetTypes } from "./types";
+import { IWidgetProps, Widget } from "./components/Widgets/Widget";
 import React, { useEffect } from "react";
 import {
   Redirect,
@@ -9,16 +11,20 @@ import {
   BrowserRouter as Router,
   Switch,
 } from "react-router-dom";
+import { bucketData, convertTracksToBlob, downloadFromUrl } from "./util";
 import { useCallback, useState } from "react";
 
 import { AdventureLogo } from "./components/AdventureLogo";
 import { AudioVisualizer } from "./components/audioVisualizer";
 import { DndProvider } from "react-dnd-multi-backend";
 import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
+import { LibraryButton } from "./components/LibraryButton";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { PlayerLogo } from "./components/PlayerButton";
 import { PlayerPage } from "./components/PlayerPage";
 import WaveformData from "waveform-data";
+import { WidgetButton } from "./components/WidgetButton";
+import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
 
 // @ts-ignore
@@ -62,8 +68,76 @@ const createWaveform = async (
   });
 };
 
+enum drawerTypes {
+  music = "music",
+  widgets = "widgets",
+}
+
 export const AudioEditor: React.FC = () => {
   const [userFiles, setUserFiles] = useState<UserFiles>({});
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerType, setDrawerType] = useState<drawerTypes | null>(null);
+  const [widgets, setWidgets] = useState<{ [key: string]: IWidgetProps }>({});
+
+  useEffect(() => {
+    setIsDrawerOpen(!!drawerType);
+  }, [drawerType]);
+
+  const moveWidget = (id: string, left: number, top: number) => {
+    setWidgets(
+      update(widgets, {
+        [id]: {
+          $merge: { left, top },
+        },
+      })
+    );
+  };
+
+  //   const onClickLibraryItem = (key: string, url: string) => () => {
+  //     props.onClickLibraryItem(key, url);
+  //   };
+
+  const onClickWidgetItem = (type: WidgetTypes) => () => {
+    const newWidgetId = uuidv4();
+
+    const newWidgets: {
+      [key: string]: IWidgetProps;
+    } = {
+      [newWidgetId]: {
+        id: newWidgetId,
+        type,
+        top: 0,
+        left: 0,
+      },
+    };
+
+    setWidgets(update(widgets, { $merge: newWidgets }));
+  };
+
+  const renderDrawerContent = () => {
+    if (drawerType === drawerTypes.music)
+      return bucketData.map(({ key, url }) => {
+        return (
+          <div
+            key={key}
+            onClick={() => onClickLibraryItem(key, url)}
+            className="library-item"
+          >
+            {key}
+          </div>
+        );
+      });
+    else if (drawerType === drawerTypes.widgets) {
+      return (
+        <div
+          className="library-item"
+          onClick={onClickWidgetItem(WidgetTypes.time)}
+        >
+          time
+        </div>
+      );
+    }
+  };
 
   const onAddFile = async (file: File) => {
     const waveForm = await createWaveform(file);
@@ -172,6 +246,61 @@ export const AudioEditor: React.FC = () => {
     >
       <PlayerLogo />
 
+      <div
+        style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
+      >
+        <LibraryButton onClick={() => setDrawerType(drawerTypes.music)} />
+      </div>
+
+      <AudioVisualizer
+        style={{
+          width: "100%",
+          height: "100%",
+          boxSizing: "border-box",
+          flex: 1,
+        }}
+        userFiles={userFiles}
+        onAddFile={onAddFile}
+        // onClickLibraryItem={onClickLibraryItem}
+        widgets={widgets}
+        moveWidget={moveWidget}
+      />
+
+      <AdventureLogo
+        widget={
+          <WidgetButton onClick={() => setDrawerType(drawerTypes.widgets)} />
+        }
+      />
+
+      <Drawer
+        variant="persistent"
+        anchor="right"
+        open={isDrawerOpen}
+        onClose={() => setDrawerType(null)}
+      >
+        <div style={{ width: 400, padding: 10 }}>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button
+              style={{
+                minWidth: 20,
+                color: "red",
+              }}
+              variant="contained"
+              onClick={() => setDrawerType(null)}
+            >
+              x
+            </Button>
+          </div>
+          {renderDrawerContent()}
+        </div>
+      </Drawer>
+
       {isActive && (
         <div
           style={{
@@ -183,19 +312,6 @@ export const AudioEditor: React.FC = () => {
           }}
         />
       )}
-
-      <AudioVisualizer
-        style={{
-          width: "100%",
-          height: "100%",
-          boxSizing: "border-box",
-          flex: 1,
-        }}
-        userFiles={userFiles}
-        onAddFile={onAddFile}
-        onClickLibraryItem={onClickLibraryItem}
-      />
-      <AdventureLogo />
     </div>
   );
 };

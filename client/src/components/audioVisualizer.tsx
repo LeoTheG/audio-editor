@@ -8,13 +8,7 @@ import {
   UserFiles,
   WidgetTypes,
 } from "../types";
-import {
-  Button,
-  CircularProgress,
-  Drawer,
-  Modal,
-  TextField,
-} from "@material-ui/core";
+import { Button, CircularProgress, Modal, TextField } from "@material-ui/core";
 import { IWidgetProps, Widget } from "./Widgets/Widget";
 import React, { useCallback, useEffect, useState } from "react";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
@@ -22,10 +16,10 @@ import { XYCoord, useDrop } from "react-dnd";
 import { bucketData, convertTracksToBlob, downloadFromUrl } from "../util";
 
 import { AudioTrackList } from "./AudioTrackList";
-import { IconButton } from "@material-ui/core";
-import { MusicNoteOutlined } from "@material-ui/icons";
 import { WaveformItem } from "./waveformItem";
+import { WidgetButton } from "./WidgetButton";
 import update from "immutability-helper";
+import { v4 as uuidv4 } from "uuid";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -44,14 +38,15 @@ interface IAudioVisualizerProps {
   userFiles: UserFiles;
   style?: React.CSSProperties;
   onAddFile: (file: File) => void;
-  onClickLibraryItem: (key: string, url: string) => void;
+  //   onClickLibraryItem: (key: string, url: string) => void;
+  widgets: { [key: string]: IWidgetProps };
+  moveWidget: (id: string, left: number, top: number) => void;
 }
 
 // todo create context with user files
 
 export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const userFilesArr = Object.values(props.userFiles);
-  const [isLibraryOpen, setLibraryOpen] = useState(false);
   const [isShareOpen, setShareOpen] = useState(false);
   const classes = useStyles();
   const [authorName, setAuthorName] = useState("");
@@ -64,21 +59,6 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
       left: number;
     };
   }>({});
-
-  const [widgets, setWidgets] = useState<{ [key: string]: IWidgetProps }>({
-    // test: {
-    //   top: 0,
-    //   left: 0,
-    //   id: "test",
-    //   type: WidgetTypes.time,
-    // },
-    // test2: {
-    //   top: 0,
-    //   left: 0,
-    //   id: "test2",
-    //   type: WidgetTypes.time,
-    // },
-  });
 
   const canvasRefs: React.Ref<HTMLCanvasElement>[] = Array.from({
     length: userFilesArr.length,
@@ -172,7 +152,6 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     drop(item: DragItem, monitor) {
       const delta = monitor.getDifferenceFromInitialOffset() as XYCoord;
       if (!delta) return;
-      console.log(item);
       const left = Math.round(item.left + delta.x);
       const top = Math.round(item.top + delta.y);
 
@@ -181,7 +160,7 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
       }
 
       if (item.type === ItemTypes.WIDGET) {
-        moveWidget(item.id, left, top);
+        props.moveWidget(item.id, left, top);
       }
       return undefined;
     },
@@ -190,16 +169,6 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const moveBox = (id: string, left: number, top: number) => {
     setBoxes(
       update(boxes, {
-        [id]: {
-          $merge: { left, top },
-        },
-      })
-    );
-  };
-
-  const moveWidget = (id: string, left: number, top: number) => {
-    setWidgets(
-      update(widgets, {
         [id]: {
           $merge: { left, top },
         },
@@ -233,10 +202,6 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     }
   };
 
-  const onClickLibraryItem = (key: string, url: string) => () => {
-    props.onClickLibraryItem(key, url);
-  };
-
   const onClickShare = (tracks: ITrack[]) => {
     setTracks(tracks);
     setShareOpen(true);
@@ -252,12 +217,6 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         flexDirection: "column",
       }}
     >
-      <div
-        style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
-      >
-        <LibraryButton onClick={() => setLibraryOpen(true)} />
-      </div>
-
       {Object.values(props.userFiles).map((userFile, index) => {
         const box = boxes[userFile.id];
         return (
@@ -276,44 +235,9 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         onActionClick={onActionClick}
         onClickShare={onClickShare}
       />
-      <Drawer
-        variant="persistent"
-        anchor="right"
-        open={isLibraryOpen}
-        onClose={() => setLibraryOpen(false)}
-      >
-        <div style={{ width: 400, padding: 10 }}>
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
-          >
-            <Button
-              style={{
-                minWidth: 20,
-                color: "red",
-              }}
-              variant="contained"
-              onClick={() => setLibraryOpen(false)}
-            >
-              x
-            </Button>
-          </div>
-          {bucketData.map(({ key, url }) => {
-            return (
-              <div
-                key={key}
-                onClick={onClickLibraryItem(key, url)}
-                className="library-item"
-              >
-                {key}
-              </div>
-            );
-          })}
-        </div>
-      </Drawer>
+
+      {/* <div style={{ flex: 1 }} /> */}
+
       <Modal
         className={classes.modal}
         open={isShareOpen}
@@ -327,7 +251,8 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
           onClickUpload={onClickUpload}
         />
       </Modal>
-      {Object.values(widgets).map((widget, index) => {
+
+      {Object.values(props.widgets).map((widget, index) => {
         return <Widget key={widget.id} {...widget} />;
       })}
     </div>
@@ -409,24 +334,4 @@ const ShareSong = React.forwardRef(
 
     return <div className="share-modal-container">{render}</div>;
   }
-);
-
-interface ILibraryButtonProps {
-  onClick: () => void;
-}
-
-const LibraryButton = ({ onClick }: ILibraryButtonProps) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      marginRight: 10,
-    }}
-  >
-    <IconButton onClick={onClick}>
-      <MusicNoteOutlined style={{ height: 40, width: 40 }} />
-    </IconButton>
-    library
-  </div>
 );

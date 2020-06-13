@@ -27,8 +27,9 @@ body {
 }
 
 .adventure-logo {
-  margin-left: 20px;
+  padding: 12px;
   width: fit-content;
+  margin-bottom: 30px;
 }
 
 .player-logo {
