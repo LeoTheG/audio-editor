@@ -3,7 +3,12 @@ import "./css/App.css";
 import { DragObjectWithType, DropTargetMonitor, useDrop } from "react-dnd";
 import { IUserUpload, UserFiles } from "./types";
 import React, { useEffect } from "react";
-import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
+import {
+  Redirect,
+  Route,
+  BrowserRouter as Router,
+  Switch,
+} from "react-router-dom";
 import { useCallback, useState } from "react";
 
 import { AdventureLogo } from "./components/AdventureLogo";
@@ -201,7 +206,6 @@ function App() {
       // .then(console.log);
       .then((res) => res.json())
       .then((_res) => {
-        console.log(_res);
         const res = _res as { uploads: IUserUpload[] };
         setSongList(res.uploads);
       });
@@ -213,11 +217,12 @@ function App() {
           <Route path="/player">
             <PlayerPage uploadList={songList} />
           </Route>
-          <Route path="/">
+          <Route exact path="/">
             <DndProvider options={HTML5toTouch}>
               <AudioEditor />
             </DndProvider>
           </Route>
+          <Redirect from="*" to="/" />
         </Switch>
       </Router>
     </div>

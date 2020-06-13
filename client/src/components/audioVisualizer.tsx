@@ -3,34 +3,27 @@ import "./css/audioVisualizer.css";
 import {
   ACTIONS,
   DragItem,
-  DragItemTrack,
   ITrack,
   ItemTypes,
   UserFiles,
+  WidgetTypes,
 } from "../types";
 import {
   Button,
   CircularProgress,
   Drawer,
-  Menu,
   Modal,
-  Popover,
   TextField,
 } from "@material-ui/core";
-import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
-import { LibraryMusic, MusicNote, MusicNoteOutlined } from "@material-ui/icons";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { IWidgetProps, Widget } from "./Widgets/Widget";
+import React, { useCallback, useEffect, useState } from "react";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
-import {
-  bucketData,
-  concatBuffer,
-  convertTracksToBlob,
-  downloadFromUrl,
-} from "../util";
+import { XYCoord, useDrop } from "react-dnd";
+import { bucketData, convertTracksToBlob, downloadFromUrl } from "../util";
 
 import { AudioTrackList } from "./AudioTrackList";
 import { IconButton } from "@material-ui/core";
-import WaveformData from "waveform-data";
+import { MusicNoteOutlined } from "@material-ui/icons";
 import { WaveformItem } from "./waveformItem";
 import update from "immutability-helper";
 
@@ -64,9 +57,6 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const [authorName, setAuthorName] = useState("");
   const [songName, setSongName] = useState("");
   const [tracks, setTracks] = useState<ITrack[]>([]);
-  //   const [infoAnchorEl, setInfoAnchorEl] = React.useState<HTMLElement | null>(
-  //     null
-  //   );
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -75,36 +65,26 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     };
   }>({});
 
-  //   const handlePopoverOpen = (
-  //     event: React.MouseEvent<HTMLElement, MouseEvent>
-  //   ) => {
-  //     console.log("setting to ", event.currentTarget);
-  //     setInfoAnchorEl(event.currentTarget);
-  //   };
-
-  //   const handlePopoverClose = () => {
-  //     console.log("CLOSED");
-  //     setInfoAnchorEl(null);
-  //   };
-
-  //   const open = Boolean(infoAnchorEl);
+  const [widgets, setWidgets] = useState<{ [key: string]: IWidgetProps }>({
+    // test: {
+    //   top: 0,
+    //   left: 0,
+    //   id: "test",
+    //   type: WidgetTypes.time,
+    // },
+    // test2: {
+    //   top: 0,
+    //   left: 0,
+    //   id: "test2",
+    //   type: WidgetTypes.time,
+    // },
+  });
 
   const canvasRefs: React.Ref<HTMLCanvasElement>[] = Array.from({
     length: userFilesArr.length,
   }).map((_) => {
     return React.createRef();
   });
-
-  //   const onClickUpload = (
-  //     songName: string,
-  //     authorName: string
-  //   ): Promise<string> => {
-  //     return new Promise((resolve) => {
-  //       setTimeout(() => {
-  //         resolve("5c0feaf3-f91f-4c20-9790-5939c1fa4b74");
-  //       }, 300);
-  //     });
-  //   };
 
   const onClickUpload = (
     songName: string,
@@ -113,17 +93,12 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     return new Promise((resolve) => {
       const blob = convertTracksToBlob(tracks, props.userFiles);
       const formData = new FormData();
-      console.log(blob);
       formData.append("audioBlob", blob, "upload.wav");
       formData.append("songName", songName);
       formData.append("authorName", authorName);
-      console.log(formData);
       fetch("/upload-song", {
         method: "POST",
         body: formData,
-        //   headers: {
-        //     "Content-Type": "multipart/form-data",
-        //   },
       })
         .then((res) => res.json())
         .then((response) => {
@@ -193,13 +168,21 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   }, [props.userFiles]);
 
   const [, drop] = useDrop({
-    accept: ItemTypes.BOX,
+    accept: [ItemTypes.BOX, ItemTypes.WIDGET],
     drop(item: DragItem, monitor) {
       const delta = monitor.getDifferenceFromInitialOffset() as XYCoord;
       if (!delta) return;
+      console.log(item);
       const left = Math.round(item.left + delta.x);
       const top = Math.round(item.top + delta.y);
-      moveBox(item.id, left, top);
+
+      if (item.type === ItemTypes.BOX) {
+        moveBox(item.id, left, top);
+      }
+
+      if (item.type === ItemTypes.WIDGET) {
+        moveWidget(item.id, left, top);
+      }
       return undefined;
     },
   });
@@ -207,6 +190,16 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const moveBox = (id: string, left: number, top: number) => {
     setBoxes(
       update(boxes, {
+        [id]: {
+          $merge: { left, top },
+        },
+      })
+    );
+  };
+
+  const moveWidget = (id: string, left: number, top: number) => {
+    setWidgets(
+      update(widgets, {
         [id]: {
           $merge: { left, top },
         },
@@ -237,10 +230,6 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
 
         input.click();
         break;
-
-      //   case ACTIONS.selectFromLibrary:
-      //     setLibraryOpen(true);
-      //     break;
     }
   };
 
@@ -286,12 +275,8 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
         onAddFile={props.onAddFile}
         onActionClick={onActionClick}
         onClickShare={onClickShare}
-        //@ts-ignore
-        // onMouseEnterInfo={handlePopoverOpen}
-        // onMouseLeaveInfo={handlePopoverClose}
       />
       <Drawer
-        // className={classes.drawer}
         variant="persistent"
         anchor="right"
         open={isLibraryOpen}
@@ -342,6 +327,9 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
           onClickUpload={onClickUpload}
         />
       </Modal>
+      {Object.values(widgets).map((widget, index) => {
+        return <Widget key={widget.id} {...widget} />;
+      })}
     </div>
   );
 };

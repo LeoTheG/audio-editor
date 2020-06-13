@@ -1,5 +1,9 @@
 import WaveformData from "waveform-data";
 
+export enum WidgetTypes {
+  time = "time",
+}
+
 export interface UserFile {
   file: File | { name: string };
   waveformData: WaveformData;
@@ -12,8 +16,9 @@ export interface UserFiles {
 }
 
 export const ItemTypes = {
-  BOX: "box",
+  BOX: "BOX",
   TRACK: "TRACK",
+  WIDGET: "WIDGET",
 };
 
 export interface DragItem {
