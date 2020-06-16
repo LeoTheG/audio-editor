@@ -114,6 +114,8 @@ export const AudioEditor: React.FC = () => {
     setWidgets(update(widgets, { $merge: newWidgets }));
   };
 
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
   const renderDrawerContent = () => {
     if (drawerType === drawerTypes.music)
       return bucketData.map(({ key, url }) => {
@@ -129,15 +131,25 @@ export const AudioEditor: React.FC = () => {
       });
     else if (drawerType === drawerTypes.widgets) {
       return (
-        <div
-          className="library-item"
-          onClick={onClickWidgetItem(WidgetTypes.time)}
-        >
-          time
-        </div>
+        <>
+          <div
+            className="library-item"
+            onClick={onClickWidgetItem(WidgetTypes.typeGame)}
+          >
+            Typing Game
+          </div>
+          <div
+            className="library-item"
+            onClick={onClickWidgetItem(WidgetTypes.time)}
+          >
+            Time
+          </div>
+        </>
       );
     }
   };
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   const onAddFile = async (file: File) => {
     const waveForm = await createWaveform(file);

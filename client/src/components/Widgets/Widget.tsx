@@ -2,6 +2,8 @@ import "../css/Widget.css";
 
 import { ItemTypes, WidgetTypes } from "../../types";
 import React, { useEffect, useState } from "react";
+import Login from "../typeGame/login";
+import Game from "../typeGame/game";
 
 import { useDrag } from "react-dnd";
 
@@ -40,6 +42,9 @@ const renderWidget = (type: WidgetTypes) => {
   switch (type) {
     case WidgetTypes.time:
       return <WidgetTime />;
+
+    case WidgetTypes.typeGame:
+      return <TypeGame />;
 
     // add widget case here for new widget types
     default:
@@ -81,4 +86,8 @@ const getFormattedTime = (): string => {
 
     .toString()
     .padStart(2, "0")}`;
+};
+
+const TypeGame = () => {
+  return <Login />;
 };

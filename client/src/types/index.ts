@@ -2,6 +2,7 @@ import WaveformData from "waveform-data";
 
 export enum WidgetTypes {
   time = "time",
+  typeGame = "typeGame",
 }
 
 export interface UserFile {

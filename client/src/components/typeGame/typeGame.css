@@ -1,0 +1,28 @@
+.phraseDiv {
+  text-align: center;
+  background-color: azure;
+  font-size: 130%;
+  color: black;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.wpmDiv {
+  text-align: center;
+}
+.oppDiv {
+  text-align: center;
+}
+.secDiv {
+  text-align: center;
+}
+.Character {
+  white-space: pre;
+}
+
+.Character-current {
+  background-color: #09d3ac;
+}
+
+.Character-out {
+  color: silver;
+}
