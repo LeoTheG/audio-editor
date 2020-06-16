@@ -10,3 +10,61 @@
   box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132),
     0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
 }
+.getJoke{
+  background-color: rgb(117,192,141);
+  justify-content: center;
+  border: none;
+  color: white;
+  font-size: .5em;
+  padding: 10px 20px;
+  font-family: 'Shadows Into Light', cursive;
+  animation-name: bounce-7;
+  animation-timing-function: cubic-bezier(0.280, 0.840, 0.420, 1);
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+.title{
+  text-align: center;
+  color: red;
+  font-size: .75em;
+  font-family: 'Permanent Marker', cursive;
+  animation: changeColor 8s infinite;
+}
+.Joke{
+  text-align: center;
+  font-family: 'Passion One', cursive;
+  font-size: .6em;
+  padding-top: 5px;
+}
+.Punch{
+  text-align: center;
+  font-family: 'Passion One', cursive;
+  font-size: .6em;
+  padding-top: 5px;
+}
+@keyframes changeColor{
+    0%{
+      color: rgb(241, 55, 55);
+    }
+    25%{
+      color: rgb(214, 139, 26);
+    }
+    50%{
+      color: rgb(46, 146, 212);
+    }
+    75%{
+      color: rgb(202, 27, 150);
+    }
+    100%{
+      color: rgb(241, 55, 55);
+    }
+}
+@keyframes bounce-7 {
+  0%   { transform: scale(1,1)      translateY(0); }
+  10%  { transform: scale(1.1,.9)   translateY(0); }
+  30%  { transform: scale(.9,1.1)   translateY(-100px); }
+  50%  { transform: scale(1.05,.95) translateY(0); }
+  57%  { transform: scale(1,1)      translateY(-7px); }
+  64%  { transform: scale(1,1)      translateY(0); }
+  100% { transform: scale(1,1)      translateY(0); }
+}
