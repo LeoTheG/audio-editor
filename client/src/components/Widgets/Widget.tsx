@@ -51,47 +51,35 @@ const renderWidget = (type: WidgetTypes) => {
 
 //Joke Widget
 const JokeWidget = () => {
-  const [joke] = useState("");
-
+  const[setup, setSetup] = useState("loading");
+  const[punchline, setPunchline] = useState("loading");
+  const audio = new Audio("http://static1.grsites.com/archive/sounds/comic/comic002.mp3");
+  const newJoke = ()=>{
+    fetch("https://official-joke-api.appspot.com/random_joke").
+    then(res=>res.json())
+    .then(res2=>{
+      setSetup(res2.setup)
+      setPunchline(res2.punchline)
+    })
+    audio.play()
+  }
+  useEffect(()=>{
+    newJoke()
+  },[])
   return(
     <div>
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Shadows+Into+Light&family=Passion+One&display=swap" rel="stylesheet"></link>
     <div>
       <h3 className="title">Press The Button To Get A Random Joke!</h3>
-          <button className="getJoke" onClick={laugh}>Tell Me Something Funny!</button>
+          <button className="getJoke" onClick={newJoke}>Tell Me Something Funny!</button>
     </div>
-    <div className="Joke"></div>
-    <div className="Punch"></div>
+    <div className="Joke">
+      Setup: {setup} <br />
+      Punchline: {punchline} <br /> 
+    </div>
     </div>
   );
 };
-function getJoke(){
-  var url = 'https://official-joke-api.appspot.com/random_joke';
-	$.getJSON(url, function(data: { setup: any; punchline: any; }) {
-        
-    var setup = `Setup: ${data.setup}<br>`
-		var punchline = `Punchline: ${data.punchline}<br>`
-		$(".Joke").html(setup);
-    $(".Punch").html(punchline);
-    
-	});
-}
-function playIt()
-{
-  $(document).ready(function() { 
-    var obj = document.createElement("audio"); 
-    obj.setAttribute("src", "http://static1.grsites.com/archive/sounds/comic/comic002.mp3"); 
-    $.get(); 
 
-    $(".getJoke").click(function() { 
-        obj.play(); 
-    }); 
-}); 
-}
-function laugh(){
-  playIt();
-  getJoke();
-}
 // example widget
 
 const WidgetTime = () => {
