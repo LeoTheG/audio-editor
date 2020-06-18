@@ -16,6 +16,14 @@
   align-items: center;
   padding: 10px 10px 10px 10px;
 }
+@media screen and (max-width: 350px){
+  .default{
+    width: 150px;
+  }
+}
+.default{
+  width: 350px;
+}
 @import url("https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Shadows+Into+Light&family=Passion+One&display=swap");
 .getJoke{
   background-color: rgb(117,192,141);

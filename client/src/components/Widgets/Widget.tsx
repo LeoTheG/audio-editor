@@ -68,7 +68,7 @@ const JokeWidget = () => {
     newJoke();
   }, []);
   return (
-    <div>
+    <div className="default">
       <div className="joke-container">
         <h3 className="title">Press The Button To Get A Random Joke!</h3>
         <button className="getJoke" onClick={newJoke}>
