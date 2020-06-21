@@ -26,11 +26,19 @@ const DataTable = (props: dataTableProps) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {Object.keys(props.tokenData).map((token: string, index: number) => (
-            <TableRow key={token}>
-              <TableCell align="left">{token}</TableCell>
+          {Object.keys(props.tokenData).map((token, index: number) => (
+            <TableRow key={props.tokenData[index].ticker}>
+              <TableCell align="left">
+                <a
+                  href={props.tokenData[index].link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {props.tokenData[index].ticker}
+                </a>
+              </TableCell>
               <TableCell align="center">
-                {props.tokenData[token] || "0"}
+                {props.tokenData[index].balance || "0"}
               </TableCell>
             </TableRow>
           ))}
@@ -39,3 +47,5 @@ const DataTable = (props: dataTableProps) => {
     </TableContainer>
   );
 };
+
+export default DataTable;

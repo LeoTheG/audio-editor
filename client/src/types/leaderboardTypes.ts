@@ -2,9 +2,10 @@ interface data {
   ticker: string;
   address: string;
   link: string;
+  balance: number;
 }
 
-enum tokenName {
+export enum tokens {
   dunkonyou,
   fishclub,
   ginandjuice,
@@ -17,19 +18,19 @@ enum tokenName {
 // }
 
 export type tokenDataObj = {
-  [key in tokenName]: data;
+  [token: number]: data;
 };
 
-export interface TokenData {
+export interface tokenData {
   [token: string]: number;
 }
 
 export type dataTableProps = {
   address: string;
-  tokenData: TokenData;
+  tokenData: tokenDataObj;
 };
 
 export type metamaskProps = {
-  setAccount: React.Dispatch<React.SetStateAction<string>>;
-  setConnected: React.Dispatch<React.SetStateAction<boolean>>;
+  setAddress: React.Dispatch<React.SetStateAction<string>>;
+  setConnection: React.Dispatch<React.SetStateAction<boolean>>;
 };

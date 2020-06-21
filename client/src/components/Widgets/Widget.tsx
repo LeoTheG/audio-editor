@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 
 import { useDrag } from "react-dnd";
 
+import LeaderBoardWidget from "./LeaderBoardWidget/LeaderboardWidget";
 export interface IWidgetProps {
   type: WidgetTypes;
   top: number;
@@ -42,6 +43,8 @@ const renderWidget = (type: WidgetTypes) => {
       return <WidgetTime />;
 
     // add widget case here for new widget types
+    case WidgetTypes.leaderboard:
+      return <LeaderBoardWidget />;
     default:
       return null;
   }
