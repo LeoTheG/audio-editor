@@ -10,7 +10,7 @@ declare let Web3: any;
 const metmaskImage = {
   url: "metamask-logo.gif",
   title: "Connect Metamask",
-  width: "40%",
+  width: "100%",
 };
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 0,
       bottom: 0,
       backgroundSize: "cover",
-      backgroundPosition: "center 40%",
+      // backgroundPosition: "center 40%",
     },
     imageBackdrop: {
       position: "absolute",

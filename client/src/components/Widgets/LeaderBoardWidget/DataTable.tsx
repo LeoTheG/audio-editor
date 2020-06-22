@@ -8,21 +8,25 @@ import {
   TableContainer,
   TableHead,
   Paper,
+  Container,
 } from "@material-ui/core";
+import "./css/table.css";
 
 const DataTable = (props: dataTableProps) => {
   return (
-    <TableContainer component={Paper}>
+    // <Container fixed>
+    <TableContainer component={Paper} className={"table"}>
       <Table size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>
-            <TableCell>{props.address}</TableCell>
+            <TableCell>Address: {props.address}</TableCell>
+            <TableCell></TableCell>
           </TableRow>
         </TableHead>
         <TableHead>
           <TableRow>
             <TableCell>Adventure Tokens</TableCell>
-            <TableCell align="right">Bag</TableCell>
+            <TableCell align="center">Bag</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -45,6 +49,7 @@ const DataTable = (props: dataTableProps) => {
         </TableBody>
       </Table>
     </TableContainer>
+    // </Container>
   );
 };
 

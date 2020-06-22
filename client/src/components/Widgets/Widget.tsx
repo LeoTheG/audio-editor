@@ -41,7 +41,6 @@ const renderWidget = (type: WidgetTypes) => {
   switch (type) {
     case WidgetTypes.time:
       return <WidgetTime />;
-
     // add widget case here for new widget types
     case WidgetTypes.leaderboard:
       return <LeaderBoardWidget />;

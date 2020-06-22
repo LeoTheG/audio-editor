@@ -4,6 +4,7 @@ import getBalance from "./getBalance";
 import tokenData from "./tokenData";
 import MetamaskButton from "./metamask";
 import DataTable from "./DataTable";
+import "./css/table.css";
 
 const LeaderboardWidget = () => {
   const [clientAddress, setClientAddress] = useState("");
@@ -12,7 +13,7 @@ const LeaderboardWidget = () => {
 
   useEffect(() => {
     if (!connection || !clientAddress) return;
-    let updatedTableData: tokenDataObj = tokenTableData;
+    const updatedTableData: tokenDataObj = tokenTableData;
     (async () => {
       let balances = await Promise.all(
         Object.entries(updatedTableData).map(async ([token, data]) => {
@@ -20,9 +21,7 @@ const LeaderboardWidget = () => {
         })
       );
       for (let i = 0; i <= balances.length; i++) {
-        if (balances[i] === "") {
-          balances[i] = "0";
-        }
+        if (balances[i] === "") balances[i] = "0";
         updatedTableData[i].balance = parseInt(balances[i]);
       }
       // const deleteChip = (emoji: EmojiData) => {
@@ -36,7 +35,7 @@ const LeaderboardWidget = () => {
   }, [connection, clientAddress]);
 
   return (
-    <div>
+    <div className="widget-container">
       {connection ? (
         <DataTable address={clientAddress} tokenData={tokenTableData} />
       ) : (

@@ -1,0 +1,14 @@
+.widget-container {
+  width: 500px;
+  height: 239px;
+}
+
+.table {
+  width: 100%;
+  height: 100%;
+}
+
+.metamask-button > img {
+  width: 100%;
+  height: 100%;
+}
