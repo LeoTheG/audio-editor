@@ -10,7 +10,7 @@ import {
   Paper,
   Container,
 } from "@material-ui/core";
-import "./css/table.css";
+import "../../css/leaderboard.css";
 
 const DataTable = (props: dataTableProps) => {
   return (

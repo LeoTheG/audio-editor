@@ -4,7 +4,7 @@ import getBalance from "./getBalance";
 import tokenData from "./tokenData";
 import MetamaskButton from "./metamask";
 import DataTable from "./DataTable";
-import "./css/table.css";
+import "../../css/leaderboard.css";
 
 const LeaderboardWidget = () => {
   const [clientAddress, setClientAddress] = useState("");
