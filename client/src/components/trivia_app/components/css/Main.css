@@ -1,0 +1,129 @@
+.choicesbtn {
+    display: inline-block;
+    width: 40%;
+    font-size: 15px;
+    border: 5px solid  #ecac21;
+    background-color: rgb(255, 255, 255);
+    color: black;
+    cursor: pointer;
+    font-weight: 400;
+
+    margin-right: 30px;
+    margin-bottom: 30px;
+    padding: 15px 20px;
+  }
+
+.choicesbtn:hover {
+    border: 5px solid  rgb(255, 255, 255);
+    background-color: #ecac21;
+    color: black;
+}
+
+.choicesbtn:disabled {
+    border: 5px solid  #ecac21;
+    background-color: rgb(255, 255, 255);
+    color: black;
+    cursor: auto;
+}
+.choicesbtn:focus {
+    border: 5px solid  #21b2ec;
+    background-color: rgb(255, 255, 255);
+}
+
+.right {
+    display: inline-block;
+    width: 40%;
+    text-align: center;
+    font-size: 15px;
+    border: 5px solid  #1ea55b;;
+    background-color: rgb(255, 255, 255);
+    color: black;
+    cursor: pointer;
+    font-weight: 400;
+
+    margin-right: 30px;
+    margin-bottom: 30px;
+    padding: 15px 20px;
+}
+
+.wrong {
+    display: inline-block;
+    width: 40%;
+    text-align: center;
+    font-size: 15px;
+    border: 5px solid  #a51e1e;;
+    background-color: rgb(255, 255, 255);
+    color: black;
+    cursor: pointer;
+    font-weight: 400;
+
+    margin-right: 30px;
+    margin-bottom: 30px;
+    padding: 15px 20px;
+}
+
+.a1 {
+    width: 100%;
+}
+
+.submit {
+display: inline-block;
+text-align: center;
+vertical-align: bottom;
+margin-top: 0px;
+margin-bottom: 10px;
+font-size: 10px;
+border: 1px solid #999;
+background-color: rgb(0, 0, 0);
+color: white;
+cursor: pointer;
+font-weight: 400;
+padding: 15px 35px;
+}
+.submit:hover {
+    background-color: azure;
+    color: black;
+}
+.submit:disabled{
+background-color: rgb(0, 0, 0);
+color: white;
+cursor: auto;
+}
+
+
+
+.qArea{
+    background-color: #ecac21;
+    color: white;
+    padding: 5px 5px;
+    margin-top: 10px;
+    margin-bottom: 50px;
+
+    
+}
+
+.question {
+    display: inline-block;
+    position: relative;
+    margin-bottom: 5px;
+    padding: 5px 10px;
+
+    font-size: 30px;
+}
+
+.answer {
+    margin-top: 0px;
+}
+
+h4 {
+    font-size: 20px;
+}
+
+.logo {
+    display: block;
+    position: fixed;
+    width: 15%; 
+    height: auto;
+    bottom: 0;
+    right: 0;
+  } 

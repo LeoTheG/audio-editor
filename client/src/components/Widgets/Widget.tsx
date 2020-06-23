@@ -5,6 +5,8 @@ import React, { useEffect, useState } from "react";
 
 import { useDrag } from "react-dnd";
 
+import App from "../trivia_app/App.js"
+
 export interface IWidgetProps {
   type: WidgetTypes;
   top: number;
@@ -41,6 +43,8 @@ const renderWidget = (type: WidgetTypes) => {
     case WidgetTypes.time:
       return <WidgetTime />;
 
+    case WidgetTypes.trivia:
+      return <TriviaApp />
     // add widget case here for new widget types
     default:
       return null;
@@ -82,3 +86,7 @@ const getFormattedTime = (): string => {
     .toString()
     .padStart(2, "0")}`;
 };
+
+const TriviaApp = () => {
+  return <App />
+}
