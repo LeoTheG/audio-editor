@@ -20,10 +20,10 @@ const useStyles = makeStyles((theme: Theme) =>
       flexWrap: "wrap",
       minWidth: 300,
       width: "100%",
+      height: "100%",
     },
     image: {
       position: "relative",
-      height: 200,
       [theme.breakpoints.down("xs")]: {
         width: "100% !important", // Overrides inline-style
         height: 100,
@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 0,
       bottom: 0,
       backgroundSize: "cover",
-      // backgroundPosition: "center 40%",
+      backgroundPosition: "center 40%",
     },
     imageBackdrop: {
       position: "absolute",

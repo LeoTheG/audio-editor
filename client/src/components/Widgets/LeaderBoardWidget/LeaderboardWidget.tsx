@@ -24,12 +24,6 @@ const LeaderboardWidget = () => {
         if (balances[i] === "") balances[i] = "0";
         updatedTableData[i].balance = parseInt(balances[i]);
       }
-      // const deleteChip = (emoji: EmojiData) => {
-      //   let newObj: TokenData = {};
-      //   Object.assign(newObj, emojisDisplayed);
-      //   if (newObj) delete newObj[emoji.name];
-      //   return setEmojisDisplayed(newObj);
-      // };
       setTokenTableData(updatedTableData);
     })();
   }, [connection, clientAddress]);

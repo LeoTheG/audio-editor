@@ -19,14 +19,20 @@ const DataTable = (props: dataTableProps) => {
       <Table size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>
-            <TableCell>Address: {props.address}</TableCell>
+            <TableCell>
+              <strong>Address:</strong> {props.address}
+            </TableCell>
             <TableCell></TableCell>
           </TableRow>
         </TableHead>
         <TableHead>
           <TableRow>
-            <TableCell>Adventure Tokens</TableCell>
-            <TableCell align="center">Bag</TableCell>
+            <TableCell>
+              <strong>Adventure Tokens</strong>
+            </TableCell>
+            <TableCell align="center">
+              <strong>Bag</strong>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
