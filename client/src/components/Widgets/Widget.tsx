@@ -40,11 +40,47 @@ const renderWidget = (type: WidgetTypes) => {
   switch (type) {
     case WidgetTypes.time:
       return <WidgetTime />;
-
+    case WidgetTypes.joke:
+      return <JokeWidget />;
     // add widget case here for new widget types
     default:
       return null;
   }
+};
+
+//Joke Widget
+const JokeWidget = () => {
+  const [setup, setSetup] = useState("loading");
+  const [punchline, setPunchline] = useState("loading");
+  const audio = new Audio(
+    "http://static1.grsites.com/archive/sounds/comic/comic002.mp3"
+  );
+  const newJoke = () => {
+    fetch("https://official-joke-api.appspot.com/random_joke")
+      .then((res) => res.json())
+      .then((res2) => {
+        setSetup(res2.setup);
+        setPunchline(res2.punchline);
+      });
+    audio.play();
+  };
+  useEffect(() => {
+    newJoke();
+  }, []);
+  return (
+    <div className="default">
+      <div className="joke-container">
+        <h3 className="title">Press The Button To Get A Random Joke!</h3>
+        <button className="getJoke" onClick={newJoke}>
+          Tell Me Something Funny!
+        </button>
+      </div>
+      <div className="Joke">
+        Setup: {setup} <br />
+        Punchline: {punchline} <br />
+      </div>
+    </div>
+  );
 };
 
 // example widget
