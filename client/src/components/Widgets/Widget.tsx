@@ -88,5 +88,9 @@ const getFormattedTime = (): string => {
 };
 
 const TriviaApp = () => {
-  return <App />
+  return (
+    <div className = "trivia-widget">
+      <App />
+    </div>
+  )
 }

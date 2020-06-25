@@ -129,12 +129,23 @@ export const AudioEditor: React.FC = () => {
       });
     else if (drawerType === drawerTypes.widgets) {
       return (
-        <div
+        <div>
+          <div
+            className="library-item"
+            onClick={onClickWidgetItem(WidgetTypes.time)}
+          >
+            time
+          </div>
+
+          <div
           className="library-item"
-          onClick={onClickWidgetItem(WidgetTypes.time)}
-        >
-          time
+          onClick={onClickWidgetItem(WidgetTypes.trivia)}
+          >
+            Trivia
+          </div>
         </div>
+
+
       );
     }
   };

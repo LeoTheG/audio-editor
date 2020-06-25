@@ -25,7 +25,7 @@ let questions_array = [
 
     {
         question: "Who wrote Cinderella",
-        choices: ["John Dryden", "Voltaire", "Thomas Dickenson","Charles Perrault"],
+        choices: ["John Dryden", "Voltaire", "Thomas Fisher","Charles Perrault"],
         answer: "Charles Perrault"
     },
 

@@ -16,5 +16,8 @@
     "lint-staged": "^10.2.2",
     "pre-commit": "^1.2.2",
     "prettier": "^2.0.5"
+  },
+  "dependencies": {
+    "axios": "^0.19.2"
   }
 }
