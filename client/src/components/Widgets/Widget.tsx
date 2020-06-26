@@ -75,20 +75,25 @@ const AudioPlayerWidget = () => {
               ];
 
   
-  var audio = new Audio(list[i].url);
+  let audio = new Audio(list[i].url);
+
+  //let [is_playing,set_playing] = useState(false);
 
   function play ()  {  
     if (!audio.paused) {audio.pause();}
     else {audio.play();}
+    //set_playing(!audio.paused);
   }
 
 
 function increment() {
     audio.pause();
+    //set_playing(!audio.paused);
     setI((i + 1) % list.length);
 }
 function decrement () {
     audio.pause();
+    //set_playing(!audio.paused);
     if (i == 0) setI(list.length - 1);
     else setI(i-1);
 }
@@ -97,7 +102,7 @@ function decrement () {
 
  return <div className="player-container">          
             <MusicController
-            isPlaying={!audio.pause}
+            isPlaying={true/*is_playing*/}
             onClickPrev={()=>{decrement()}}
             onClickNext={()=>{increment()}}
             onTogglePlay={()=>{play()}}
