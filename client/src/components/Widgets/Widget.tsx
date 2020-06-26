@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { Tooltip } from "@material-ui/core";
 import { useDrag } from "react-dnd";
+import {MusicController } from "adventure-component-library";
 
 export interface IWidgetProps {
   type: WidgetTypes;
@@ -47,6 +48,9 @@ const renderWidget = (type: WidgetTypes) => {
 
     case WidgetTypes.bearfaucet:
       return <BearFaucetWidget />;
+
+      case WidgetTypes.audioplayer:
+        return <AudioPlayerWidget />;
     
 
     // add widget case here for new widget types
@@ -58,6 +62,51 @@ const renderWidget = (type: WidgetTypes) => {
 declare let web3: any
 declare let ethereum: any
 declare let Web3: any
+
+
+
+const AudioPlayerWidget = () => {
+
+  
+  var [i,setI] = useState(0);
+  const list = [
+                {songName: "dejitaru glow", artist: "a.l.i.s.o.n, crystal cola", url: "http://www.hochmuth.com/mp3/Vivaldi_Sonata_eminor_.mp3"},
+                {songName: "dejitaru glow", artist: "brooo", url: "https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3"}
+              ];
+
+  
+  var audio = new Audio(list[i].url);
+
+  function play ()  {  
+    if (!audio.paused) {audio.pause();}
+    else {audio.play();}
+  }
+
+
+function increment() {
+    audio.pause();
+    setI((i + 1) % list.length);
+}
+function decrement () {
+    audio.pause();
+    if (i == 0) setI(list.length - 1);
+    else setI(i-1);
+}
+
+
+
+ return <div className="player-container">          
+            <MusicController
+            isPlaying={!audio.pause}
+            onClickPrev={()=>{decrement()}}
+            onClickNext={()=>{increment()}}
+            onTogglePlay={()=>{play()}}
+            song={ list[i]} />
+          </div>
+}
+
+
+
 
 
 const BearFaucetWidget = () => {

@@ -4,6 +4,7 @@ export enum WidgetTypes {
   time = "time",
   balances = "balances",
   bearfaucet = "bearfaucet",
+  audioplayer = "audioplayer",
 }
 
 export interface UserFile {

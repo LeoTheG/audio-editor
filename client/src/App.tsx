@@ -148,6 +148,12 @@ export const AudioEditor: React.FC = () => {
       >
         bear_faucet
       </div>
+      <div
+        className="library-item"
+        onClick={onClickWidgetItem(WidgetTypes.audioplayer)}
+      >
+        audio_player
+      </div>
       </div>
 
       );
