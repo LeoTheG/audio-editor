@@ -348,15 +348,17 @@ function App() {
     >
       <Router>
         <Switch>
-          <Route path={process.env.PUBLIC_URL + "/player"}>
+          {/* <Route path={process.env.PUBLIC_URL + "/player"}> */}
+          {/* <Route path={"/player"}>
             <PlayerPage uploadList={songList} />
-          </Route>
-          <Route exact path={process.env.PUBLIC_URL}>
+          </Route> */}
+          {/* <Route exact path={process.env.PUBLIC_URL}> */}
+          <Route exact path={"/"}>
             <DndProvider options={HTML5toTouch}>
               <AudioEditor />
             </DndProvider>
           </Route>
-          <Redirect from="*" to={process.env.PUBLIC_URL} />
+          <Redirect from="*" to={"/"} />
         </Switch>
       </Router>
     </div>
