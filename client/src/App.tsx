@@ -143,6 +143,12 @@ export const AudioEditor: React.FC = () => {
           >
             joke
           </div>
+          <div
+            className="library-item"
+            onClick={onClickWidgetItem(WidgetTypes.leaderboard)}
+          >
+            leaderboard
+          </div>
         </div>
       );
     }
