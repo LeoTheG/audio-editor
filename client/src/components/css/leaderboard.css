@@ -1,15 +1,14 @@
-.widget-container {
-  /* display: flex;
+.leaderboard-container {
+  display: flex;
   flex-direction: column;
-  align-items: center; */
-  width: 400px;
-  /* height: 210px; */
+  align-items: center;
+  padding: 0px;
+  width: 450px;
+  height: 173.55px;
 }
 
 .metamask-button > img {
-  /* display: flex;
+  display: flex;
   flex-direction: column;
-  align-items: center; */
-  width: 400px;
-  height: 210px;
+  align-items: center;
 }

@@ -29,7 +29,7 @@ const LeaderboardWidget = () => {
   }, [connection, clientAddress]);
 
   return (
-    <div className="widget-container">
+    <div className="leaderboard-container">
       {connection ? (
         <DataTable address={clientAddress} tokenData={tokenTableData} />
       ) : (

@@ -1,12 +1,12 @@
 .widget-container {
   display: flex;
   flex-direction: column;
-  min-width: 200px;
+  /* min-width: 200px; */
   position: absolute;
   cursor: move;
   border: 1px solid black;
   background-color: white;
-  min-height: 200px;
+  /* min-height: 200px; */
   box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132),
     0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
 }
