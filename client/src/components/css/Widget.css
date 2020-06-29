@@ -10,6 +10,10 @@
   box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132),
     0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
 }
+.time-container {
+  width: 100px;
+  height: 65px;
+}
 .joke-container {
   display: flex;
   flex-direction: column;

@@ -100,7 +100,7 @@ const WidgetTime = () => {
   }, []);
 
   return (
-    <div>
+    <div className={"time-container"}>
       The time is <div>{time}</div>
     </div>
   );
