@@ -27,6 +27,14 @@ import { WidgetButton } from "./components/WidgetButton";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
 
+import axios from 'axios';
+import "./components/css/metamaskconn.css"
+
+declare let web3: any
+declare let ethereum: any
+declare let Web3: any
+
+
 // @ts-ignore
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
@@ -254,6 +262,95 @@ export const AudioEditor: React.FC = () => {
 
   const isActive = canDrop && isOver;
 
+
+
+  /*  metamask connection and balance getting */
+
+
+
+var [account,set_account] = useState("");
+
+var [connected,set_connected] = useState(false);
+
+var [balance,set_balance] : any= useState(undefined);
+
+const connectMetamask = async () => {
+
+    try {
+
+      if (ethereum) {
+
+        console.log('ETH IS ', ethereum)
+        web3 = new Web3(ethereum)
+        try {
+          await ethereum.enable()
+
+          web3.eth.getAccounts((err: string, accounts: string[]) => {
+            if (err) console.log(err)
+            else if (!accounts.length) alert('No Metamask accounts found')
+            else {
+              set_account(accounts[0]);
+              set_connected(true);
+              try {
+                update_balance(accounts[0],"BEAR").then((_balance) => {
+                  set_balance(_balance)
+                });
+              }
+              catch(error) {}
+
+              
+
+            }
+          })
+        } catch (e) {
+          console.error('Error, ', e)
+        }
+      }
+    } catch (e) {
+      console.log('error ', e)
+    }
+  }
+
+
+  async function api_request(url_end: string, params: object) {
+    var url = 'https://myserverpool.herokuapp.com/'+url_end;
+    var res;
+    await axios.post(url,params)
+            .then(function (response) {
+                res = response.data;
+            })
+            .catch(function (error) {
+              res = undefined;
+            });
+    
+    return res;
+}
+
+async function update_balance( _user: string , _ticker: string) {
+  const params = {
+                user: _user, 
+                ticker: _ticker
+                };
+
+    const url ="balance";
+
+    try {
+        var balance : any = (await api_request(url,params));
+
+        if (balance === undefined ) return -1;
+        else {
+          const aux = require('web3');
+          const res : number = aux.utils.fromWei(balance.toString(),"ether");
+          return res;
+        }
+
+    }
+    catch(err) {
+        console.log(err+"can't get balance");
+        return -1;
+    }
+}
+
   return (
     <div
       ref={drop}
@@ -266,6 +363,23 @@ export const AudioEditor: React.FC = () => {
       }}
     >
       <PlayerLogo />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+  >
+      <div className="topright">
+          <p hidden={!connected}>{account}</p><p hidden={!connected}> has : {balance} rawr tokens</p>
+      <figure hidden={connected} >
+            <img src="https://www.bitdegree.org/tutorials/wp-content/uploads/2018/06/metamask-wallet-review-1.jpg?__cf_chl_jschl_tk__=1d0e93f6cc171a31c1f11c88e66b94d14177d17d-1593449301-0-AWto0m_WCfSz-GHxFtzPaVcnHv6b9l5dI_KuBOwZv1WXTnHYywpyqK3Bob3Khn8gkY4FhF-K5YT_gWCM7GTLSuJCeMJ12X06fNV246UeDS6WAVerhda4ii5pydFtYV5hH3K1cC358QEMvbS5RvR82c6im7Plh5UR2l2HQUZeCbHm0aqWqHABKUfMOxDggzMYECkjQ_i6EmxPjnddy5-1towisgkhFnTZQ_RTBhXejzaFZflpYrHzUO4jpHDQ7LQDUaffr3GY6fdJSYgJxabFucf8jkvt08GBBVDGBauZOG7BOzuke-nDkl5sg0KC5kGodepF1CLBGBpY0JCOnOl1YaUfO7CQyF4rU9dFiLQ3TgsQ" 
+              onClick={connectMetamask} style={{width: '50px', height: '60px'}}/>
+            <figcaption>click to connect to metamask</figcaption>
+         </figure>
+      </div>
+
+  </div>
 
       <div
         style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}

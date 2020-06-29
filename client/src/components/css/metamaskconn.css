@@ -1,0 +1,14 @@
+.topright {
+    position: relative;
+    left: 1500px;
+    bottom: 120px;
+    font-size: 15px;
+    text-align: left;
+  }
+
+  figcaption {
+    background-color: white;
+    color: black;
+    padding: 2px;
+    text-align: rigth;
+  }
