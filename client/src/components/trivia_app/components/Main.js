@@ -18,7 +18,9 @@ class Main extends Component {
             user_choice_check : false,
             submit_clicked : false,
             classNames : ['choicesbtn','choicesbtn','choicesbtn','choicesbtn'],
-            correct_check: false
+            correct_check: false,
+            pause: false,
+            game_over: false
         };
 
         let updatedClass = [];
@@ -68,9 +70,9 @@ class Main extends Component {
         this.checkAnswer();
         this.setState({
             submit_clicked : true,
-            classNames : this.updatedClass
+            classNames : this.updatedClass,
+            user_choice_check : false
         })
-        this.submitRef.current.setAttribute("disabled", "disabled");
         this.optionRef1.current.setAttribute("disabled", "disabled");
         this.optionRef2.current.setAttribute("disabled", "disabled");
         this.optionRef3.current.setAttribute("disabled", "disabled");
@@ -80,10 +82,9 @@ class Main extends Component {
 
     handleNext () {
         this.setState((state) => {
-            return {current_q: state.current_q + 1, user_choice_check : false, correct_check : false,
+            return {current_q: state.current_q + 1, correct_check : false, pause : false,
                 submit_clicked : false, classNames: ['choicesbtn','choicesbtn','choicesbtn','choicesbtn']};
           });
-          this.submitRef.current.removeAttribute("disabled");
           this.optionRef1.current.removeAttribute("disabled");
           this.optionRef2.current.removeAttribute("disabled");
           this.optionRef3.current.removeAttribute("disabled");
@@ -165,54 +166,73 @@ class Main extends Component {
 
     DisplayAnswer () {
         this.updatedClass = this.state.classNames
-        if (this.state.submit_clicked === false)
+        if (this.state.pause === false)
         {
-            return ( <div></div> )
-        }
-        else if (questions_array[this.state.current_q]['choices'][this.state.user_choice] === questions_array[this.state.current_q]['answer'])
-        {
-            if (this.state.current_q === this.state.total_q - 1)
+            if (this.state.submit_clicked === false)
             {
-                this.state.score += 1
-                return (
-                    <div className = "answer">
-                        <h4>Correct!</h4>
-                        <h4>Final Score: {this.state.score}</h4>
-                        {this.sendToken()}
+                return ( <div></div> )
+            }
+            else if (questions_array[this.state.current_q]['choices'][this.state.user_choice] === questions_array[this.state.current_q]['answer'])
+            {
+                if (this.state.current_q === this.state.total_q - 1)
+                {
+                    this.state.score += 1
+                    this.state.pause = true
+                    this.state.game_over = true
+                    return (
+                        <div className = "answer">
+                            {this.sendToken()}
+                        </div>
+                    )
+                }
+                else
+                {
+                    this.state.score += 1
+                    this.state.pause = true
+                    return (
+                        <this.DisplayNext />
+                    )
+                }
+            }
+            else
+            {
+                if (this.state.current_q === this.state.total_q - 1)
+                {
+                    this.state.pause = true
+                    this.state.game_over = true
+                    return (
+                        <div className = "answer">
+                            {this.sendToken()}
+                        </div>
+                        )
+                }
+                else
+                {
+                    this.state.pause = true
+                    return (
+                            <this.DisplayNext />
+                        )
+                }
+            }
+        }
+        else
+        {
+            if (this.state.game_over === true)
+            {
+                return(
+                    <div>
+                        <h4>You have been awarded {this.state.score} Rawr Tokens</h4>
                     </div>
                 )
             }
             else
             {
-                this.state.score += 1
-                return (
-                <div className = "answer"> 
-                    <h4>Correct!</h4>
+                return(
                     <this.DisplayNext />
-                </div>)
+                )
+                
             }
         }
-        else
-        {
-            if (this.state.current_q === this.state.total_q - 1)
-            {
-                return (
-                    <div className = "answer">
-                        <h4>Sorry, the correct answer is {questions_array[this.state.current_q]['answer']}</h4>
-                        <h4>Final Score: {this.state.score}</h4>
-                        {this.sendToken()}
-                    </div>)
-            }
-            else
-            {
-                return (
-                    <div className = "answer">
-                        <h4>Sorry, the correct answer is {questions_array[this.state.current_q]['answer']}</h4>
-                        <this.DisplayNext />
-                    </div>)
-            }
-        }
-        
     }
 
     componentDidMount() {
@@ -220,6 +240,7 @@ class Main extends Component {
     }
     
     sendToken() {
+        console.log('send')
         var apiAddress = "http://13.56.163.182:8000/transfer-token";
         axios.post(apiAddress, {
             ticker: "BEAR",
@@ -227,36 +248,40 @@ class Main extends Component {
             to: this.state.account[0],
             hookUrl: "done",
         })
-            .then(function (response) {
-                console.log(response);
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-            return (
-                <div>
-                    <h4> You have been awarded {this.state.score} Rawr Tokens</h4>
-                </div>
-            )
+
+        .then(function (response) {
+            console.log(response);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+        return (
+            <div>
+                <h4> You have been awarded {this.state.score} Rawr Tokens</h4>
+            </div>
+        )
+
+
     }
 
-
+    gameOver () {
+        this.setState({
+            game_over: true
+        })
+    }
 
     render() {
         return <>
-            <div>
+            <div className = "container">
                 <div className = 'qArea'>
-                     <p>Question {this.state.current_q + 1} :</p>
+                     <h4>Question {this.state.current_q + 1} :</h4>
                     <this.DisplayQuestion />
                 </div>
                 <this.DisplayOptions />
 
                 {this.state.user_choice_check ? <div> <this.DisplaySubmit /></div> : <div></div> }
-                <this.DisplayAnswer />
-                
-                <div className = "advLogo">
-                        <img className = "logo" src = "http://13.57.47.139/adventure-logo.png"/>
-                </div>    
+                <this.DisplayAnswer /> 
             </div>
         </>
     }
