@@ -5,13 +5,30 @@ import axios from 'axios';
 
 const ethereum = window.ethereum;
 
+const num_questions = 5;
+let q = new Set();
+let questions = [];
+let rand = 0;
+while (q.size < num_questions)
+{
+    rand = Math.floor(Math.random() * (questions_array.length));
+    q.add(questions_array[rand]);
+}
+
+var set_iterator = q.entries();
+for (let i =0; i < q.size; i++)
+{
+    questions.push(set_iterator.next().value[0])
+}
+
+
 class Main extends Component {
     constructor(props) {
         super(props)
         this.state = {
             account: null,
             hasMM: true,
-            total_q : questions_array.length,
+            total_q : questions.length,
             current_q : 0,
             score : 0,
             user_choice : null,
@@ -95,7 +112,7 @@ class Main extends Component {
     DisplayQuestion () {
         return (
             <div className = "question">
-                {questions_array[this.state.current_q]['question']}
+                {questions[this.state.current_q]['question']}
             </div>
         )
     }
@@ -105,22 +122,22 @@ class Main extends Component {
             <div className = "a1">
                 <div className = "a1">
                     <button ref = {this.optionRef1} className={this.state.classNames[0]} onClick={() => this.handleChoice(0)}>
-                    {questions_array[this.state.current_q]['choices'][0]}
+                    {questions[this.state.current_q]['choices'][0]}
                     </button>
                 
 
                     <button ref = {this.optionRef2} className={this.state.classNames[1]} onClick={() => this.handleChoice(1)}>
-                    {questions_array[this.state.current_q]['choices'][1]}
+                    {questions[this.state.current_q]['choices'][1]}
                     </button>
                 </div>
 
                 <div className = "a2">
                     <button ref = {this.optionRef3} className={this.state.classNames[2]} onClick={() => this.handleChoice(2)}>
-                    {questions_array[this.state.current_q]['choices'][2]}
+                    {questions[this.state.current_q]['choices'][2]}
                     </button>
 
                     <button ref = {this.optionRef4} className={this.state.classNames[3]} onClick={() => this.handleChoice(3)}>
-                    {questions_array[this.state.current_q]['choices'][3]}
+                    {questions[this.state.current_q]['choices'][3]}
                     </button>
 
                 </div>
@@ -151,7 +168,7 @@ class Main extends Component {
     }
 
     checkAnswer () {
-        if (questions_array[this.state.current_q]['choices'][this.state.user_choice] === questions_array[this.state.current_q]['answer'])
+        if (questions[this.state.current_q]['choices'][this.state.user_choice] === questions[this.state.current_q]['answer'])
         {
             this.updatedClass[this.state.user_choice] = 'right';
             this.setState({
@@ -172,7 +189,7 @@ class Main extends Component {
             {
                 return ( <div></div> )
             }
-            else if (questions_array[this.state.current_q]['choices'][this.state.user_choice] === questions_array[this.state.current_q]['answer'])
+            else if (questions[this.state.current_q]['choices'][this.state.user_choice] === questions[this.state.current_q]['answer'])
             {
                 if (this.state.current_q === this.state.total_q - 1)
                 {
