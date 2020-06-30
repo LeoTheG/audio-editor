@@ -28,7 +28,8 @@
 
 .topright_balances {
     position: relative;
-    left: 60px;
+    left: 25px;
+    top: 10px;
 }
 .header {
     display: block;
@@ -90,4 +91,10 @@
   position: relative;
   top: 30px;
   left: 80px;
+}
+.credits_balances {
+  position: relative;
+  top: 80px;
+  left: 160px;
+  font-size: 10px;
 }
