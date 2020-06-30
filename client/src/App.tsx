@@ -1,4 +1,5 @@
 import "./css/App.css";
+import backgroundImage from "./assets/Polka-Dots.svg";
 
 import { Button, Drawer } from "@material-ui/core";
 import { DragObjectWithType, DropTargetMonitor, useDrop } from "react-dnd";
@@ -8,7 +9,7 @@ import React, { useEffect } from "react";
 import {
   Redirect,
   Route,
-  BrowserRouter as Router,
+  HashRouter as Router,
   Switch,
 } from "react-router-dom";
 import { bucketData, convertTracksToBlob, downloadFromUrl } from "./util";
@@ -143,6 +144,18 @@ export const AudioEditor: React.FC = () => {
           onClick={onClickWidgetItem(WidgetTypes.time)}
         >
           time
+          <div
+            className="library-item"
+            onClick={onClickWidgetItem(WidgetTypes.time)}
+          >
+            time
+          </div>
+          <div
+            className="library-item"
+            onClick={onClickWidgetItem(WidgetTypes.joke)}
+          >
+            joke
+          </div>
         </div>
         <div
         className="library-item"
@@ -381,11 +394,12 @@ async function update_balance( _user: string , _ticker: string) {
 
   </div>
 
-      <div
+      {/* <div
+      TODO LIBRARY BUTTON
         style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
       >
         <LibraryButton onClick={() => setDrawerType(drawerTypes.music)} />
-      </div>
+      </div> */}
 
       <AudioVisualizer
         style={{
@@ -452,28 +466,38 @@ async function update_balance( _user: string , _ticker: string) {
 };
 function App() {
   const [songList, setSongList] = useState<IUserUpload[]>([]);
-  useEffect(() => {
-    fetch("/user-uploads")
-      // .then(console.log);
-      .then((res) => res.json())
-      .then((_res) => {
-        const res = _res as { uploads: IUserUpload[] };
-        setSongList(res.uploads);
-      });
-  }, []);
+
+  // useEffect(() => {
+  //   //TODO fetch uploads
+  //   fetch("/user-uploads")
+  //     // .then(console.log);
+  //     .then((res) => res.json())
+  //     .then((_res) => {
+  //       const res = _res as { uploads: IUserUpload[] };
+  //       setSongList(res.uploads);
+  //     });
+  // }, []);
+
   return (
-    <div className="App">
+    <div
+      className="App"
+      style={{
+        background: `url(${backgroundImage})`,
+      }}
+    >
       <Router>
         <Switch>
-          <Route path="/player">
+          {/* <Route path={process.env.PUBLIC_URL + "/player"}> */}
+          {/* <Route path={"/player"}>
             <PlayerPage uploadList={songList} />
-          </Route>
-          <Route exact path="/">
+          </Route> */}
+          {/* <Route exact path={process.env.PUBLIC_URL}> */}
+          <Route exact path={"/"}>
             <DndProvider options={HTML5toTouch}>
               <AudioEditor />
             </DndProvider>
           </Route>
-          <Redirect from="*" to="/" />
+          <Redirect from="*" to={"/"} />
         </Switch>
       </Router>
     </div>

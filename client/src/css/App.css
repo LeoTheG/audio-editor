@@ -14,7 +14,8 @@ body,
 .App {
   display: flex;
   flex-direction: column;
-  background: url("/Polka-Dots.svg");
+  /* background: url("/Polka-Dots.svg"); */
+  /* background: url("/Polka-Dots.svg"); */
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Oswald:wght@300&display=swap");

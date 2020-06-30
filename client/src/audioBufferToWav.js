@@ -10,12 +10,11 @@ function audioBufferToWav(buffer, opt) {
 
   var result;
   //   console.log(numChannels);
-  //   if (numChannels === 2) {
-  result = interleave(buffer.getChannelData(0), buffer.getChannelData(1));
-  //   }
-  //   else {
-  //     result = buffer.getChannelData(0);
-  //   }
+  if (numChannels === 2) {
+    result = interleave(buffer.getChannelData(0), buffer.getChannelData(1));
+  } else {
+    result = buffer.getChannelData(0);
+  }
 
   return encodeWAV(result, format, sampleRate, numChannels, bitDepth);
 }

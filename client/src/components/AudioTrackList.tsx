@@ -353,14 +353,15 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
           />
         </div>
 
-        <Tooltip title="Share">
+        {/* <Tooltip title="Share">
+        TODO SHARE BUTTON
           <IconButton
             style={{ width: "fit-content" }}
             onClick={() => props.onClickShare(tracks)}
           >
             <Share style={{ width: 50, color: "#75d56c", height: 30 }} />
           </IconButton>
-        </Tooltip>
+        </Tooltip> */}
       </div>
       <Popover
         id="mouse-over-popover"
