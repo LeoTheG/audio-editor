@@ -5,6 +5,9 @@ import React, { useEffect, useState } from "react";
 
 import { useDrag } from "react-dnd";
 
+import Gif from "../gif/index";
+import Shoes from "../shoes/index";
+
 export interface IWidgetProps {
   type: WidgetTypes;
   top: number;
@@ -43,6 +46,10 @@ const renderWidget = (type: WidgetTypes) => {
     case WidgetTypes.joke:
       return <JokeWidget />;
     // add widget case here for new widget types
+    case WidgetTypes.gif:
+      return <GifWidget />;
+    case WidgetTypes.shoes:
+      return <ShoesWidget />;
     default:
       return null;
   }
@@ -117,4 +124,20 @@ const getFormattedTime = (): string => {
 
     .toString()
     .padStart(2, "0")}`;
+};
+
+const GifWidget = () => {
+  return (
+    <div className="gif-widget">
+      <Gif />
+    </div>
+  );
+};
+
+const ShoesWidget = () => {
+  return (
+    <div className="shoes-widget">
+      <Shoes />
+    </div>
+  );
 };

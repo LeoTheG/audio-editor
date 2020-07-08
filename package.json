@@ -17,5 +17,16 @@
     "pre-commit": "^1.2.2",
     "prettier": "^2.0.5"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@material-ui/core": "^4.10.2",
+    "axios": "^0.19.2",
+    "immutability-helper": "^3.1.1",
+    "react": "^16.13.1",
+    "react-dnd": "^11.1.3",
+    "react-dnd-html5-backend": "^11.1.3",
+    "react-dnd-multi-backend": "^6.0.2",
+    "react-router-dom": "^5.2.0",
+    "uuid": "^8.2.0",
+    "waveform-data": "^3.3.2"
+  }
 }

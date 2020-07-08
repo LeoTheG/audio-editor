@@ -1,0 +1,39 @@
+form {
+  margin-left: 40%;
+}
+
+label {
+  font-size: 20px;
+}
+
+select {
+  margin-left: 10px;
+}
+
+.button {
+  margin-left: 15px;
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 10px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 15px;
+}
+
+img {
+  margin: 0 auto;
+}
+
+.imgback {
+  margin: 20px auto;
+  width:400px;
+  height: 400px;
+}
+
+img{
+  width: 100%;
+  height: 100%;
+}
+
