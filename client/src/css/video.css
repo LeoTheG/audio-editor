@@ -1,0 +1,46 @@
+.MainDiv {
+  text-align: center;
+  color: black;
+  background-color: lightblue;
+}
+.MainTitle {
+  padding-top: 0%;
+  background-color: lightblue;
+}
+
+.inputButton {
+  color: #0099cc;
+  background: transparent;
+  border: 2px solid #0099cc;
+  border-radius: 6px;
+}
+.inputButton:hover {
+  background-color: #008cba;
+  color: white;
+}
+
+.history {
+  padding: 0px;
+  font-size: x-small;
+  background-color: lightblue;
+  cursor: default;
+}
+
+iframe {
+  width: 280px;
+  height: 265px;
+  overflow: hidden;
+  padding-bottom: 1px;
+  border: none;
+}
+
+.AdvenMainDiv {
+  text-align: center;
+  color: black;
+  background-color: rgb(72, 64, 225);
+  cursor: pointer;
+}
+.AdvenVideo {
+  background-color: white;
+  padding-top: 10px;
+}

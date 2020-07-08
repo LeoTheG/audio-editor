@@ -3,6 +3,8 @@ import WaveformData from "waveform-data";
 export enum WidgetTypes {
   time = "time",
   joke = "joke",
+  vidplayer = "vidplayer",
+  advenVidPlayer = "advenVidPlayer",
 }
 
 export interface UserFile {

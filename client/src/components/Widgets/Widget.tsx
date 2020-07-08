@@ -5,6 +5,9 @@ import React, { useEffect, useState } from "react";
 
 import { useDrag } from "react-dnd";
 
+import VideoPlayer from "../VideoPlayer";
+import AdventureVideoPlayer from "../AdventureVideoPlayer";
+
 export interface IWidgetProps {
   type: WidgetTypes;
   top: number;
@@ -43,6 +46,11 @@ const renderWidget = (type: WidgetTypes) => {
     case WidgetTypes.joke:
       return <JokeWidget />;
     // add widget case here for new widget types
+
+    case WidgetTypes.vidplayer:
+      return <VideoPlayer />;
+    case WidgetTypes.advenVidPlayer:
+      return <AdventureVideoPlayer />;
     default:
       return null;
   }
@@ -117,4 +125,12 @@ const getFormattedTime = (): string => {
 
     .toString()
     .padStart(2, "0")}`;
+};
+
+const WidgetVideoPlayer = () => {
+  return <VideoPlayer />;
+};
+
+const WidgetAdvenVideoPlayer = () => {
+  return <AdventureVideoPlayer />;
 };

@@ -143,6 +143,18 @@ export const AudioEditor: React.FC = () => {
           >
             joke
           </div>
+          <div
+            className="library-item"
+            onClick={onClickWidgetItem(WidgetTypes.vidplayer)}
+          >
+            Video Player
+          </div>
+          <div
+            className="library-item"
+            onClick={onClickWidgetItem(WidgetTypes.advenVidPlayer)}
+          >
+            Adventure Video Player
+          </div>
         </div>
       );
     }
