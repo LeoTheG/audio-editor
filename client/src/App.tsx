@@ -1,5 +1,4 @@
 import "./css/App.css";
-import backgroundImage from "./assets/Polka-Dots.svg";
 
 import { Button, Drawer } from "@material-ui/core";
 import { DragObjectWithType, DropTargetMonitor, useDrop } from "react-dnd";
@@ -25,6 +24,7 @@ import { PlayerLogo } from "./components/PlayerButton";
 import { PlayerPage } from "./components/PlayerPage";
 import WaveformData from "waveform-data";
 import { WidgetButton } from "./components/WidgetButton";
+import backgroundImage from "./assets/Polka-Dots.svg";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
 
@@ -60,7 +60,7 @@ const createWaveform = async (
     reader.onloadend = () => {
       const buffer = reader.result as Buffer;
 
-      audioContext.decodeAudioData(buffer).then(async (audioBuffer) => {
+      audioContext.decodeAudioData(buffer, async (audioBuffer) => {
         const waveformData = await convertBufferToWaveformData(audioBuffer);
         resolve(waveformData);
       });
@@ -348,11 +348,6 @@ function App() {
     >
       <Router>
         <Switch>
-          {/* <Route path={process.env.PUBLIC_URL + "/player"}> */}
-          {/* <Route path={"/player"}>
-            <PlayerPage uploadList={songList} />
-          </Route> */}
-          {/* <Route exact path={process.env.PUBLIC_URL}> */}
           <Route exact path={"/"}>
             <DndProvider options={HTML5toTouch}>
               <AudioEditor />

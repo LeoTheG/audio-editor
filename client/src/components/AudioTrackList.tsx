@@ -171,27 +171,27 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
   const isActive = canDrop && isOver;
   const isEmptyTracklist = !tracks.length;
 
-  useEffect(() => {
-    if (isPlayingSong && tracks.length) {
-      const toConcatFiles: AudioBuffer[] = tracks.map(
-        (track) => props.userFiles[track.referenceId].audioBuffer
-      );
+  //   useEffect(() => {
+  //     if (isPlayingSong && tracks.length) {
+  //       const toConcatFiles: AudioBuffer[] = tracks.map(
+  //         (track) => props.userFiles[track.referenceId].audioBuffer
+  //       );
 
-      const blob = convertAudioBufferToBlob(toConcatFiles);
+  //       const blob = convertAudioBufferToBlob(toConcatFiles);
 
-      const newAudioUrl = URL.createObjectURL(blob);
+  //       const newAudioUrl = URL.createObjectURL(blob);
 
-      const newAudio = new Audio(newAudioUrl);
-      setAudio(newAudio);
-      newAudio.play();
+  //       const newAudio = new Audio(newAudioUrl);
+  //       setAudio(newAudio);
+  //       newAudio.play();
 
-      newAudio.onended = () => {
-        setPlayingSong(false);
-      };
-    } else {
-      audio.pause();
-    }
-  }, [isPlayingSong]);
+  //       newAudio.onended = () => {
+  //         setPlayingSong(false);
+  //       };
+  //     } else {
+  //       audio.pause();
+  //     }
+  //   }, [isPlayingSong]);
 
   return (
     <div
@@ -349,7 +349,29 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
         <div style={{ height: 105 }}>
           <PlayerButton
             isPlaying={isPlayingSong}
-            onClick={() => setPlayingSong(!isPlayingSong)}
+            onClick={() => {
+              if (isPlayingSong) {
+                audio.pause();
+                setPlayingSong(false);
+              } else {
+                const toConcatFiles: AudioBuffer[] = tracks.map(
+                  (track) => props.userFiles[track.referenceId].audioBuffer
+                );
+
+                const blob = convertAudioBufferToBlob(toConcatFiles);
+
+                const newAudioUrl = URL.createObjectURL(blob);
+
+                const newAudio = new Audio(newAudioUrl);
+                setAudio(newAudio);
+                newAudio.play();
+                setPlayingSong(true);
+
+                newAudio.onended = () => {
+                  setPlayingSong(false);
+                };
+              }
+            }}
           />
         </div>
 
