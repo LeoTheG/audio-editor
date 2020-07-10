@@ -4,7 +4,7 @@
   "scripts": {
     "pre-commit": "lint-staged",
     "postinstall": "cd client && npm install",
-    "build": "PUBLIC_URL=https://yeeplayer.net npm run build --prefix client"
+    "build": "PUBLIC_URL=https://yeeplayer.com npm run build --prefix client"
   },
   "pre-commit": [
     "pre-commit"
