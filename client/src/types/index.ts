@@ -1,5 +1,10 @@
 import WaveformData from "waveform-data";
 
+export interface libraryMetadata {
+  name: string;
+  downloadURL: string;
+}
+
 export enum WidgetTypes {
   time = "time",
   joke = "joke",

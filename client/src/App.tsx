@@ -9,7 +9,7 @@ import {
   HashRouter as Router,
   Switch,
 } from "react-router-dom";
-import { UserFiles, WidgetTypes } from "./types";
+import { UserFiles, WidgetTypes, libraryMetadata } from "./types";
 import { useCallback, useState } from "react";
 
 import { AdventureLogo } from "./components/AdventureLogo";
@@ -23,7 +23,7 @@ import { PlayerLogo } from "./components/PlayerButton";
 import WaveformData from "waveform-data";
 import { WidgetButton } from "./components/WidgetButton";
 import backgroundImage from "./assets/Polka-Dots.svg";
-import { bucketData } from "./util";
+// import { bucketData } from "./util";
 import firebase from "firebase";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
@@ -40,7 +40,27 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-const db = firebase.firestore();
+// const db = firebase.firestore();
+const storage = firebase.storage();
+
+const getLibraryMetadata = (): Promise<libraryMetadata[]> => {
+  return new Promise<libraryMetadata[]>((resolve) => {
+    storage
+      .ref("audio")
+      .listAll()
+      .then((result) => {
+        Promise.all(
+          result.items.map(async (item) => {
+            const name = item.name;
+            const downloadURL = (await item.getDownloadURL()) as string;
+            return { name, downloadURL };
+          })
+        ).then((result) => {
+          resolve(result);
+        });
+      });
+  });
+};
 
 // @ts-ignore
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -93,6 +113,13 @@ export const AudioEditor: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerType, setDrawerType] = useState<drawerTypes | null>(null);
   const [widgets, setWidgets] = useState<{ [key: string]: IWidgetProps }>({});
+  const [libraryMetadata, setLibraryMetadata] = useState<libraryMetadata[]>([]);
+
+  useEffect(() => {
+    if (!libraryMetadata.length) {
+      getLibraryMetadata().then(setLibraryMetadata);
+    }
+  }, [libraryMetadata.length]);
 
   useEffect(() => {
     setIsDrawerOpen(!!drawerType);
@@ -131,14 +158,14 @@ export const AudioEditor: React.FC = () => {
 
   const renderDrawerContent = () => {
     if (drawerType === drawerTypes.music)
-      return bucketData.map(({ key, url }) => {
+      return libraryMetadata.map(({ name, downloadURL }) => {
         return (
           <div
-            key={key}
-            onClick={() => onClickLibraryItem(key, url)}
+            key={name}
+            onClick={() => onClickLibraryItem(name, downloadURL)}
             className="library-item"
           >
-            {key}
+            {name}
           </div>
         );
       });
