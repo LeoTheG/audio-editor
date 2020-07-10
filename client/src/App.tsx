@@ -24,8 +24,23 @@ import WaveformData from "waveform-data";
 import { WidgetButton } from "./components/WidgetButton";
 import backgroundImage from "./assets/Polka-Dots.svg";
 import { bucketData } from "./util";
+import firebase from "firebase";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC19cZLLW3oYWjQxWEFPhdtzSOGWQcgQjQ",
+  authDomain: "adventure-ea7cd.firebaseapp.com",
+  databaseURL: "https://adventure-ea7cd.firebaseio.com",
+  projectId: "adventure-ea7cd",
+  storageBucket: "adventure-ea7cd.appspot.com",
+  messagingSenderId: "753400311148",
+  appId: "1:753400311148:web:f8f56db5a153280f185749",
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
 
 // @ts-ignore
 const AudioContext = window.AudioContext || window.webkitAudioContext;
