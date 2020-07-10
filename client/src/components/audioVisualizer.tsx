@@ -3,12 +3,13 @@ import "./css/audioVisualizer.css";
 import { ACTIONS, DragItem, ITrack, ItemTypes, UserFiles } from "../types";
 import { Button, CircularProgress, Modal, TextField } from "@material-ui/core";
 import { IWidgetProps, Widget } from "./Widgets/Widget";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 import { XYCoord, useDrop } from "react-dnd";
 import { convertTracksToBlob, downloadFromUrl } from "../util";
 
 import { AudioTrackList } from "./AudioTrackList";
+import { FirebaseContext } from "../App";
 import { WaveformItem } from "./waveformItem";
 import update from "immutability-helper";
 
@@ -43,6 +44,7 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const [authorName, setAuthorName] = useState("");
   const [songName, setSongName] = useState("");
   const [tracks, setTracks] = useState<ITrack[]>([]);
+  const firebaseContext = useContext(FirebaseContext);
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -63,20 +65,22 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   ): Promise<string> => {
     return new Promise((resolve) => {
       const blob = convertTracksToBlob(tracks, props.userFiles);
-      const formData = new FormData();
-      formData.append("audioBlob", blob, "upload.wav");
-      formData.append("songName", songName);
-      formData.append("authorName", authorName);
-      fetch("/upload-song", {
-        method: "POST",
-        body: formData,
-      })
-        .then((res) => res.json())
-        .then((response) => {
-          //@ts-ignore
-          resolve(response.id);
-        })
-        .catch(console.error);
+      //   const formData = new FormData();
+      //   formData.append("audioBlob", blob, "upload.wav");
+      //   formData.append("songName", songName);
+      //   formData.append("authorName", authorName);
+      firebaseContext.uploadSong(blob);
+
+      //   fetch("/upload-song", {
+      //     method: "POST",
+      //     body: formData,
+      //   })
+      //     .then((res) => res.json())
+      //     .then((response) => {
+      //       //@ts-ignore
+      //       resolve(response.id);
+      //     })
+      //     .catch(console.error);
     });
   };
 

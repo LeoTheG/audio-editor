@@ -5,7 +5,7 @@ import {
   ItemTypes,
   UserFiles,
 } from "../types/index";
-import { CloudDownload, Info } from "@material-ui/icons";
+import { CloudDownload, Info, Share } from "@material-ui/icons";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 import { IconButton, Popover, Tooltip } from "@material-ui/core";
 import React, { useCallback, useEffect, useState } from "react";
@@ -372,15 +372,14 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
           />
         </div>
 
-        {/* <Tooltip title="Share">
-        TODO SHARE BUTTON
+        <Tooltip title="Share">
           <IconButton
             style={{ width: "fit-content" }}
             onClick={() => props.onClickShare(tracks)}
           >
             <Share style={{ width: 50, color: "#75d56c", height: 30 }} />
           </IconButton>
-        </Tooltip> */}
+        </Tooltip>
       </div>
       <Popover
         id="mouse-over-popover"

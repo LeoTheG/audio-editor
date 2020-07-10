@@ -40,10 +40,22 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-// const db = firebase.firestore();
 const storage = firebase.storage();
 
+interface firebaseContext {
+  uploadSong: (song: Blob) => void;
+}
+
+export const FirebaseContext = React.createContext<firebaseContext>({
+  uploadSong: () => {},
+});
+
+// const db = firebase.firestore();
+
 const getLibraryMetadata = (): Promise<libraryMetadata[]> => {
+  //   if (process.env.NODE_ENV === "development") {
+  //     return Promise.resolve([]);
+  //   }
   return new Promise<libraryMetadata[]>((resolve) => {
     storage
       .ref("audio")
@@ -379,6 +391,18 @@ function App() {
   //     });
   // }, []);
 
+  const firebaseContext: firebaseContext = {
+    uploadSong: (blob: Blob) => {
+      storage
+        .ref("userSongs")
+        .put(blob)
+        .then((snapshot) => {
+          console.log(snapshot);
+          console.log(snapshot.metadata);
+        });
+    },
+  };
+
   return (
     <div
       className="App"
@@ -390,7 +414,9 @@ function App() {
         <Switch>
           <Route exact path={"/"}>
             <DndProvider options={HTML5toTouch}>
-              <AudioEditor />
+              <FirebaseContext.Provider value={firebaseContext}>
+                <AudioEditor />
+              </FirebaseContext.Provider>
             </DndProvider>
           </Route>
           <Redirect from="*" to={"/"} />
