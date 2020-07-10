@@ -2,8 +2,6 @@ import "./css/App.css";
 
 import { Button, Drawer } from "@material-ui/core";
 import { DragObjectWithType, DropTargetMonitor, useDrop } from "react-dnd";
-import { IUserUpload, UserFiles, WidgetTypes } from "./types";
-import { IWidgetProps, Widget } from "./components/Widgets/Widget";
 import React, { useEffect } from "react";
 import {
   Redirect,
@@ -11,20 +9,21 @@ import {
   HashRouter as Router,
   Switch,
 } from "react-router-dom";
-import { bucketData, convertTracksToBlob, downloadFromUrl } from "./util";
+import { UserFiles, WidgetTypes } from "./types";
 import { useCallback, useState } from "react";
 
 import { AdventureLogo } from "./components/AdventureLogo";
 import { AudioVisualizer } from "./components/audioVisualizer";
 import { DndProvider } from "react-dnd-multi-backend";
 import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
+import { IWidgetProps } from "./components/Widgets/Widget";
 import { LibraryButton } from "./components/LibraryButton";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { PlayerLogo } from "./components/PlayerButton";
-import { PlayerPage } from "./components/PlayerPage";
 import WaveformData from "waveform-data";
 import { WidgetButton } from "./components/WidgetButton";
 import backgroundImage from "./assets/Polka-Dots.svg";
+import { bucketData } from "./util";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
 
@@ -255,12 +254,11 @@ export const AudioEditor: React.FC = () => {
     >
       <PlayerLogo />
 
-      {/* <div
-      TODO LIBRARY BUTTON
+      <div
         style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
       >
         <LibraryButton onClick={() => setDrawerType(drawerTypes.music)} />
-      </div> */}
+      </div>
 
       <AudioVisualizer
         style={{
@@ -326,7 +324,7 @@ export const AudioEditor: React.FC = () => {
   );
 };
 function App() {
-  const [songList, setSongList] = useState<IUserUpload[]>([]);
+  //   const [songList, setSongList] = useState<IUserUpload[]>([]);
 
   // useEffect(() => {
   //   //TODO fetch uploads

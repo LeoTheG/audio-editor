@@ -5,15 +5,11 @@ import {
   ItemTypes,
   UserFiles,
 } from "../types/index";
-import { CloudDownload, Info, Share } from "@material-ui/icons";
-import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
+import { CloudDownload, Info } from "@material-ui/icons";
+import { DropTargetMonitor, useDrop } from "react-dnd";
 import { IconButton, Popover, Tooltip } from "@material-ui/core";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  TRACK_LENGTH_MODIFIDER,
-  concatBuffer,
-  convertAudioBufferToBlob,
-} from "../util";
+import React, { useCallback, useEffect, useState } from "react";
+import { TRACK_LENGTH_MODIFIDER, convertAudioBufferToBlob } from "../util";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 
 import { AudioTrack } from "./AudioTrack";
@@ -76,12 +72,6 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
     return React.createRef();
   });
 
-  useEffect(() => {
-    if (tracks.length) {
-      renderCanvas();
-    }
-  }, [tracks]);
-
   const renderCanvas = useCallback(() => {
     const newBoxes: {
       [key: string]: {
@@ -132,7 +122,13 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
       ctx.fill();
     });
     setBoxes(update(boxes, { $merge: newBoxes }));
-  }, [tracks]);
+  }, [tracks, boxes, canvasRefs]);
+
+  useEffect(() => {
+    if (tracks.length) {
+      renderCanvas();
+    }
+  }, [tracks, renderCanvas]);
 
   const moveTrack = useCallback(
     (dragIndex: number, hoverIndex: number) => {
@@ -393,7 +389,11 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
         onClose={handlePopoverClose}
         disableRestoreFocus
       >
-        <img style={{ width: "100%" }} src="/audio-editor-info.gif" />
+        <img
+          alt="visual instructions"
+          style={{ width: "100%" }}
+          src="/audio-editor-info.gif"
+        />
       </Popover>
     </div>
   );
@@ -444,7 +444,7 @@ const PlayLine = (props: IPlayLineProps) => {
     return () => {
       clearInterval(interval);
     };
-  }, [props.audio]);
+  }, [props.audio, props.pixelsPerSecond]);
 
   return (
     <div

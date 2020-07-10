@@ -1,7 +1,7 @@
 import "../css/Widget.css";
 
 import { ItemTypes, WidgetTypes } from "../../types";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { useDrag } from "react-dnd";
 
@@ -15,7 +15,7 @@ export interface IWidgetProps {
 export const Widget = (props: IWidgetProps) => {
   const { top, left, id, type } = props;
 
-  const [{ isDragging }, drag] = useDrag({
+  const [, drag] = useDrag({
     item: { id, left, top, type: ItemTypes.WIDGET },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
@@ -55,7 +55,7 @@ const JokeWidget = () => {
   const audio = new Audio(
     "http://static1.grsites.com/archive/sounds/comic/comic002.mp3"
   );
-  const newJoke = () => {
+  const newJoke = useCallback(() => {
     fetch("https://official-joke-api.appspot.com/random_joke")
       .then((res) => res.json())
       .then((res2) => {
@@ -63,10 +63,11 @@ const JokeWidget = () => {
         setPunchline(res2.punchline);
       });
     audio.play();
-  };
+  }, [audio]);
+
   useEffect(() => {
     newJoke();
-  }, []);
+  }, [newJoke]);
   return (
     <div className="default">
       <div className="joke-container">

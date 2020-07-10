@@ -1,7 +1,7 @@
 import { Pause, PlayCircleFilledRounded } from "@material-ui/icons";
-import React, { useEffect } from "react";
 
 import { IconButton } from "@material-ui/core";
+import React from "react";
 
 interface IPlayerButtonProps {
   onClick: () => void;

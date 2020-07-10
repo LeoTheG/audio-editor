@@ -1,5 +1,6 @@
+import { ItemTypes, UserFile } from "../types";
+
 import React from "react";
-import { UserFile, ItemTypes } from "../types";
 import { useDrag } from "react-dnd";
 
 interface IWaveFormItemProps {
@@ -13,7 +14,7 @@ export const WaveformItem = React.forwardRef(
     const { userFile, top, left } = props;
     const { file, id } = userFile;
 
-    const [{ isDragging }, drag] = useDrag({
+    const [, drag] = useDrag({
       item: { id, left, top, type: ItemTypes.BOX },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),

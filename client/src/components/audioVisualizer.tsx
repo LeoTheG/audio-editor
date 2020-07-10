@@ -1,25 +1,16 @@
 import "./css/audioVisualizer.css";
 
-import {
-  ACTIONS,
-  DragItem,
-  ITrack,
-  ItemTypes,
-  UserFiles,
-  WidgetTypes,
-} from "../types";
+import { ACTIONS, DragItem, ITrack, ItemTypes, UserFiles } from "../types";
 import { Button, CircularProgress, Modal, TextField } from "@material-ui/core";
 import { IWidgetProps, Widget } from "./Widgets/Widget";
 import React, { useCallback, useEffect, useState } from "react";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 import { XYCoord, useDrop } from "react-dnd";
-import { bucketData, convertTracksToBlob, downloadFromUrl } from "../util";
+import { convertTracksToBlob, downloadFromUrl } from "../util";
 
 import { AudioTrackList } from "./AudioTrackList";
 import { WaveformItem } from "./waveformItem";
-import { WidgetButton } from "./WidgetButton";
 import update from "immutability-helper";
-import { v4 as uuidv4 } from "uuid";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -139,13 +130,13 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
       ctx.fill();
     });
     setBoxes(update(boxes, { $merge: newBoxes }));
-  }, [props.userFiles]);
+  }, [boxes, canvasRefs, userFilesArr]);
 
   useEffect(() => {
     if (userFilesArr.length) {
       renderCanvas();
     }
-  }, [props.userFiles]);
+  }, [props.userFiles, renderCanvas, userFilesArr.length]);
 
   const [, drop] = useDrop({
     accept: [ItemTypes.BOX, ItemTypes.WIDGET],
@@ -301,7 +292,7 @@ const ShareSong = React.forwardRef(
           <div>
             <div>Listen to your song with this shareable link:</div>
             <div style={{ marginTop: 10 }}>
-              <a target="_blank" href={songUrl}>
+              <a target="_blank" rel="noopener noreferrer" href={songUrl}>
                 {songUrl}
               </a>
               {}

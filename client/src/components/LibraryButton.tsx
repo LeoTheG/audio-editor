@@ -1,7 +1,6 @@
-import { MusicNoteOutlined, Widgets as WidgetsIcon } from "@material-ui/icons";
-import React, { useCallback, useEffect, useState } from "react";
-
 import { IconButton } from "@material-ui/core";
+import { MusicNoteOutlined } from "@material-ui/icons";
+import React from "react";
 
 interface ILibraryButtonProps {
   onClick: () => void;
