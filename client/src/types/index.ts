@@ -1,5 +1,13 @@
 import WaveformData from "waveform-data";
 
+export interface userSong {
+  authorName: string;
+  songName: string;
+  fullPath: string;
+  id: string;
+  url: string;
+}
+
 export interface libraryMetadata {
   name: string;
   downloadURL: string;

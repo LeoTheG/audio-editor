@@ -233,8 +233,9 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
           }}
           ref={drop}
           onScroll={(evt) => {
-            // @ts-ignore
-            timeListRef.current.scrollLeft = evt.target.scrollLeft;
+            if (timeListRef.current)
+              // @ts-ignore
+              timeListRef.current.scrollLeft = evt.target.scrollLeft;
           }}
         >
           <PlayLine

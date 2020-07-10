@@ -69,7 +69,9 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
       //   formData.append("audioBlob", blob, "upload.wav");
       //   formData.append("songName", songName);
       //   formData.append("authorName", authorName);
-      firebaseContext.uploadSong(blob);
+      firebaseContext.uploadSong(blob, songName, authorName).then((id) => {
+        resolve(id);
+      });
 
       //   fetch("/upload-song", {
       //     method: "POST",

@@ -9,7 +9,7 @@ import {
   HashRouter as Router,
   Switch,
 } from "react-router-dom";
-import { UserFiles, WidgetTypes, libraryMetadata } from "./types";
+import { UserFiles, WidgetTypes, libraryMetadata, userSong } from "./types";
 import { useCallback, useState } from "react";
 
 import { AdventureLogo } from "./components/AdventureLogo";
@@ -27,6 +27,7 @@ import backgroundImage from "./assets/Polka-Dots.svg";
 import firebase from "firebase";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
+import { PlayerPage } from "./components/PlayerPage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC19cZLLW3oYWjQxWEFPhdtzSOGWQcgQjQ",
@@ -43,14 +44,22 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 
 interface firebaseContext {
-  uploadSong: (song: Blob) => void;
+  uploadSong: (
+    song: Blob,
+    songName: string,
+    authorName: string
+  ) => Promise<string>;
+  getSongs: () => Promise<userSong[]>;
+  getSongURL: (songId: string) => Promise<string>;
 }
 
 export const FirebaseContext = React.createContext<firebaseContext>({
-  uploadSong: () => {},
+  uploadSong: () => Promise.resolve(""),
+  getSongs: () => Promise.resolve([]),
+  getSongURL: () => Promise.resolve(""),
 });
 
-// const db = firebase.firestore();
+const db = firebase.firestore();
 
 const getLibraryMetadata = (): Promise<libraryMetadata[]> => {
   //   if (process.env.NODE_ENV === "development") {
@@ -392,14 +401,48 @@ function App() {
   // }, []);
 
   const firebaseContext: firebaseContext = {
-    uploadSong: (blob: Blob) => {
-      storage
-        .ref("userSongs")
-        .put(blob)
-        .then((snapshot) => {
-          console.log(snapshot);
-          console.log(snapshot.metadata);
-        });
+    getSongURL: (songId) => {
+      return storage.ref(`userSongs/${songId}.wav`).getDownloadURL();
+    },
+    getSongs: () => {
+      return new Promise((resolve) => {
+        console.log("yes");
+        db.collection("userSongs")
+          .get()
+          .then((result) => {
+            resolve(result.docs.map((doc) => doc.data() as userSong));
+          });
+      });
+    },
+    uploadSong: (
+      blob: Blob,
+      songName: string,
+      authorName: string
+    ): Promise<string> => {
+      return new Promise<string>((resolve) => {
+        const songId = uuidv4();
+        storage
+          .ref(`userSongs/${songId}.wav`)
+          .put(blob)
+          .then(async (snapshot) => {
+            console.log(snapshot);
+            console.log(snapshot.metadata);
+            const songUrl = await firebaseContext.getSongURL(songId);
+
+            db.collection("userSongs")
+              .doc(songId)
+              .set({
+                songName,
+                authorName,
+                fullPath: snapshot.metadata.fullPath,
+                url: songUrl,
+                id: songId,
+              })
+              .then(() => {
+                resolve(songId);
+              });
+          });
+      });
     },
   };
 
@@ -410,18 +453,21 @@ function App() {
         background: `url(${backgroundImage})`,
       }}
     >
-      <Router>
-        <Switch>
-          <Route exact path={"/"}>
-            <DndProvider options={HTML5toTouch}>
-              <FirebaseContext.Provider value={firebaseContext}>
+      <FirebaseContext.Provider value={firebaseContext}>
+        <Router>
+          <Switch>
+            <Route exact path={"/"}>
+              <DndProvider options={HTML5toTouch}>
                 <AudioEditor />
-              </FirebaseContext.Provider>
-            </DndProvider>
-          </Route>
-          <Redirect from="*" to={"/"} />
-        </Switch>
-      </Router>
+              </DndProvider>
+            </Route>
+            <Route path={"/player"}>
+              <PlayerPage />
+            </Route>
+            <Redirect from="*" to={"/"} />
+          </Switch>
+        </Router>
+      </FirebaseContext.Provider>
     </div>
   );
 }
