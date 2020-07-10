@@ -2,7 +2,9 @@
   "name": "app",
   "main": "index.js",
   "scripts": {
-    "pre-commit": "lint-staged"
+    "pre-commit": "lint-staged",
+    "postinstall": "cd client && npm install",
+    "build": "PUBLIC_URL=https://yeeplayer.net npm run build --prefix client"
   },
   "pre-commit": [
     "pre-commit"

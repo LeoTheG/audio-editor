@@ -1,7 +1,7 @@
 import React from "react";
 import { Tooltip } from "@material-ui/core";
 
-const adventureText = `version 0.4.1. production: leo, mike, vaish`;
+const adventureText = `version ${process.env.REACT_APP_VERSION}. production: leo, mike, vaish`;
 
 interface IAdventureLogo {
   widget?: JSX.Element;

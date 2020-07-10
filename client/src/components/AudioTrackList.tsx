@@ -14,6 +14,7 @@ import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 
 import { AudioTrack } from "./AudioTrack";
 import { PlayerButton } from "./PlayerButton";
+import infoGif from "../assets/audio-editor-info.gif";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
 
@@ -392,7 +393,7 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
         <img
           alt="visual instructions"
           style={{ width: "100%" }}
-          src="/audio-editor-info.gif"
+          src={infoGif}
         />
       </Popover>
     </div>
