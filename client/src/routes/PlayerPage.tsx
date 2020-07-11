@@ -56,6 +56,7 @@ export const PlayerPage = () => {
       } else {
         alert("Song with id " + id + " not found");
         setSongPlayingIndex(0);
+        setAudio(new window.Audio(userSongs[0].url));
       }
     }
   }, [userSongs, id]);

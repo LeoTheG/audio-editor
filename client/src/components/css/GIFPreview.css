@@ -3,17 +3,30 @@
   height: 600px;
   border: 1px dashed purple;
   display: flex;
+  align-items: center;
   flex-direction: column;
+  justify-content: space-around;
 }
 
 .add-gif-container {
-  width: 100px;
-  height: 100px;
+  width: 200px;
+  height: 200px;
   border: 1px dashed blue;
+  align-items: center;
+  display: flex;
+  justify-content: center;
 }
 
 .width-100-centered {
   width: 100%;
   display: flex;
   justify-content: center;
+}
+
+.gif-preview-title {
+  margin: 10px 0;
+}
+
+.editable-textfield-container {
+  display: flex;
 }

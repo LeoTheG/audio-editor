@@ -55,6 +55,9 @@ export function withFirebaseContext(Component: JSX.Element) {
       songName: string,
       authorName: string
     ): Promise<string> => {
+      // if (process.env.NODE_ENV === "development") {
+      //   return Promise.resolve("abcd-efgh");
+      // }
       return new Promise<string>((resolve) => {
         const songId = uuidv4();
         storage

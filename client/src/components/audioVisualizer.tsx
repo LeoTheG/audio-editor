@@ -33,6 +33,7 @@ interface IAudioVisualizerProps {
   //   onClickLibraryItem: (key: string, url: string) => void;
   widgets: { [key: string]: IWidgetProps };
   moveWidget: (id: string, left: number, top: number) => void;
+  onShareSong: (song: Blob) => void;
 }
 
 // todo create context with user files
@@ -44,6 +45,8 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const [authorName, setAuthorName] = useState("");
   const [songName, setSongName] = useState("");
   const [tracks, setTracks] = useState<ITrack[]>([]);
+  // const [shareSong, setShareSong] = useState<Blob | null>();
+
   const firebaseContext = useContext(FirebaseContext);
 
   const [boxes, setBoxes] = useState<{
@@ -64,15 +67,16 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     authorName: string
   ): Promise<string> => {
     return new Promise((resolve) => {
-      const blob = convertTracksToBlob(tracks, props.userFiles);
+      // const blob = convertTracksToBlob(tracks, props.userFiles);
+      // props.onShareSong(blob);
+      // setShareSong(blob)
       //   const formData = new FormData();
       //   formData.append("audioBlob", blob, "upload.wav");
       //   formData.append("songName", songName);
       //   formData.append("authorName", authorName);
-      firebaseContext.uploadSong(blob, songName, authorName).then((id) => {
-        resolve(id);
-      });
-
+      // firebaseContext.uploadSong(blob, songName, authorName).then((id) => {
+      //   resolve(id);
+      // });
       //   fetch("/upload-song", {
       //     method: "POST",
       //     body: formData,
@@ -200,8 +204,10 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   };
 
   const onClickShare = (tracks: ITrack[]) => {
+    const blob = convertTracksToBlob(tracks, props.userFiles);
+    props.onShareSong(blob);
     setTracks(tracks);
-    setShareOpen(true);
+    // setShareOpen(true);
   };
 
   return (
@@ -235,7 +241,7 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
 
       {/* <div style={{ flex: 1 }} /> */}
 
-      <Modal
+      {/* <Modal
         className={classes.modal}
         open={isShareOpen}
         onClose={() => setShareOpen(false)}
@@ -247,7 +253,7 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
           onChangeAuthorName={(val) => setAuthorName(val)}
           onClickUpload={onClickUpload}
         />
-      </Modal>
+      </Modal> */}
 
       {Object.values(props.widgets).map((widget, index) => {
         return <Widget key={widget.id} {...widget} />;

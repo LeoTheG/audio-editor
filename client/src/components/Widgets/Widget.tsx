@@ -4,6 +4,7 @@ import { ItemTypes, WidgetTypes } from "../../types";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { useDrag } from "react-dnd";
+import { GIFPreview } from "../GIFPreview";
 
 export interface IWidgetProps {
   type: WidgetTypes;
@@ -42,6 +43,8 @@ const renderWidget = (type: WidgetTypes) => {
       return <WidgetTime />;
     case WidgetTypes.joke:
       return <JokeWidget />;
+    case WidgetTypes.shareSong:
+      return <GIFPreview />;
     // add widget case here for new widget types
     default:
       return null;

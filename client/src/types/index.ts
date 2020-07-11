@@ -16,6 +16,7 @@ export interface ILibraryMetadata {
 export enum WidgetTypes {
   time = "time",
   joke = "joke",
+  shareSong = "share song",
 }
 
 export interface UserFile {

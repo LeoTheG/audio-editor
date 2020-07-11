@@ -14,6 +14,7 @@ import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
 import { FirebaseContext } from "../contexts/firebaseContext";
 import { GIFPreview } from "../components/GIFPreview";
+import { AppStateContext } from "../contexts/appContext";
 
 enum drawerTypes {
   music = "music",
@@ -69,6 +70,7 @@ export const Homepage: React.FC = () => {
   const [libraryMetadata, setLibraryMetadata] = useState<ILibraryMetadata[]>(
     []
   );
+  const [shareSong, setShareSong] = useState<Blob | undefined>();
   const firebaseContext = useContext(FirebaseContext);
 
   useEffect(() => {
@@ -89,6 +91,30 @@ export const Homepage: React.FC = () => {
         },
       })
     );
+  };
+
+  const onShareSong = (blob: Blob) => {
+    setShareSong(blob);
+    if (
+      Object.values(widgets).findIndex(
+        (widget) => widget.type === WidgetTypes.shareSong
+      ) === -1
+    ) {
+      const newWidgetId = uuidv4();
+
+      const newWidgets: {
+        [key: string]: IWidgetProps;
+      } = {
+        [newWidgetId]: {
+          id: newWidgetId,
+          type: WidgetTypes.shareSong,
+          top: 50,
+          left: window.innerWidth / 2 - 200,
+        },
+      };
+
+      setWidgets(update(widgets, { $merge: newWidgets }));
+    }
   };
 
   const onClickWidgetItem = (type: WidgetTypes) => () => {
@@ -236,85 +262,91 @@ export const Homepage: React.FC = () => {
   const isActive = canDrop && isOver;
 
   return (
-    <div
-      ref={drop}
-      style={{
-        display: "flex",
-        width: "100%",
-        minHeight: "100vh",
-        position: "relative",
-        flexDirection: "column",
+    <AppStateContext.Provider
+      value={{
+        shareSong,
+        //   setShareSong: (blob: Blob) => setShareSong(blob)
       }}
     >
-      <PlayerLogo />
-
       <div
-        style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
-      >
-        <LibraryButton onClick={() => setDrawerType(drawerTypes.music)} />
-      </div>
-
-      <AudioVisualizer
+        ref={drop}
         style={{
+          display: "flex",
           width: "100%",
-          height: "100%",
-          boxSizing: "border-box",
-          flex: 1,
+          minHeight: "100vh",
+          position: "relative",
+          flexDirection: "column",
         }}
-        userFiles={userFiles}
-        onAddFile={onAddFile}
-        widgets={widgets}
-        moveWidget={moveWidget}
-      />
-
-      <GIFPreview />
-
-      <AdventureLogo
-      // widget={
-      //   <WidgetButton onClick={() => setDrawerType(drawerTypes.widgets)} />
-      // }
-      />
-
-      <Drawer
-        variant="persistent"
-        anchor="right"
-        open={isDrawerOpen}
-        onClose={() => setDrawerType(null)}
       >
-        <div style={{ width: 400, padding: 10 }}>
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
-          >
-            <Button
-              style={{
-                minWidth: 20,
-                color: "red",
-              }}
-              variant="contained"
-              onClick={() => setDrawerType(null)}
-            >
-              x
-            </Button>
-          </div>
-          {renderDrawerContent()}
-        </div>
-      </Drawer>
+        <PlayerLogo />
 
-      {isActive && (
         <div
+          style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
+        >
+          <LibraryButton onClick={() => setDrawerType(drawerTypes.music)} />
+        </div>
+
+        <AudioVisualizer
           style={{
             width: "100%",
             height: "100%",
-            position: "absolute",
-            background: "lightblue",
-            opacity: 0.7,
+            boxSizing: "border-box",
+            flex: 1,
           }}
+          userFiles={userFiles}
+          onAddFile={onAddFile}
+          widgets={widgets}
+          moveWidget={moveWidget}
+          onShareSong={onShareSong}
         />
-      )}
-    </div>
+
+        <AdventureLogo
+        // widget={
+        //   <WidgetButton onClick={() => setDrawerType(drawerTypes.widgets)} />
+        // }
+        />
+
+        <Drawer
+          variant="persistent"
+          anchor="right"
+          open={isDrawerOpen}
+          onClose={() => setDrawerType(null)}
+        >
+          <div style={{ width: 400, padding: 10 }}>
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                style={{
+                  minWidth: 20,
+                  color: "red",
+                }}
+                variant="contained"
+                onClick={() => setDrawerType(null)}
+              >
+                x
+              </Button>
+            </div>
+            {renderDrawerContent()}
+          </div>
+        </Drawer>
+
+        {isActive && (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              background: "lightblue",
+              opacity: 0.7,
+            }}
+          />
+        )}
+      </div>
+    </AppStateContext.Provider>
   );
 };
