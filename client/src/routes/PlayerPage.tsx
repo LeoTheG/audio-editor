@@ -1,12 +1,14 @@
-import React, { useEffect, useState, useContext } from "react";
-import { useParam } from "../util";
-import { MusicController } from "adventure-component-library";
-import { userSong } from "../types";
 import "../css/PlayerPage.css";
+
+import React, { useContext, useEffect, useState } from "react";
+
 import { AdventureLogo } from "../components/AdventureLogo";
 import { Button } from "@material-ui/core";
-import { useHistory } from "react-router-dom";
 import { FirebaseContext } from "../contexts/firebaseContext";
+import { MusicController } from "adventure-component-library";
+import { useHistory } from "react-router-dom";
+import { useParam } from "../util";
+import { userSong } from "../types";
 
 // interface IPlayerPageProps {
 // }
@@ -42,20 +44,30 @@ export const PlayerPage = () => {
   }, [audio]);
 
   useEffect(() => {
-    if (userSongs.length) {
-      const songIndex = userSongs.findIndex((upload) => upload.id === id);
-      if (songIndex !== -1) {
-        const song = userSongs[songIndex];
-
-        setAudio(new window.Audio(song.url));
-        setSongPlayingIndex(songIndex);
-      } else {
-        alert("Song with id " + id + " not found");
-        setSongPlayingIndex(0);
-        setAudio(new window.Audio(userSongs[0].url));
-      }
+    if (!userSongs.length) return;
+    const songIndex = userSongs.findIndex((upload) => upload.id === id);
+    if (songIndex === -1) {
+      alert("Song with id " + id + " not found");
+    } else {
+      setSongPlayingIndex(songIndex);
     }
-  }, [userSongs, id]);
+  }, [id, userSongs]);
+
+  //   useEffect(() => {
+  //     if (userSongs.length) {
+  //       const songIndex = userSongs.findIndex((upload) => upload.id === id);
+  //       if (songIndex !== -1) {
+  //         const song = userSongs[songIndex];
+
+  //         setAudio(new window.Audio(song.url));
+  //         setSongPlayingIndex(songIndex);
+  //       } else {
+  //         alert("Song with id " + id + " not found");
+  //         setSongPlayingIndex(0);
+  //         setAudio(new window.Audio(userSongs[0].url));
+  //       }
+  //     }
+  //   }, [userSongs, id]);
 
   const onClickPrevSong = () => {
     let newSongIndex = songPlayingIndex - 1;
@@ -76,17 +88,30 @@ export const PlayerPage = () => {
 
   const onTogglePlaySong = () => {
     setIsPlaying(!isPlaying);
+    if (userSongs.length && !isPlaying) {
+      //   const songIndex = userSongs.findIndex((upload) => upload.id === id);
+      if (songPlayingIndex !== -1) {
+        const song = userSongs[songPlayingIndex];
+
+        const newAudio = new window.Audio(song.url);
+        setAudio(newAudio);
+        newAudio.play();
+        // setSongPlayingIndex(songIndex);
+      }
+    } else if (userSongs.length) {
+      audio?.pause();
+    }
   };
 
-  useEffect(() => {
-    if (!audio) return;
-    if (isPlaying) {
-      audio.play();
-    }
-    if (!isPlaying) {
-      audio.pause();
-    }
-  }, [isPlaying, audio]);
+  //   useEffect(() => {
+  //     if (!audio) return;
+  //     if (isPlaying) {
+  //       audio.play();
+  //     }
+  //     if (!isPlaying) {
+  //       audio.pause();
+  //     }
+  //   }, [isPlaying, audio]);
 
   useEffect(() => {
     if (isPlaying && audio) {
