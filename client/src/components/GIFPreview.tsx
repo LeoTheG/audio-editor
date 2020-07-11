@@ -20,6 +20,10 @@ export const GIFPreview = () => {
   const [songUrl, setSongUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [songId, setSongId] = useState("");
+  const inputRef = React.createRef<HTMLInputElement>();
+  const [userGif, setUserGif] = useState<
+    { blob: Blob; url: string } | undefined
+  >();
 
   useEffect(() => {
     if (appStateContext.shareSong) {
@@ -55,8 +59,21 @@ export const GIFPreview = () => {
     <div className="width-100-centered">
       <div className="gif-preview-container">
         <div className="gif-preview-title">preview</div>
-        <div className="add-gif-container">
-          <div>add gif</div>
+        <div
+          className="add-gif-container"
+          onClick={() => {
+            inputRef.current?.click();
+          }}
+        >
+          {userGif ? (
+            <img
+              alt="preview"
+              src={userGif.url}
+              style={{ width: "100%", height: "100%" }}
+            />
+          ) : (
+            <div>click to add gif</div>
+          )}
         </div>
 
         <div>
@@ -72,10 +89,18 @@ export const GIFPreview = () => {
           <Tooltip title="Share song">
             <IconButton
               onClick={() => {
+                if (!authorName || !songName) {
+                  return window.alert("Empty song / author name not allowed");
+                }
                 if (appStateContext.shareSong) {
                   setIsLoading(true);
                   firebaseContext
-                    .uploadSong(appStateContext.shareSong, songName, authorName)
+                    .uploadSong(
+                      appStateContext.shareSong,
+                      songName,
+                      authorName,
+                      userGif?.blob
+                    )
                     .then((id) => {
                       setSongId(id);
                       setIsLoading(false);
@@ -88,6 +113,22 @@ export const GIFPreview = () => {
           </Tooltip>
         )}
       </div>
+      <input
+        ref={inputRef}
+        type="file"
+        onChange={(evt) => {
+          const files = evt.target.files;
+          if (files && files.length) {
+            const file = files[0];
+            const fileUrl = URL.createObjectURL(file);
+            setUserGif({
+              blob: file,
+              url: fileUrl,
+            });
+          }
+        }}
+        style={{ display: "none" }}
+      />
     </div>
   );
 };
@@ -108,7 +149,7 @@ const EditableTextfield = (props: IEditableTextFieldProps) => {
 
   useEffect(() => {
     props.onChange(value);
-  }, [value]);
+  }, [value, props.onChange, props]);
 
   if (isEditing) {
     return (

@@ -351,7 +351,7 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
               if (isPlayingSong) {
                 audio.pause();
                 setPlayingSong(false);
-              } else {
+              } else if (tracks.length) {
                 const toConcatFiles: AudioBuffer[] = tracks.map(
                   (track) => props.userFiles[track.referenceId].audioBuffer
                 );

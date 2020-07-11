@@ -4,6 +4,9 @@ service firebase.storage {
     match /userSongs/{allPaths=**} {
         allow create;
     }
+    match /userGifs/{allPaths=**} {
+        allow create;
+    }
     match /{allPaths=**} {
       allow read;
     }

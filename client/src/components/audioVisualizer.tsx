@@ -1,30 +1,14 @@
 import "./css/audioVisualizer.css";
 
 import { ACTIONS, DragItem, ITrack, ItemTypes, UserFiles } from "../types";
-import { Button, CircularProgress, Modal, TextField } from "@material-ui/core";
 import { IWidgetProps, Widget } from "./Widgets/Widget";
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
+import React, { useCallback, useEffect, useState } from "react";
 import { XYCoord, useDrop } from "react-dnd";
 import { convertTracksToBlob, downloadFromUrl } from "../util";
 
 import { AudioTrackList } from "./AudioTrackList";
 import { WaveformItem } from "./waveformItem";
 import update from "immutability-helper";
-import { FirebaseContext } from "../contexts/firebaseContext";
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    modal: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    popover: {
-      pointerEvents: "none",
-    },
-  })
-);
 
 interface IAudioVisualizerProps {
   userFiles: UserFiles;
@@ -40,14 +24,7 @@ interface IAudioVisualizerProps {
 
 export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   const userFilesArr = Object.values(props.userFiles);
-  const [isShareOpen, setShareOpen] = useState(false);
-  const classes = useStyles();
-  const [authorName, setAuthorName] = useState("");
-  const [songName, setSongName] = useState("");
-  const [tracks, setTracks] = useState<ITrack[]>([]);
-  // const [shareSong, setShareSong] = useState<Blob | null>();
-
-  const firebaseContext = useContext(FirebaseContext);
+  // const [tracks, setTracks] = useState<ITrack[]>([]);
 
   const [boxes, setBoxes] = useState<{
     [key: string]: {
@@ -62,33 +39,33 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
     return React.createRef();
   });
 
-  const onClickUpload = (
-    songName: string,
-    authorName: string
-  ): Promise<string> => {
-    return new Promise((resolve) => {
-      // const blob = convertTracksToBlob(tracks, props.userFiles);
-      // props.onShareSong(blob);
-      // setShareSong(blob)
-      //   const formData = new FormData();
-      //   formData.append("audioBlob", blob, "upload.wav");
-      //   formData.append("songName", songName);
-      //   formData.append("authorName", authorName);
-      // firebaseContext.uploadSong(blob, songName, authorName).then((id) => {
-      //   resolve(id);
-      // });
-      //   fetch("/upload-song", {
-      //     method: "POST",
-      //     body: formData,
-      //   })
-      //     .then((res) => res.json())
-      //     .then((response) => {
-      //       //@ts-ignore
-      //       resolve(response.id);
-      //     })
-      //     .catch(console.error);
-    });
-  };
+  // const onClickUpload = (
+  //   songName: string,
+  //   authorName: string
+  // ): Promise<string> => {
+  //   return new Promise((resolve) => {
+  //     // const blob = convertTracksToBlob(tracks, props.userFiles);
+  //     // props.onShareSong(blob);
+  //     // setShareSong(blob)
+  //     //   const formData = new FormData();
+  //     //   formData.append("audioBlob", blob, "upload.wav");
+  //     //   formData.append("songName", songName);
+  //     //   formData.append("authorName", authorName);
+  //     // firebaseContext.uploadSong(blob, songName, authorName).then((id) => {
+  //     //   resolve(id);
+  //     // });
+  //     //   fetch("/upload-song", {
+  //     //     method: "POST",
+  //     //     body: formData,
+  //     //   })
+  //     //     .then((res) => res.json())
+  //     //     .then((response) => {
+  //     //       //@ts-ignore
+  //     //       resolve(response.id);
+  //     //     })
+  //     //     .catch(console.error);
+  //   });
+  // };
 
   const renderCanvas = useCallback(() => {
     const newBoxes: {
@@ -204,9 +181,12 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   };
 
   const onClickShare = (tracks: ITrack[]) => {
+    if (!tracks.length) {
+      return;
+    }
     const blob = convertTracksToBlob(tracks, props.userFiles);
     props.onShareSong(blob);
-    setTracks(tracks);
+    // setTracks(tracks);
     // setShareOpen(true);
   };
 
@@ -262,79 +242,79 @@ export const AudioVisualizer = (props: IAudioVisualizerProps) => {
   );
 };
 
-interface IShareSongProps {
-  songName: string;
-  onChangeSongName: (value: string) => void;
-  onChangeAuthorName: (value: string) => void;
-  authorName: string;
-  onClickUpload: (songName: string, authorName: string) => Promise<string>;
-}
-const ShareSong = React.forwardRef(
-  (
-    {
-      songName,
-      onChangeSongName,
-      authorName,
-      onChangeAuthorName,
-      onClickUpload: onClickUploadProp,
-    }: IShareSongProps,
-    ref
-  ) => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [uploadId, setUploadId] = useState("");
+// interface IShareSongProps {
+//   songName: string;
+//   onChangeSongName: (value: string) => void;
+//   onChangeAuthorName: (value: string) => void;
+//   authorName: string;
+//   onClickUpload: (songName: string, authorName: string) => Promise<string>;
+// }
+// const ShareSong = React.forwardRef(
+//   (
+//     {
+//       songName,
+//       onChangeSongName,
+//       authorName,
+//       onChangeAuthorName,
+//       onClickUpload: onClickUploadProp,
+//     }: IShareSongProps,
+//     ref
+//   ) => {
+//     const [isLoading, setIsLoading] = useState(false);
+//     const [uploadId, setUploadId] = useState("");
 
-    const onClickUpload = async () => {
-      setIsLoading(true);
-      const id = await onClickUploadProp(songName, authorName);
-      setUploadId(id);
-      setIsLoading(false);
-    };
+//     const onClickUpload = async () => {
+//       setIsLoading(true);
+//       const id = await onClickUploadProp(songName, authorName);
+//       setUploadId(id);
+//       setIsLoading(false);
+//     };
 
-    const songUrl = `${document.location.href}player?id=${uploadId}`;
-    let render = null;
+//     const songUrl = `${document.location.href}player?id=${uploadId}`;
+//     let render = null;
 
-    if (isLoading) {
-      render = <CircularProgress />;
-    } else if (uploadId) {
-      render = (
-        <>
-          <div style={{ fontSize: "1.2em", marginBottom: 10 }}>
-            Successful upload!
-          </div>
-          <div>
-            <div>Listen to your song with this shareable link:</div>
-            <div style={{ marginTop: 10 }}>
-              <a target="_blank" rel="noopener noreferrer" href={songUrl}>
-                {songUrl}
-              </a>
-              {}
-            </div>
-          </div>
-        </>
-      );
-    } else {
-      render = (
-        <>
-          <div>Share song</div>
-          <div className="share-modal-textfield-container">
-            <TextField
-              value={songName}
-              onChange={(evt) => onChangeSongName(evt.target.value)}
-              label="Song name"
-            />
-            <TextField
-              value={authorName}
-              onChange={(evt) => onChangeAuthorName(evt.target.value)}
-              label="Author name"
-            />
-          </div>
-          <Button onClick={onClickUpload} variant="contained">
-            Upload
-          </Button>
-        </>
-      );
-    }
+//     if (isLoading) {
+//       render = <CircularProgress />;
+//     } else if (uploadId) {
+//       render = (
+//         <>
+//           <div style={{ fontSize: "1.2em", marginBottom: 10 }}>
+//             Successful upload!
+//           </div>
+//           <div>
+//             <div>Listen to your song with this shareable link:</div>
+//             <div style={{ marginTop: 10 }}>
+//               <a target="_blank" rel="noopener noreferrer" href={songUrl}>
+//                 {songUrl}
+//               </a>
+//               {}
+//             </div>
+//           </div>
+//         </>
+//       );
+//     } else {
+//       render = (
+//         <>
+//           <div>Share song</div>
+//           <div className="share-modal-textfield-container">
+//             <TextField
+//               value={songName}
+//               onChange={(evt) => onChangeSongName(evt.target.value)}
+//               label="Song name"
+//             />
+//             <TextField
+//               value={authorName}
+//               onChange={(evt) => onChangeAuthorName(evt.target.value)}
+//               label="Author name"
+//             />
+//           </div>
+//           <Button onClick={onClickUpload} variant="contained">
+//             Upload
+//           </Button>
+//         </>
+//       );
+//     }
 
-    return <div className="share-modal-container">{render}</div>;
-  }
-);
+//     return <div className="share-modal-container">{render}</div>;
+//   }
+// );

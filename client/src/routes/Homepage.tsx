@@ -13,7 +13,6 @@ import update from "immutability-helper";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
 import { FirebaseContext } from "../contexts/firebaseContext";
-import { GIFPreview } from "../components/GIFPreview";
 import { AppStateContext } from "../contexts/appContext";
 
 enum drawerTypes {

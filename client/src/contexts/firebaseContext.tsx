@@ -22,7 +22,8 @@ interface firebaseContext {
   uploadSong: (
     song: Blob,
     songName: string,
-    authorName: string
+    authorName: string,
+    gif?: Blob
   ) => Promise<string>;
   getSongs: () => Promise<userSong[]>;
   getSongURL: (songId: string) => Promise<string>;
@@ -53,13 +54,25 @@ export function withFirebaseContext(Component: JSX.Element) {
     uploadSong: (
       blob: Blob,
       songName: string,
-      authorName: string
+      authorName: string,
+      gif?: Blob
     ): Promise<string> => {
       // if (process.env.NODE_ENV === "development") {
       //   return Promise.resolve("abcd-efgh");
       // }
-      return new Promise<string>((resolve) => {
+      return new Promise<string>(async (resolve) => {
         const songId = uuidv4();
+        let gifId: string;
+        let gifUrl: string;
+
+        if (gif) {
+          gifId = uuidv4();
+          const storageRes = await storage
+            .ref(`userGifs/${gifId}.gif`)
+            .put(gif);
+
+          gifUrl = await storageRes.ref.getDownloadURL();
+        }
         storage
           .ref(`userSongs/${songId}.wav`)
           .put(blob)
@@ -74,6 +87,8 @@ export function withFirebaseContext(Component: JSX.Element) {
                 fullPath: snapshot.metadata.fullPath,
                 url: songUrl,
                 id: songId,
+                gifId,
+                gifUrl,
               })
               .then(() => {
                 resolve(songId);

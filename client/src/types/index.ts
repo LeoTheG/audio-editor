@@ -6,6 +6,8 @@ export interface userSong {
   fullPath: string;
   id: string;
   url: string;
+  gifUrl?: string;
+  gifId?: string;
 }
 
 export interface ILibraryMetadata {

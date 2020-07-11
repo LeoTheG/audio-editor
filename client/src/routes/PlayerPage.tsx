@@ -23,10 +23,6 @@ export const PlayerPage = () => {
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
       setUserSongs(songs);
-      // if (songs.length && songPlayingIndex === -1) {
-      //   setAudio(new window.Audio(songs[0].url));
-      //   setSongPlayingIndex(0);
-      // }
     });
   }, [firebaseContext]);
 
@@ -97,10 +93,6 @@ export const PlayerPage = () => {
       const song = userSongs[songPlayingIndex];
       audio.src = song.url;
       audio.play();
-      // firebaseContext.getSongURL(song._id).then((songUrl) => {
-      //   audio.src = songUrl;
-      //   audio.play();
-      // });
     }
   }, [songPlayingIndex, audio, isPlaying, userSongs]);
 
@@ -115,8 +107,6 @@ export const PlayerPage = () => {
           url: song.url,
           artist: song.authorName,
           songName: song.songName,
-          // ...song,
-          // artist: song.authorName,
         };
 
   return (
@@ -136,6 +126,15 @@ export const PlayerPage = () => {
         </Button>
       </div>
       <div className="player-body">
+        {song && song.gifUrl ? (
+          <img
+            alt="corresponding gif"
+            style={{ width: 200, height: 200 }}
+            src={song.gifUrl}
+          />
+        ) : (
+          <div style={{ width: 200, height: 200 }} />
+        )}
         <div className="music-controller-container">
           <MusicController
             isPlaying={isPlaying}
