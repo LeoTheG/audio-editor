@@ -1,0 +1,19 @@
+.gif-preview-container {
+  width: 400px;
+  height: 600px;
+  border: 1px dashed purple;
+  display: flex;
+  flex-direction: column;
+}
+
+.add-gif-container {
+  width: 100px;
+  height: 100px;
+  border: 1px dashed blue;
+}
+
+.width-100-centered {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}

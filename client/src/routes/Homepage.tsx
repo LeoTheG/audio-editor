@@ -13,6 +13,7 @@ import update from "immutability-helper";
 import WaveformData from "waveform-data";
 import { v4 as uuidv4 } from "uuid";
 import { FirebaseContext } from "../contexts/firebaseContext";
+import { GIFPreview } from "../components/GIFPreview";
 
 enum drawerTypes {
   music = "music",
@@ -265,6 +266,8 @@ export const Homepage: React.FC = () => {
         widgets={widgets}
         moveWidget={moveWidget}
       />
+
+      <GIFPreview />
 
       <AdventureLogo
       // widget={

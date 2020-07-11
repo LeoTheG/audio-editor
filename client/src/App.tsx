@@ -11,7 +11,7 @@ import {
 import { DndProvider } from "react-dnd-multi-backend";
 import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
 import backgroundImage from "./assets/Polka-Dots.svg";
-import { PlayerPage } from "./components/PlayerPage";
+import { PlayerPage } from "./routes/PlayerPage";
 import { Homepage } from "./routes/Homepage";
 import { withFirebaseContext } from "./contexts/firebaseContext";
 
