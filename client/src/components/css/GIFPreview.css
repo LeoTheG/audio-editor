@@ -6,6 +6,8 @@
   align-items: center;
   flex-direction: column;
   justify-content: space-around;
+  z-index: 2;
+  background-color: white;
 }
 
 .add-gif-container {
