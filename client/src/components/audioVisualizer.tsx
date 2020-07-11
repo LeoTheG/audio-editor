@@ -9,9 +9,9 @@ import { XYCoord, useDrop } from "react-dnd";
 import { convertTracksToBlob, downloadFromUrl } from "../util";
 
 import { AudioTrackList } from "./AudioTrackList";
-import { FirebaseContext } from "../App";
 import { WaveformItem } from "./waveformItem";
 import update from "immutability-helper";
+import { FirebaseContext } from "../contexts/firebaseContext";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

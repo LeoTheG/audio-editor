@@ -6,13 +6,12 @@ import "./css/PlayerPage.css";
 import { AdventureLogo } from "./AdventureLogo";
 import { Button } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
-import { FirebaseContext } from "../App";
+import { FirebaseContext } from "../contexts/firebaseContext";
 
-interface IPlayerPageProps {
-  // uploadList: IUserUpload[];
-}
+// interface IPlayerPageProps {
+// }
 
-export const PlayerPage = (props: IPlayerPageProps) => {
+export const PlayerPage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [songPlayingIndex, setSongPlayingIndex] = useState(-1);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
@@ -23,12 +22,11 @@ export const PlayerPage = (props: IPlayerPageProps) => {
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
-      console.log(songs);
       setUserSongs(songs);
-      if (songs.length) {
-        setAudio(new window.Audio(songs[0].url));
-        setSongPlayingIndex(0);
-      }
+      // if (songs.length && songPlayingIndex === -1) {
+      //   setAudio(new window.Audio(songs[0].url));
+      //   setSongPlayingIndex(0);
+      // }
     });
   }, [firebaseContext]);
 
@@ -38,7 +36,6 @@ export const PlayerPage = (props: IPlayerPageProps) => {
 
   const onEndAudio = () => {
     setIsPlaying(false);
-    // onClickNextSong();
   };
 
   useEffect(() => {
@@ -49,7 +46,6 @@ export const PlayerPage = (props: IPlayerPageProps) => {
   }, [audio]);
 
   useEffect(() => {
-    // if (props.uploadList.length) {
     if (userSongs.length) {
       const songIndex = userSongs.findIndex((upload) => upload.id === id);
       if (songIndex !== -1) {
@@ -57,15 +53,9 @@ export const PlayerPage = (props: IPlayerPageProps) => {
 
         setAudio(new window.Audio(song.url));
         setSongPlayingIndex(songIndex);
-        console.log("song playing index is ", songIndex);
-
-        // const songUrl = firebaseContext.getSongURL(song._id).then((url) => {
-        //   // setAudio(new window.Audio(song.url));
-        //   setAudio(new window.Audio(url));
-        //   setSongPlayingIndex(songIndex);
-        // });
       } else {
         alert("Song with id " + id + " not found");
+        setSongPlayingIndex(0);
       }
     }
   }, [userSongs, id]);
@@ -127,8 +117,6 @@ export const PlayerPage = (props: IPlayerPageProps) => {
           // ...song,
           // artist: song.authorName,
         };
-
-  console.log(convertedSong);
 
   return (
     <div className="player-page-container">

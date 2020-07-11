@@ -8,7 +8,7 @@ export interface userSong {
   url: string;
 }
 
-export interface libraryMetadata {
+export interface ILibraryMetadata {
   name: string;
   downloadURL: string;
 }
