@@ -32,6 +32,14 @@ export const PlayerPage = () => {
 
   const [song, setSong] = useState<userSong>();
 
+  const updateEmojis = useCallback(
+    _.debounce((song: userSong, emojiSelections: IEmojiSelections) => {
+      if (!song || !Object.keys(emojiSelections).length) return;
+      firebaseContext.updateEmojis(song.id, emojiSelections);
+    }, 1000),
+    [song]
+  );
+
   useEffect(() => {
     if (userSongs.length) setSong(userSongs[songPlayingIndex]);
   }, [userSongs, songPlayingIndex]);
@@ -82,7 +90,7 @@ export const PlayerPage = () => {
         return newSongEmojiSelections;
       });
     },
-    [selectedSongEmojis, selectedEmojis, songPlayingIndex, userSongs]
+    [updateEmojis]
   );
 
   const onEndAudio = () => {
@@ -169,14 +177,6 @@ export const PlayerPage = () => {
         songName: "",
       };
 
-  const updateEmojis = useCallback(
-    _.debounce((song: userSong, emojiSelections: IEmojiSelections) => {
-      if (!song || !Object.keys(emojiSelections).length) return;
-      firebaseContext.updateEmojis(song.id, emojiSelections);
-    }, 1000),
-    [song]
-  );
-
   return (
     <div className="player-page-container">
       <div style={{ width: "100%" }}>
@@ -242,6 +242,7 @@ export const PlayerPage = () => {
                 <img
                   style={{ width: 30, height: 30 }}
                   src={getEmojiImageURL(key)}
+                  alt="emoji"
                 />
               </IconButton>
               <div>{value}</div>
