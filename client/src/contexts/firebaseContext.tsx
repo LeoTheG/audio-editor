@@ -1,7 +1,8 @@
+import { IEmojiSelections, ILibraryMetadata, userSong } from "../types";
+
 import React from "react";
 import firebase from "firebase";
 import { v4 as uuidv4 } from "uuid";
-import { ILibraryMetadata, userSong } from "../types";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC19cZLLW3oYWjQxWEFPhdtzSOGWQcgQjQ",
@@ -28,6 +29,7 @@ interface firebaseContext {
   getSongs: () => Promise<userSong[]>;
   getSongURL: (songId: string) => Promise<string>;
   getLibraryMetadata: () => Promise<ILibraryMetadata[]>;
+  updateEmojis: (songId: string, emojiSelections: IEmojiSelections) => void;
 }
 
 export const FirebaseContext = React.createContext<firebaseContext>({
@@ -35,6 +37,7 @@ export const FirebaseContext = React.createContext<firebaseContext>({
   getSongs: () => Promise.resolve([]),
   getSongURL: () => Promise.resolve(""),
   getLibraryMetadata: () => Promise.resolve([]),
+  updateEmojis: () => {},
 });
 
 export function withFirebaseContext(Component: JSX.Element) {
@@ -116,6 +119,17 @@ export function withFirebaseContext(Component: JSX.Element) {
             });
           });
       });
+    },
+    updateEmojis: (songId: string, emojiSelections: IEmojiSelections) => {
+      db.collection("userSongs").doc(songId).set(
+        {
+          emojiSelections,
+        },
+        { merge: true }
+      );
+      //   .then(() => {
+      //     resolve(songId);
+      //   });
     },
   };
 

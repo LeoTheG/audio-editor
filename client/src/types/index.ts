@@ -1,5 +1,13 @@
 import WaveformData from "waveform-data";
 
+export interface ISongEmojiSelections {
+  [songId: string]: IEmojiSelections;
+}
+
+export interface IEmojiSelections {
+  [emojiId: string]: number;
+}
+
 export interface userSong {
   authorName: string;
   songName: string;
@@ -8,6 +16,7 @@ export interface userSong {
   url: string;
   gifUrl?: string;
   gifId?: string;
+  emojiSelections?: IEmojiSelections;
 }
 
 export interface ILibraryMetadata {

@@ -1,14 +1,17 @@
 import "../css/PlayerPage.css";
 
-import React, { useContext, useEffect, useState } from "react";
+import { Button, IconButton, Tooltip } from "@material-ui/core";
+import { Close, InsertEmoticon } from "@material-ui/icons";
+import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
+import Picker, { IEmojiData } from "emoji-picker-react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 
 import { AdventureLogo } from "../components/AdventureLogo";
-import { Button } from "@material-ui/core";
 import { FirebaseContext } from "../contexts/firebaseContext";
 import { MusicController } from "adventure-component-library";
+import _ from "underscore";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
-import { userSong } from "../types";
 
 export const PlayerPage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -16,18 +19,71 @@ export const PlayerPage = () => {
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const firebaseContext = useContext(FirebaseContext);
   const [userSongs, setUserSongs] = useState<userSong[]>([]);
+  const [selectedSongEmojis, setSelectedSongEmojis] = useState<
+    ISongEmojiSelections
+  >({});
 
-  const song = userSongs[songPlayingIndex];
+  const selectedEmojis =
+    userSongs.length && userSongs[songPlayingIndex]
+      ? selectedSongEmojis[userSongs[songPlayingIndex].id] || {}
+      : {};
+
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+
+  const [song, setSong] = useState<userSong>();
+
+  useEffect(() => {
+    if (userSongs.length) setSong(userSongs[songPlayingIndex]);
+  }, [userSongs, songPlayingIndex]);
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
       setUserSongs(songs);
+
+      const selectedSongEmojis = songs.reduce<ISongEmojiSelections>(
+        (acc, song) => {
+          acc[song.id] = song.emojiSelections || {};
+          return acc;
+        },
+        {}
+      );
+
+      setSelectedSongEmojis(selectedSongEmojis);
     });
   }, [firebaseContext]);
 
   const id = useParam("id") || "";
 
   const history = useHistory();
+
+  const onEmojiClick = useCallback(
+    (song?: userSong) => (_: MouseEvent, emoji: IEmojiData) => {
+      if (!song) return;
+
+      setSelectedSongEmojis((selectedSongEmojis) => {
+        let newSongEmojiSelections: ISongEmojiSelections = {
+          ...selectedSongEmojis,
+        };
+        if (!selectedSongEmojis[song.id]) {
+          newSongEmojiSelections[song.id] = {};
+        }
+
+        newSongEmojiSelections = {
+          ...newSongEmojiSelections,
+          [song.id]: {
+            ...selectedSongEmojis[song.id],
+            [emoji.unified]:
+              (newSongEmojiSelections[song.id][emoji.unified] || 0) + 1,
+          },
+        };
+
+        updateEmojis(song, newSongEmojiSelections[song.id]);
+
+        return newSongEmojiSelections;
+      });
+    },
+    [selectedSongEmojis, selectedEmojis, songPlayingIndex, userSongs]
+  );
 
   const onEndAudio = () => {
     setIsPlaying(false);
@@ -75,6 +131,7 @@ export const PlayerPage = () => {
     } else {
       audio?.pause();
       const song = userSongs[index];
+      if (!song) return;
 
       let _audio: HTMLAudioElement = audio || new window.Audio(song.url);
 
@@ -100,18 +157,25 @@ export const PlayerPage = () => {
     }
   };
 
-  const convertedSong =
-    songPlayingIndex === -1
-      ? {
-          url: "",
-          artist: "",
-          songName: "",
-        }
-      : {
-          url: song.url,
-          artist: song.authorName,
-          songName: song.songName,
-        };
+  const convertedSong = song
+    ? {
+        url: song.url,
+        artist: song.authorName,
+        songName: song.songName,
+      }
+    : {
+        url: "",
+        artist: "",
+        songName: "",
+      };
+
+  const updateEmojis = useCallback(
+    _.debounce((song: userSong, emojiSelections: IEmojiSelections) => {
+      if (!song || !Object.keys(emojiSelections).length) return;
+      firebaseContext.updateEmojis(song.id, emojiSelections);
+    }, 1000),
+    [song]
+  );
 
   return (
     <div className="player-page-container">
@@ -132,7 +196,7 @@ export const PlayerPage = () => {
       <div className="player-body">
         {song && song.gifUrl ? (
           <img
-            alt="corresponding gif"
+            alt="corresponding media"
             style={{ width: 200, height: 200 }}
             src={song.gifUrl}
           />
@@ -148,8 +212,71 @@ export const PlayerPage = () => {
             song={convertedSong}
           />
         </div>
+
+        <div
+          style={{
+            width: 400,
+            display: "flex",
+            overflowX: "hidden",
+            overflowWrap: "break-word",
+            flexWrap: "wrap",
+            maxHeight: 300,
+            overflowY: "auto",
+          }}
+        >
+          {Object.entries(selectedEmojis || {}).map(([key, value]) => (
+            <div key={key} style={{ textAlign: "center" }}>
+              <IconButton
+                onClick={() => {
+                  const song = userSongs[songPlayingIndex];
+
+                  setSelectedSongEmojis((selectedSongEmojis) => ({
+                    ...selectedSongEmojis,
+                    [song.id]: {
+                      ...selectedSongEmojis[song.id],
+                      [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
+                    },
+                  }));
+                }}
+              >
+                <img
+                  style={{ width: 30, height: 30 }}
+                  src={getEmojiImageURL(key)}
+                />
+              </IconButton>
+              <div>{value}</div>
+            </div>
+          ))}
+        </div>
+
+        <Tooltip title="insert emoji">
+          <IconButton onClick={() => setIsEmojiPickerOpen(true)}>
+            <InsertEmoticon />
+          </IconButton>
+        </Tooltip>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          visibility: isEmojiPickerOpen ? "visible" : "hidden",
+        }}
+      >
+        <IconButton onClick={() => setIsEmojiPickerOpen(false)}>
+          <Close htmlColor="red" />
+        </IconButton>
+        <Picker key={song?.id} onEmojiClick={onEmojiClick(song)} />
       </div>
       <AdventureLogo />
     </div>
   );
+};
+
+const baseEmojiUrl =
+  "https://cdn.jsdelivr.net/gh/iamcal/emoji-data@master/img-apple-64/";
+
+const getEmojiImageURL = (code: string) => {
+  return `${baseEmojiUrl}${code}.png`;
 };
