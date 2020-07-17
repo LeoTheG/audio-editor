@@ -1,19 +1,21 @@
-import React, { useEffect, useCallback, useState, useContext } from "react";
 import { Button, Drawer } from "@material-ui/core";
 import { DragObjectWithType, DropTargetMonitor, useDrop } from "react-dnd";
-import { UserFiles, WidgetTypes, ILibraryMetadata } from "../types";
+import { ILibraryMetadata, UserFiles, WidgetTypes } from "../types";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+
 import { AdventureLogo } from "../components/AdventureLogo";
+import { AppStateContext } from "../contexts/appContext";
+import { AudioVisualizer } from "../components/audioVisualizer";
+import { FirebaseContext } from "../contexts/firebaseContext";
 import { IWidgetProps } from "../components/Widgets/Widget";
 import { LibraryButton } from "../components/LibraryButton";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { PlayerLogo } from "../components/PlayerButton";
-import { AudioVisualizer } from "../components/audioVisualizer";
+import WaveformData from "waveform-data";
 // import { WidgetButton } from "../components/WidgetButton";
 import update from "immutability-helper";
-import WaveformData from "waveform-data";
+import { useHistory } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import { FirebaseContext } from "../contexts/firebaseContext";
-import { AppStateContext } from "../contexts/appContext";
 
 enum drawerTypes {
   music = "music",
@@ -71,6 +73,8 @@ export const Homepage: React.FC = () => {
   );
   const [shareSong, setShareSong] = useState<Blob | undefined>();
   const firebaseContext = useContext(FirebaseContext);
+
+  const history = useHistory();
 
   useEffect(() => {
     if (!libraryMetadata.length) {
@@ -277,7 +281,29 @@ export const Homepage: React.FC = () => {
           flexDirection: "column",
         }}
       >
-        <PlayerLogo />
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <PlayerLogo />
+
+          <Button
+            style={{
+              minWidth: 20,
+              color: "white",
+              background: "grey",
+              padding: 10,
+              height: 50,
+            }}
+            variant="contained"
+            onClick={() => history.push("/player")}
+          >
+            PLAYER
+          </Button>
+        </div>
 
         <div
           style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
