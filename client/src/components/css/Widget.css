@@ -76,3 +76,19 @@
   64%  { transform: scale(1,1)      translateY(0); }
   100% { transform: scale(1,1)      translateY(0); }
 }
+
+.live_emoji {
+  width: 2.5rem;
+  height: 2.5rem;
+  position: absolute;
+  left: -2.5rem;
+}
+
+#emojis {
+  width: 20rem;
+  height: 20rem;
+  margin-top: auto;
+  margin-bottom: auto;
+  outline: black;
+  position:relative;
+}
