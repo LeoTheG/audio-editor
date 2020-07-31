@@ -1,6 +1,5 @@
 import React from "react";
 import anime from "animejs/lib/anime.es";
-import { FirebaseContext } from "../contexts/firebaseContext";
 
 var EmojiData = require("emoji-data");
 
@@ -15,21 +14,33 @@ class BulletSection extends React.Component {
     this.chosenEmoji = testEmojiData;
     this.audio = null;
     this.id = 0;
+    this.interval = null;
     window.bulletComponent = this;
   }
 
   initializeAudio(audio) {
-    this.audio = audio;
-    this.audio.onplaying = (element) => {
-      this.interval = setInterval(this.bulletScreen, 500);
-    };
-    this.audio.onpause = (element) => {
-      if (this.interval != null) clearInterval(this.interval);
-    };
+    if (audio) {
+      this.audio = audio;
+      this.audio.onplaying = (element) => {
+        console.log("playing");
+        this.interval = setInterval(this.bulletScreen, 500);
+      };
+      this.audio.onpause = (element) => {
+        console.log("paused");
+        if (this.interval != null) clearInterval(this.interval);
+      };
+      this.audio.onend = (element) => {
+        console.log("ended");
+        if (this.interval != null) clearInterval(this.interval);
+      };
+
+      console.log("Audio initialized");
+    }
   }
 
   initializeEmojis(liveEmojis) {
     this.chosenEmoji = liveEmojis;
+    console.log("Live Emoji initialized");
   }
 
   round = (num) => {
@@ -40,33 +51,28 @@ class BulletSection extends React.Component {
     return this.round(this.audio.currentTime);
   };
 
-  addEmoji(songId, emoji) {
-    // var time = this.getTimeStamp();
-    // var node = this.createEmojiNode(emoji);
-    // if (node !== undefined) {
-    //   this.emojiToScreen(node);
-    // }
-    // setTimeout(() => {
-    //   if (!(time in this.chosenEmoji)) this.chosenEmoji[time] = [];
-    //   this.chosenEmoji[time].push(emoji);
-    //   FirebaseContext.updateLiveEmojis(songId, time, this.chosenEmoji[time]);
-    // }, 500);
+  addEmoji(emoji) {
+    var time = this.getTimeStamp();
+    var node = this.createEmojiNode(emoji);
+    if (node !== undefined) {
+      this.emojiToScreen(node);
+    }
+    setTimeout(() => {
+      if (!(time in this.chosenEmoji)) this.chosenEmoji[time] = [];
+      this.chosenEmoji[time].push(emoji);
+    }, 500);
   }
 
   createEmojiNode = (emoji) => {
-    var node = document.createElement("div");
+    var node = document.createElement("img");
     node.className = "live_emoji";
-    var renderEmoji = EmojiData.from_unified(emoji);
-    if (renderEmoji !== undefined) {
-      node.innerHTML = renderEmoji.render();
-      node.id = "emoji" + this.id;
-      node.className = "live_emoji";
-      let random = Math.floor(Math.random() * 8) * 2.5;
-      node.style.top = [random + "rem"];
-      this.id++;
-      return node;
-    }
-    return undefined;
+    node.src = getEmojiImageURL(emoji);
+    node.id = "emoji" + this.id;
+    let random = Math.floor(Math.random() * 8) * 2.5;
+    node.style.top = [random + "rem"];
+    this.id++;
+    if (this.id >= 1024) this.id = 0;
+    return node;
   };
 
   emojiToScreen = (node) => {
@@ -116,5 +122,12 @@ class BulletSection extends React.Component {
     return <div id="emojis"></div>;
   }
 }
+
+const baseEmojiUrl =
+  "https://cdn.jsdelivr.net/gh/iamcal/emoji-data@master/img-apple-64/";
+
+const getEmojiImageURL = (code) => {
+  return `${baseEmojiUrl}${code}.png`;
+};
 
 export default BulletSection;

@@ -49,19 +49,25 @@ export const PlayerPage = () => {
   );
 
   const updateLiveEmojis = useCallback(
-    _.debounce((songId: string, timestamp: number, data: any) => {
-      firebaseContext.updateLiveEmojis(songId, timestamp, data);
-    }, 500),
+    _.debounce((songId: string, data: any) => {
+      firebaseContext.updateLiveEmojis(songId, data);
+    }, 1000),
     [song]
   );
 
   useEffect(() => {
-    if (userSongs.length) setSong(userSongs[songPlayingIndex]);
+    if (userSongs.length) {
+      if (userSongs[songPlayingIndex] !== undefined) {
+        window.bulletComponent.initializeEmojis(
+          selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
+        );
+      }
+      setSong(userSongs[songPlayingIndex]);
+    }
   }, [userSongs, songPlayingIndex]);
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
-      setUserSongs(songs);
       const selectedSongEmojis = songs.reduce<ISongEmojiSelections>(
         (acc, song) => {
           acc[song.id] = song.emojiSelections || {};
@@ -75,6 +81,7 @@ export const PlayerPage = () => {
         return acc;
       }, {});
       setSelectedSongLiveEmojis(selectedSongliveEmojis);
+      setUserSongs(songs);
     });
   }, [firebaseContext]);
 
@@ -105,16 +112,8 @@ export const PlayerPage = () => {
 
         updateEmojis(song, newSongEmojiSelections[song.id]);
 
-        window.bulletComponent.addEmoji(song.id, emoji.unified);
-        const timestamp = window.bulletComponent.getTimeStamp();
-        if (!(timestamp in selectedSongLiveEmojis[song.id]))
-          selectedSongLiveEmojis[song.id][timestamp] = [];
-        selectedSongLiveEmojis[song.id][timestamp].push(emoji.unified);
-        updateLiveEmojis(
-          song.id,
-          timestamp,
-          selectedSongLiveEmojis[song.id][timestamp]
-        );
+        window.bulletComponent.addEmoji(emoji.unified);
+        updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
         return newSongEmojiSelections;
       });
     },
@@ -175,13 +174,9 @@ export const PlayerPage = () => {
       _audio?.play();
       if (!audio) {
         setAudio(_audio);
-        window.bulletComponent.initializeAudio(_audio);
         console.log(song.id);
-        window.bulletComponent.initializeEmojis(
-          selectedSongLiveEmojis[song.id]
-        );
+        window.bulletComponent.initializeAudio(_audio);
       }
-
       setSongPlayingIndex(index);
     }
     setIsPlaying(true);
@@ -273,16 +268,8 @@ export const PlayerPage = () => {
                     },
                   }));
 
-                  window.bulletComponent.addEmoji(song.id, key);
-                  const timestamp = window.bulletComponent.getTimeStamp();
-                  if (!(timestamp in selectedSongLiveEmojis[song.id]))
-                    selectedSongLiveEmojis[song.id][timestamp] = [];
-                  selectedSongLiveEmojis[song.id][timestamp].push(key);
-                  updateLiveEmojis(
-                    song.id,
-                    timestamp,
-                    selectedSongLiveEmojis[song.id][timestamp]
-                  );
+                  window.bulletComponent.addEmoji(key);
+                  updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
                 }}
               >
                 <img
