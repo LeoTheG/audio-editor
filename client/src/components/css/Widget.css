@@ -89,6 +89,7 @@
   height: 20rem;
   margin-top: auto;
   margin-bottom: auto;
-  outline: black;
+  border: 5px solid black;
   position:relative;
+  overflow: auto
 }

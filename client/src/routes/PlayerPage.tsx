@@ -8,10 +8,17 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 
 import { AdventureLogo } from "../components/AdventureLogo";
 import { FirebaseContext } from "../contexts/firebaseContext";
+import BulletSection from "../components/BulletSection";
 import { MusicController } from "adventure-component-library";
 import _ from "underscore";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
+
+declare global {
+  interface Window {
+    bulletComponent: any;
+  }
+}
 
 export const PlayerPage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -22,6 +29,7 @@ export const PlayerPage = () => {
   const [selectedSongEmojis, setSelectedSongEmojis] = useState<
     ISongEmojiSelections
   >({});
+  const [selectedSongLiveEmojis, setSelectedSongLiveEmojis] = useState<any>({});
 
   const selectedEmojis =
     userSongs.length && userSongs[songPlayingIndex]
@@ -40,6 +48,13 @@ export const PlayerPage = () => {
     [song]
   );
 
+  const updateLiveEmojis = useCallback(
+    _.debounce((songId: string, timestamp: number, data: any) => {
+      firebaseContext.updateLiveEmojis(songId, timestamp, data);
+    }, 500),
+    [song]
+  );
+
   useEffect(() => {
     if (userSongs.length) setSong(userSongs[songPlayingIndex]);
   }, [userSongs, songPlayingIndex]);
@@ -47,7 +62,6 @@ export const PlayerPage = () => {
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
       setUserSongs(songs);
-
       const selectedSongEmojis = songs.reduce<ISongEmojiSelections>(
         (acc, song) => {
           acc[song.id] = song.emojiSelections || {};
@@ -55,8 +69,12 @@ export const PlayerPage = () => {
         },
         {}
       );
-
       setSelectedSongEmojis(selectedSongEmojis);
+      const selectedSongliveEmojis = songs.reduce<any>((acc, song) => {
+        acc[song.id] = song.liveEmojis || {};
+        return acc;
+      }, {});
+      setSelectedSongLiveEmojis(selectedSongliveEmojis);
     });
   }, [firebaseContext]);
 
@@ -87,10 +105,20 @@ export const PlayerPage = () => {
 
         updateEmojis(song, newSongEmojiSelections[song.id]);
 
+        window.bulletComponent.addEmoji(song.id, emoji.unified);
+        const timestamp = window.bulletComponent.getTimeStamp();
+        if (!(timestamp in selectedSongLiveEmojis[song.id]))
+          selectedSongLiveEmojis[song.id][timestamp] = [];
+        selectedSongLiveEmojis[song.id][timestamp].push(emoji.unified);
+        updateLiveEmojis(
+          song.id,
+          timestamp,
+          selectedSongLiveEmojis[song.id][timestamp]
+        );
         return newSongEmojiSelections;
       });
     },
-    [updateEmojis]
+    [updateEmojis, updateLiveEmojis]
   );
 
   const onEndAudio = () => {
@@ -147,6 +175,11 @@ export const PlayerPage = () => {
       _audio?.play();
       if (!audio) {
         setAudio(_audio);
+        window.bulletComponent.initializeAudio(_audio);
+        console.log(song.id);
+        window.bulletComponent.initializeEmojis(
+          selectedSongLiveEmojis[song.id]
+        );
       }
 
       setSongPlayingIndex(index);
@@ -193,7 +226,9 @@ export const PlayerPage = () => {
           HOME
         </Button>
       </div>
+
       <div className="player-body">
+        <BulletSection />
         {song && song.gifUrl ? (
           <img
             alt="corresponding media"
@@ -237,6 +272,17 @@ export const PlayerPage = () => {
                       [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
                     },
                   }));
+
+                  window.bulletComponent.addEmoji(song.id, key);
+                  const timestamp = window.bulletComponent.getTimeStamp();
+                  if (!(timestamp in selectedSongLiveEmojis[song.id]))
+                    selectedSongLiveEmojis[song.id][timestamp] = [];
+                  selectedSongLiveEmojis[song.id][timestamp].push(key);
+                  updateLiveEmojis(
+                    song.id,
+                    timestamp,
+                    selectedSongLiveEmojis[song.id][timestamp]
+                  );
                 }}
               >
                 <img
