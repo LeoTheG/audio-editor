@@ -223,7 +223,6 @@ export const PlayerPage = () => {
       </div>
 
       <div className="player-body">
-        <BulletSection />
         {song && song.gifUrl ? (
           <img
             alt="corresponding media"
@@ -233,6 +232,7 @@ export const PlayerPage = () => {
         ) : (
           <div style={{ width: 200, height: 200 }} />
         )}
+
         <div className="music-controller-container">
           <MusicController
             isPlaying={isPlaying}
@@ -243,6 +243,7 @@ export const PlayerPage = () => {
           />
         </div>
 
+        <BulletSection />
         <div
           style={{
             width: 400,

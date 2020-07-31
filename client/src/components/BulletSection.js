@@ -23,18 +23,25 @@ class BulletSection extends React.Component {
       this.audio = audio;
       this.audio.onplaying = (element) => {
         console.log("playing");
+        this.clearBulletInterval();
         this.interval = setInterval(this.bulletScreen, 500);
       };
       this.audio.onpause = (element) => {
         console.log("paused");
-        if (this.interval != null) clearInterval(this.interval);
+        this.clearBulletInterval();
       };
       this.audio.onend = (element) => {
         console.log("ended");
-        if (this.interval != null) clearInterval(this.interval);
+        this.clearBulletInterval();
       };
-
       console.log("Audio initialized");
+    }
+  }
+
+  clearBulletInterval() {
+    if (this.interval != null) {
+      clearInterval(this.interval);
+      this.interval = null;
     }
   }
 
@@ -68,7 +75,7 @@ class BulletSection extends React.Component {
     node.className = "live_emoji";
     node.src = getEmojiImageURL(emoji);
     node.id = "emoji" + this.id;
-    let random = Math.floor(Math.random() * 8) * 2.5;
+    let random = Math.floor(Math.random() * 7) * 2 + 0.8;
     node.style.top = [random + "rem"];
     this.id++;
     if (this.id >= 1024) this.id = 0;
@@ -76,17 +83,16 @@ class BulletSection extends React.Component {
   };
 
   emojiToScreen = (node) => {
-    console.log("Adding emojis");
     var emojisNode = document.getElementById("emojis");
     emojisNode.appendChild(node);
 
     anime({
       targets: "#" + node.id,
       translateX: function () {
-        return "23rem";
+        return "30rem";
       },
       scale: function () {
-        return anime.random(15, 20) / 10;
+        return anime.random(13, 17) / 10;
       },
       duration: function () {
         return 2750;
@@ -100,13 +106,9 @@ class BulletSection extends React.Component {
 
   bulletScreen = () => {
     if (this.audio != null && this.audio.played) {
-      console.log(this.getTimeStamp());
       var time = this.getTimeStamp();
-      console.log(this.chosenEmoji);
       if (time in this.chosenEmoji) {
-        console.log("In");
         this.chosenEmoji[time].map((emoji) => {
-          console.log(this.chosenEmoji[time]);
           var node = this.createEmojiNode(emoji);
           if (node !== undefined) {
             setTimeout(() => {
