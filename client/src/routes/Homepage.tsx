@@ -337,7 +337,7 @@ export const Homepage: React.FC = () => {
           open={isDrawerOpen}
           onClose={() => setDrawerType(null)}
         >
-          <div style={{ width: 400, padding: 10 }}>
+          <div style={{ width: 400, maxWidth: "80vw", padding: 10 }}>
             <div
               style={{
                 width: "100%",
