@@ -77,7 +77,7 @@ export function downloadFromUrl(url: string) {
   document.body.removeChild(link);
 }
 
-export const TRACK_LENGTH_MODIFIDER = 3;
+export const TRACK_LENGTH_MODIFIDER = window.innerWidth < 600 ? 15 : 5;
 
 export function useParam(paramName: string) {
   const location = useLocation();
