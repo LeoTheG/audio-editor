@@ -1,5 +1,4 @@
 import React from "react";
-import { isiOS } from "../util";
 
 interface IAppStateContext {
   shareSong?: Blob;
