@@ -349,3 +349,18 @@ export const bucketData = [
       "https://audio-player-clips.s3-us-west-1.amazonaws.com/when+the+party's+over_Chorus.wav",
   },
 ];
+
+export const isiOS = () => {
+  return (
+    [
+      "iPad Simulator",
+      "iPhone Simulator",
+      "iPod Simulator",
+      "iPad",
+      "iPhone",
+      "iPod",
+    ].includes(navigator.platform) ||
+    // iPad on iOS 13 detection
+    (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+  );
+};

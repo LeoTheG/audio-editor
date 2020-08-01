@@ -8,7 +8,7 @@ import {
 import { CloudDownload, Info, Share } from "@material-ui/icons";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 import { IconButton, Popover, Tooltip } from "@material-ui/core";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useContext } from "react";
 import { TRACK_LENGTH_MODIFIDER, convertAudioBufferToBlob } from "../util";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 
@@ -17,6 +17,7 @@ import { PlayerButton } from "./PlayerButton";
 import infoGif from "../assets/audio-editor-info.gif";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
+import { AppStateContext } from "../contexts/appContext";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -41,6 +42,7 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
   const [audio, setAudio] = useState(new Audio());
   const [isHoveringId, setIsHoveringId] = useState<string | null>(null);
   const timeListRef = React.createRef<HTMLDivElement>();
+  const { isIOS } = useContext(AppStateContext);
   const classes = useStyles();
 
   const [infoAnchorEl, setInfoAnchorEl] = React.useState<HTMLElement | null>(
@@ -220,17 +222,9 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
         </div>
         <div
           style={{
-            width: "100%",
-            height: 154,
-            border: "2px dashed orange",
-            display: "flex",
-            flexDirection: "row",
             backgroundColor: isActive ? "lightblue" : "inherit",
-            boxSizing: "border-box",
-            overflowX: "auto",
-            overflowY: "hidden",
-            position: "relative",
           }}
+          className="tracklist-container"
           ref={drop}
           onScroll={(evt) => {
             if (timeListRef.current)
@@ -243,6 +237,7 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
               tracks.length ? tracks[0].waveformData.pixels_per_second : 0
             }
             audio={audio}
+            height={isIOS ? 120 : "100%"}
           />
 
           {isEmptyTracklist && (
@@ -301,7 +296,7 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
             ref={timeListRef}
           >
             {Array.from({ length: 100 }).map((_, index) => {
-              // eventually calculate this, don't set to 100
+              // todo eventually calculate this, don't set to 100
               return (
                 <div
                   key={index}
@@ -430,6 +425,7 @@ const ActionLinks = (props: IActionLinksProps) => {
 interface IPlayLineProps {
   audio: HTMLAudioElement;
   pixelsPerSecond: number;
+  height: string | number;
 }
 
 const PlayLine = (props: IPlayLineProps) => {
@@ -452,7 +448,7 @@ const PlayLine = (props: IPlayLineProps) => {
       style={{
         width: 5,
         background: "lightgreen",
-        height: "100%",
+        height: props.height,
         position: "absolute",
         left: position,
         zIndex: 1,
