@@ -62,8 +62,8 @@ class BulletSection extends React.Component {
 
   // manually add the emoji to screen
   addEmoji(emoji: any) {
-    var time = this.getTimeStamp();
-    var node = this.createEmojiNode(emoji);
+    const time = this.getTimeStamp();
+    const node = this.createEmojiNode(emoji);
     if (node !== undefined) {
       this.emojiToScreen(node);
     }
@@ -76,15 +76,15 @@ class BulletSection extends React.Component {
   }
 
   createEmojiNode(emoji: string) {
-    var node = document.createElement("img");
+    const node = document.createElement("img");
     node.className = "live_emoji";
     node.src = getEmojiImageURL(emoji);
     node.id = "emoji" + this.id;
-    var emojisNode = document.getElementById("emojis");
+    const emojisNode = document.getElementById("emojis");
 
     if (emojisNode != null) {
       // the number of emojis in a column the screen can hold
-      var options = Math.floor(emojisNode.clientHeight / 30) - 1;
+      const options = Math.floor(emojisNode.clientHeight / 30) - 1;
       // randomly picks a row and calculate the respective height
       let random = Math.floor(Math.random() * options) * 30 + 10;
       node.style.top = [random + "px"] as any;
@@ -99,7 +99,7 @@ class BulletSection extends React.Component {
 
   // add the emoji to screen and animate it
   emojiToScreen(node: HTMLElement) {
-    var emojisNode = document.getElementById("emojis");
+    const emojisNode = document.getElementById("emojis");
     if (emojisNode != null) {
       emojisNode.appendChild(node as any);
       let width = emojisNode.clientWidth;
@@ -125,10 +125,10 @@ class BulletSection extends React.Component {
   // add all emojis at the current timestamp to the screen
   bulletScreen = () => {
     if (this.audio != null && this.audio.played) {
-      var time = this.getTimeStamp();
+      const time = this.getTimeStamp();
       if (time in this.chosenEmoji) {
         this.chosenEmoji[time].map((emoji: any) => {
-          var node = this.createEmojiNode(emoji);
+          const node = this.createEmojiNode(emoji);
           if (node !== undefined) {
             // have a random time offset for each emoji (dont clutter together)
             setTimeout(() => {
