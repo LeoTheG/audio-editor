@@ -58,9 +58,9 @@ export const PlayerPage = () => {
   useEffect(() => {
     if (userSongs.length) {
       if (userSongs[songPlayingIndex] !== undefined) {
-        window.bulletComponent.initializeEmojis(
-          selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
-        );
+        // window.bulletComponent.initializeEmojis(
+        //   selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
+        // );
       }
       setSong(userSongs[songPlayingIndex]);
     }
@@ -176,7 +176,7 @@ export const PlayerPage = () => {
       if (!audio) {
         setAudio(_audio);
         console.log(song.id);
-        window.bulletComponent.initializeAudio(_audio);
+        // window.bulletComponent.initializeAudio(_audio);
       }
       setSongPlayingIndex(index);
     }
@@ -234,7 +234,7 @@ export const PlayerPage = () => {
           <div style={{ width: 200, height: 200 }} />
         )}
 
-        <BulletSection />
+        <BulletSection chosenEmoji={song?.liveEmojis} audio={audio} />
 
         <div className="music-controller-container">
           <MusicController

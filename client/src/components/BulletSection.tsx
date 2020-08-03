@@ -8,19 +8,28 @@ const testEmojiData = {
   2.0: ["1f3e0"],
 };
 
-class BulletSection extends React.Component {
+interface BulletSectionProps {
+  chosenEmoji: any;
+  audio: HTMLAudioElement | null;
+}
+
+class BulletSection extends React.Component<BulletSectionProps> {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
   id: number = 0;
   interval: any = -1;
-  constructor(props: Readonly<{}>) {
+
+  constructor(props: BulletSectionProps) {
     super(props);
+    this.chosenEmoji = props.chosenEmoji ? props.chosenEmoji : testEmojiData;
+    console.log(this.chosenEmoji);
+    this.audio = props.audio;
+    this.initializeAudio();
     window.bulletComponent = this;
   }
 
-  initializeAudio(audio: HTMLAudioElement) {
-    if (audio) {
-      this.audio = audio;
+  initializeAudio() {
+    if (this.audio) {
       // if the song is playing, we keep outputing emojis every .5 sec
       this.audio.onplaying = (element: any) => {
         console.log("playing");
@@ -45,10 +54,10 @@ class BulletSection extends React.Component {
     }
   }
 
-  initializeEmojis(liveEmojis: { number: Array<string> }) {
-    this.chosenEmoji = liveEmojis;
-    console.log("Live Emoji initialized");
-  }
+  // initializeEmojis(liveEmojis: { number: Array<string> }) {
+  //   this.chosenEmoji = liveEmojis;
+  //   console.log("Live Emoji initialized");
+  // }
 
   // round to half a sec
   round = (num: number) => {
