@@ -76,6 +76,7 @@ export const PlayerPage = () => {
         {}
       );
       setSelectedSongEmojis(selectedSongEmojis);
+
       const selectedSongliveEmojis = songs.reduce<any>((acc, song) => {
         acc[song.id] = song.liveEmojis || {};
         return acc;
@@ -233,6 +234,8 @@ export const PlayerPage = () => {
           <div style={{ width: 200, height: 200 }} />
         )}
 
+        <BulletSection />
+
         <div className="music-controller-container">
           <MusicController
             isPlaying={isPlaying}
@@ -242,8 +245,6 @@ export const PlayerPage = () => {
             song={convertedSong}
           />
         </div>
-
-        <BulletSection />
         <div
           style={{
             width: 400,
