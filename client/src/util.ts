@@ -77,7 +77,7 @@ export function downloadFromUrl(url: string) {
   document.body.removeChild(link);
 }
 
-export const TRACK_LENGTH_MODIFIDER = 3;
+export const TRACK_LENGTH_MODIFIDER = window.innerWidth < 600 ? 15 : 5;
 
 export function useParam(paramName: string) {
   const location = useLocation();
@@ -349,3 +349,18 @@ export const bucketData = [
       "https://audio-player-clips.s3-us-west-1.amazonaws.com/when+the+party's+over_Chorus.wav",
   },
 ];
+
+export const isiOS = () => {
+  return (
+    [
+      "iPad Simulator",
+      "iPhone Simulator",
+      "iPod Simulator",
+      "iPad",
+      "iPhone",
+      "iPod",
+    ].includes(navigator.platform) ||
+    // iPad on iOS 13 detection
+    (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+  );
+};

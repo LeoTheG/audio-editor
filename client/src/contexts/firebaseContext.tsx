@@ -102,9 +102,13 @@ export function withFirebaseContext(Component: JSX.Element) {
       });
     },
     getLibraryMetadata: () => {
-      //   if (process.env.NODE_ENV === "development") {
-      //     return Promise.resolve([]);
-      //   }
+      // if (process.env.NODE_ENV === "development") {
+      //   return Promise.resolve([
+      //     { name: "test1", downloadURL: "" },
+      //     { name: "test2", downloadURL: "" },
+      //     { name: "test3", downloadURL: "" },
+      //   ]);
+      // }
       return new Promise<ILibraryMetadata[]>((resolve) => {
         storage
           .ref("audio")

@@ -16,6 +16,7 @@ import WaveformData from "waveform-data";
 import update from "immutability-helper";
 import { useHistory } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import { isiOS } from "../util";
 
 enum drawerTypes {
   music = "music",
@@ -268,6 +269,7 @@ export const Homepage: React.FC = () => {
     <AppStateContext.Provider
       value={{
         shareSong,
+        isIOS: isiOS(),
         //   setShareSong: (blob: Blob) => setShareSong(blob)
       }}
     >
@@ -337,7 +339,7 @@ export const Homepage: React.FC = () => {
           open={isDrawerOpen}
           onClose={() => setDrawerType(null)}
         >
-          <div style={{ width: 400, padding: 10 }}>
+          <div style={{ width: 400, maxWidth: "80vw", padding: 10 }}>
             <div
               style={{
                 width: "100%",

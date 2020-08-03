@@ -1,9 +1,10 @@
-import React, { useRef } from "react";
+import React, { useRef, useContext } from "react";
 import { ItemTypes, DragItemTrack } from "../types";
 import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
 import WaveformData from "waveform-data";
 import { Button } from "@material-ui/core";
 import { TRACK_LENGTH_MODIFIDER } from "../util";
+import { AppStateContext } from "../contexts/appContext";
 
 interface IAudioTrackProps {
   index: number;
@@ -18,6 +19,7 @@ interface IAudioTrackProps {
 export const AudioTrack = React.forwardRef(
   (props: IAudioTrackProps, canvasRef: React.Ref<HTMLCanvasElement>) => {
     const { index, id, moveTrack } = props;
+    const { isIOS } = useContext(AppStateContext);
 
     const ref = useRef<HTMLDivElement>(null);
     const [, drop] = useDrop({
@@ -88,12 +90,13 @@ export const AudioTrack = React.forwardRef(
           position: "relative",
           background: props.isHovering ? "lightgrey" : "transparent",
           cursor: "move",
+          height: isIOS ? 120 : 150,
         }}
       >
         <canvas
           ref={canvasRef}
           width={props.waveformData.length / TRACK_LENGTH_MODIFIDER}
-          height={150}
+          height={isIOS ? 120 : 150}
           style={{ border: "1px solid black" }}
           onMouseOver={() => props.setIsHovering(true)}
           onMouseLeave={() => props.setIsHovering(false)}
@@ -103,6 +106,7 @@ export const AudioTrack = React.forwardRef(
             position: "absolute",
             top: 0,
             right: 0,
+            height: isIOS ? 120 : 150,
           }}
         >
           <Button
