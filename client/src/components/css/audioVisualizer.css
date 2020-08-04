@@ -1,5 +1,12 @@
 .audio-tracklist-container {
   margin-top: 5%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 50px;
+  box-sizing: border-box;
 }
 
 .audio-tracklist-container > * {

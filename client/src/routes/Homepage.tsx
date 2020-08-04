@@ -2,6 +2,7 @@ import { Button, Drawer } from "@material-ui/core";
 import { DragObjectWithType, DropTargetMonitor, useDrop } from "react-dnd";
 import { ILibraryMetadata, UserFiles, WidgetTypes } from "../types";
 import React, { useCallback, useContext, useEffect, useState } from "react";
+import { convertBufferToWaveformData, createWaveform, isiOS } from "../util";
 
 import { AdventureLogo } from "../components/AdventureLogo";
 import { AppStateContext } from "../contexts/appContext";
@@ -11,12 +12,12 @@ import { IWidgetProps } from "../components/Widgets/Widget";
 import { LibraryButton } from "../components/LibraryButton";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { PlayerLogo } from "../components/PlayerButton";
-import WaveformData from "waveform-data";
-import { isiOS } from "../util";
 // import { WidgetButton } from "../components/WidgetButton";
 import update from "immutability-helper";
 import { useHistory } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+
+const WAVEFORM_SCALE = 128;
 
 enum drawerTypes {
   music = "music",
@@ -27,43 +28,6 @@ enum drawerTypes {
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
 
-const convertBufferToWaveformData = (audioBuffer: AudioBuffer) => {
-  const options = {
-    audio_context: audioContext,
-    audio_buffer: audioBuffer,
-    scale: 128,
-  };
-
-  return new Promise<{ waveform: WaveformData; audioBuffer: AudioBuffer }>(
-    (resolve, reject) => {
-      WaveformData.createFromAudio(options, (err, waveform) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ waveform, audioBuffer });
-        }
-      });
-    }
-  );
-};
-
-const createWaveform = async (
-  file: File
-): Promise<{ waveform: WaveformData; audioBuffer: AudioBuffer }> => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const buffer = reader.result as Buffer;
-
-      audioContext.decodeAudioData(buffer, async (audioBuffer) => {
-        const waveformData = await convertBufferToWaveformData(audioBuffer);
-        resolve(waveformData);
-      });
-    };
-    reader.readAsArrayBuffer(file);
-  });
-};
-
 export const Homepage: React.FC = () => {
   const [userFiles, setUserFiles] = useState<UserFiles>({});
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -73,9 +37,6 @@ export const Homepage: React.FC = () => {
     []
   );
   const [shareSong, setShareSong] = useState<Blob | undefined>();
-  const [waveformLength, setWaveformLength] = useState(
-    window.innerWidth < 600 ? 100 : 200
-  );
   const firebaseContext = useContext(FirebaseContext);
 
   const history = useHistory();
@@ -175,7 +136,7 @@ export const Homepage: React.FC = () => {
   };
 
   const onAddFile = async (file: File) => {
-    const waveForm = await createWaveform(file);
+    const waveForm = await createWaveform(file, WAVEFORM_SCALE);
     const newId = uuidv4();
     const newUserFiles = {
       ...userFiles,
@@ -199,7 +160,10 @@ export const Homepage: React.FC = () => {
       audioContext.decodeAudioData(
         audioData,
         async (buffer) => {
-          const waveForm = await convertBufferToWaveformData(buffer);
+          const waveForm = await convertBufferToWaveformData(
+            buffer,
+            WAVEFORM_SCALE
+          );
           const newId = uuidv4();
           const newUserFiles = {
             ...userFiles,
@@ -231,7 +195,7 @@ export const Homepage: React.FC = () => {
 
         Promise.all(
           newFilesArr.map((file) => {
-            return createWaveform(file);
+            return createWaveform(file, WAVEFORM_SCALE);
           })
         ).then((waveformDataArr) => {
           const newUserFiles: UserFiles = Object.values(newFilesArr).reduce(
@@ -273,8 +237,7 @@ export const Homepage: React.FC = () => {
       value={{
         shareSong,
         isIOS: isiOS(),
-        waveformLength,
-        //   setShareSong: (blob: Blob) => setShareSong(blob)
+        waveformLength: window.innerWidth < 600 ? 100 : 200,
       }}
     >
       <div

@@ -1,10 +1,10 @@
-import React, { useRef, useContext } from "react";
-import { ItemTypes, DragItemTrack } from "../types";
-import { useDrop, XYCoord, DropTargetMonitor, useDrag } from "react-dnd";
-import WaveformData from "waveform-data";
-import { Button } from "@material-ui/core";
-import { TRACK_LENGTH_MODIFIDER } from "../util";
+import { DragItemTrack, ItemTypes } from "../types";
+import { DropTargetMonitor, XYCoord, useDrag, useDrop } from "react-dnd";
+import React, { useContext, useRef } from "react";
+
 import { AppStateContext } from "../contexts/appContext";
+import { Button } from "@material-ui/core";
+import WaveformData from "waveform-data";
 
 interface IAudioTrackProps {
   index: number;
@@ -95,7 +95,7 @@ export const AudioTrack = React.forwardRef(
       >
         <canvas
           ref={canvasRef}
-          width={props.waveformData.length / TRACK_LENGTH_MODIFIDER}
+          width={props.waveformData.length}
           height={isIOS ? 120 : 150}
           style={{ border: "1px solid black" }}
           onMouseOver={() => props.setIsHovering(true)}
