@@ -8,28 +8,21 @@ const testEmojiData = {
   2.0: ["1f3e0"],
 };
 
-interface BulletSectionProps {
-  chosenEmoji: any;
-  audio: HTMLAudioElement | null;
-}
-
-class BulletSection extends React.Component<BulletSectionProps> {
+class BulletSection extends React.Component {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
   id: number = 0;
   interval: any = -1;
+  emojiSecRef: React.RefObject<HTMLDivElement> | undefined = React.createRef();
 
-  constructor(props: BulletSectionProps) {
-    super(props);
-    this.chosenEmoji = props.chosenEmoji ? props.chosenEmoji : testEmojiData;
-    console.log(this.chosenEmoji);
-    this.audio = props.audio;
-    this.initializeAudio();
-    window.bulletComponent = this;
+  initializeEmojis(liveEmojis: { number: Array<string> }) {
+    this.chosenEmoji = liveEmojis;
+    console.log("Live Emoji initialized");
   }
 
-  initializeAudio() {
-    if (this.audio) {
+  initializeAudio(audio: HTMLAudioElement) {
+    if (audio) {
+      this.audio = audio;
       // if the song is playing, we keep outputing emojis every .5 sec
       this.audio.onplaying = (element: any) => {
         console.log("playing");
@@ -54,11 +47,6 @@ class BulletSection extends React.Component<BulletSectionProps> {
     }
   }
 
-  // initializeEmojis(liveEmojis: { number: Array<string> }) {
-  //   this.chosenEmoji = liveEmojis;
-  //   console.log("Live Emoji initialized");
-  // }
-
   // round to half a sec
   round = (num: number) => {
     return (Math.floor(num * 2) / 2).toFixed(1);
@@ -70,7 +58,7 @@ class BulletSection extends React.Component<BulletSectionProps> {
   };
 
   // manually add the emoji to screen
-  addEmoji(emoji: any) {
+  async addEmoji(emoji: any) {
     const time = this.getTimeStamp();
     const node = this.createEmojiNode(emoji);
     if (node !== undefined) {
@@ -89,11 +77,11 @@ class BulletSection extends React.Component<BulletSectionProps> {
     node.className = "live_emoji";
     node.src = getEmojiImageURL(emoji);
     node.id = "emoji" + this.id;
-    const emojisNode = document.getElementById("emojis");
 
-    if (emojisNode != null) {
+    if (this.emojiSecRef && this.emojiSecRef.current) {
       // the number of emojis in a column the screen can hold
-      const options = Math.floor(emojisNode.clientHeight / 30) - 1;
+      const options =
+        Math.floor(this.emojiSecRef.current.clientHeight / 30) - 1;
       // randomly picks a row and calculate the respective height
       let random = Math.floor(Math.random() * options) * 30 + 10;
       node.style.top = [random + "px"] as any;
@@ -107,11 +95,10 @@ class BulletSection extends React.Component<BulletSectionProps> {
   }
 
   // add the emoji to screen and animate it
-  emojiToScreen(node: HTMLElement) {
-    const emojisNode = document.getElementById("emojis");
-    if (emojisNode != null) {
-      emojisNode.appendChild(node as any);
-      let width = emojisNode.clientWidth;
+  emojiToScreen(node: HTMLDivElement) {
+    if (this.emojiSecRef && this.emojiSecRef.current) {
+      this.emojiSecRef.current.appendChild(node);
+      let width = this.emojiSecRef.current.clientWidth;
       anime({
         targets: "#" + node.id,
         translateX: function () {
@@ -125,7 +112,8 @@ class BulletSection extends React.Component<BulletSectionProps> {
         },
         easing: "linear",
         complete: () => {
-          if (emojisNode != null) emojisNode.removeChild(node);
+          if (this.emojiSecRef && this.emojiSecRef.current)
+            this.emojiSecRef.current.removeChild(node);
         },
       });
     }
@@ -136,7 +124,7 @@ class BulletSection extends React.Component<BulletSectionProps> {
     if (this.audio != null && this.audio.played) {
       const time = this.getTimeStamp();
       if (time in this.chosenEmoji) {
-        this.chosenEmoji[time].map((emoji: any) => {
+        this.chosenEmoji[time].map((emoji: string) => {
           const node = this.createEmojiNode(emoji);
           if (node !== undefined) {
             // have a random time offset for each emoji (dont clutter together)
@@ -150,14 +138,14 @@ class BulletSection extends React.Component<BulletSectionProps> {
   };
 
   render() {
-    return <div id="emojis"></div>;
+    return <div id="emojis" ref={this.emojiSecRef}></div>;
   }
 }
 
 const baseEmojiUrl =
   "https://cdn.jsdelivr.net/gh/iamcal/emoji-data@master/img-apple-64/";
 
-const getEmojiImageURL = (code: any) => {
+const getEmojiImageURL = (code: string) => {
   return `${baseEmojiUrl}${code}.png`;
 };
 

@@ -4,7 +4,13 @@ import { Button, IconButton, Tooltip } from "@material-ui/core";
 import { Close, InsertEmoticon } from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
 
 import { AdventureLogo } from "../components/AdventureLogo";
 import { FirebaseContext } from "../contexts/firebaseContext";
@@ -40,6 +46,8 @@ export const PlayerPage = () => {
 
   const [song, setSong] = useState<userSong>();
 
+  const bulletRef = useRef(null);
+
   const updateEmojis = useCallback(
     _.debounce((song: userSong, emojiSelections: IEmojiSelections) => {
       if (!song || !Object.keys(emojiSelections).length) return;
@@ -57,12 +65,13 @@ export const PlayerPage = () => {
 
   useEffect(() => {
     if (userSongs.length) {
-      if (userSongs[songPlayingIndex] !== undefined) {
-        // window.bulletComponent.initializeEmojis(
-        //   selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
-        // );
+      if (userSongs[songPlayingIndex]) {
+        setSong(userSongs[songPlayingIndex]);
+        //@ts-ignore
+        bulletRef.current.initializeEmojis(
+          selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
+        );
       }
-      setSong(userSongs[songPlayingIndex]);
     }
   }, [userSongs, songPlayingIndex]);
 
@@ -113,7 +122,8 @@ export const PlayerPage = () => {
 
         updateEmojis(song, newSongEmojiSelections[song.id]);
 
-        window.bulletComponent.addEmoji(emoji.unified);
+        //@ts-ignore
+        bulletRef.current.addEmoji(emoji.unified);
         updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
         return newSongEmojiSelections;
       });
@@ -175,8 +185,8 @@ export const PlayerPage = () => {
       _audio?.play();
       if (!audio) {
         setAudio(_audio);
-        console.log(song.id);
-        // window.bulletComponent.initializeAudio(_audio);
+        //@ts-ignore
+        bulletRef.current.initializeAudio(_audio);
       }
       setSongPlayingIndex(index);
     }
@@ -234,7 +244,7 @@ export const PlayerPage = () => {
           <div style={{ width: 200, height: 200 }} />
         )}
 
-        <BulletSection chosenEmoji={song?.liveEmojis} audio={audio} />
+        <BulletSection ref={bulletRef} />
 
         <div className="music-controller-container">
           <MusicController
@@ -270,7 +280,8 @@ export const PlayerPage = () => {
                     },
                   }));
 
-                  window.bulletComponent.addEmoji(key);
+                  //@ts-ignore
+                  bulletRef.current.addEmoji(key);
                   updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
                 }}
               >
