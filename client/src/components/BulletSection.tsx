@@ -12,7 +12,7 @@ class BulletSection extends React.Component {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
   id: number = 0;
-  interval: any = -1;
+  interval: any = -1; //Timeout object
   emojiSecRef: React.RefObject<HTMLDivElement> | undefined = React.createRef();
 
   initializeEmojis(liveEmojis: { number: Array<string> }) {

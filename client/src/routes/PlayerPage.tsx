@@ -20,12 +20,6 @@ import _ from "underscore";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
 
-declare global {
-  interface Window {
-    bulletComponent: any;
-  }
-}
-
 export const PlayerPage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [songPlayingIndex, setSongPlayingIndex] = useState(-1);
@@ -46,7 +40,7 @@ export const PlayerPage = () => {
 
   const [song, setSong] = useState<userSong>();
 
-  const bulletRef = useRef(null);
+  const bulletRef = useRef<BulletSection>(null);
 
   const updateEmojis = useCallback(
     _.debounce((song: userSong, emojiSelections: IEmojiSelections) => {
@@ -67,10 +61,11 @@ export const PlayerPage = () => {
     if (userSongs.length) {
       if (userSongs[songPlayingIndex]) {
         setSong(userSongs[songPlayingIndex]);
-        //@ts-ignore
-        bulletRef.current.initializeEmojis(
-          selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
-        );
+        if (bulletRef && bulletRef.current) {
+          bulletRef.current.initializeEmojis(
+            selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
+          );
+        }
       }
     }
   }, [userSongs, songPlayingIndex]);
@@ -122,8 +117,9 @@ export const PlayerPage = () => {
 
         updateEmojis(song, newSongEmojiSelections[song.id]);
 
-        //@ts-ignore
-        bulletRef.current.addEmoji(emoji.unified);
+        if (bulletRef && bulletRef.current) {
+          bulletRef.current.addEmoji(emoji.unified);
+        }
         updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
         return newSongEmojiSelections;
       });
@@ -185,8 +181,8 @@ export const PlayerPage = () => {
       _audio?.play();
       if (!audio) {
         setAudio(_audio);
-        //@ts-ignore
-        bulletRef.current.initializeAudio(_audio);
+        if (bulletRef && bulletRef.current)
+          bulletRef.current.initializeAudio(_audio);
       }
       setSongPlayingIndex(index);
     }
@@ -280,8 +276,8 @@ export const PlayerPage = () => {
                     },
                   }));
 
-                  //@ts-ignore
-                  bulletRef.current.addEmoji(key);
+                  if (bulletRef && bulletRef.current)
+                    bulletRef.current.addEmoji(key);
                   updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
                 }}
               >
