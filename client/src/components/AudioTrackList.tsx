@@ -5,19 +5,19 @@ import {
   ItemTypes,
   UserFiles,
 } from "../types/index";
-import { CloudDownload, Info, Share } from "@material-ui/icons";
+import { Add, CloudDownload, Info, Remove, Share } from "@material-ui/icons";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 import { IconButton, Popover, Tooltip } from "@material-ui/core";
-import React, { useCallback, useEffect, useState, useContext } from "react";
-import { TRACK_LENGTH_MODIFIDER, convertAudioBufferToBlob } from "../util";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
+import { convertAudioBufferToBlob, convertBufferToWaveformData } from "../util";
 
+import { AppStateContext } from "../contexts/appContext";
 import { AudioTrack } from "./AudioTrack";
 import { PlayerButton } from "./PlayerButton";
 import infoGif from "../assets/audio-editor-info.gif";
 import update from "immutability-helper";
 import { v4 as uuidv4 } from "uuid";
-import { AppStateContext } from "../contexts/appContext";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -42,6 +42,7 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
   const [audio, setAudio] = useState(new Audio());
   const [isHoveringId, setIsHoveringId] = useState<string | null>(null);
   const timeListRef = React.createRef<HTMLDivElement>();
+  const [scale, setScale] = useState(512);
   const { isIOS } = useContext(AppStateContext);
   const classes = useStyles();
 
@@ -148,10 +149,19 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
     [tracks]
   );
 
-  const onDrop = (item: DragItem, monitor: DropTargetMonitor) => {
+  const onDrop = async (item: DragItem, monitor: DropTargetMonitor) => {
     const newTrack = props.userFiles[item.id];
+    let waveformData = newTrack.waveformData;
+    waveformData = (
+      await convertBufferToWaveformData(newTrack.audioBuffer, scale)
+    ).waveform;
     setTracks(
-      tracks.concat({ ...newTrack, id: uuidv4(), referenceId: item.id })
+      tracks.concat({
+        ...newTrack,
+        id: uuidv4(),
+        referenceId: item.id,
+        waveformData,
+      })
     );
   };
 
@@ -167,49 +177,64 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
     }),
   });
 
+  const changeSongScale = useCallback(
+    (scale: number) => {
+      Promise.all(
+        tracks.map((track) => {
+          const userFile = props.userFiles[track.referenceId];
+          const waveformData = convertBufferToWaveformData(
+            userFile.audioBuffer,
+            scale
+          );
+          return waveformData;
+        })
+      ).then((waveformDataArr) => {
+        const newTracks: ITrack[] = [];
+        waveformDataArr.forEach((data, index) => {
+          if (!data) return;
+          const track = tracks[index];
+          newTracks.push({ ...track, waveformData: data?.waveform });
+        });
+        setTracks(newTracks);
+      });
+    },
+    [tracks, props.userFiles]
+  );
+
   const isActive = canDrop && isOver;
   const isEmptyTracklist = !tracks.length;
 
-  //   useEffect(() => {
-  //     if (isPlayingSong && tracks.length) {
-  //       const toConcatFiles: AudioBuffer[] = tracks.map(
-  //         (track) => props.userFiles[track.referenceId].audioBuffer
-  //       );
-
-  //       const blob = convertAudioBufferToBlob(toConcatFiles);
-
-  //       const newAudioUrl = URL.createObjectURL(blob);
-
-  //       const newAudio = new Audio(newAudioUrl);
-  //       setAudio(newAudio);
-  //       newAudio.play();
-
-  //       newAudio.onended = () => {
-  //         setPlayingSong(false);
-  //       };
-  //     } else {
-  //       audio.pause();
-  //     }
-  //   }, [isPlayingSong]);
-
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "0 50px",
-        boxSizing: "border-box",
-      }}
-      className="audio-tracklist-container"
-    >
+    <div className="audio-tracklist-container">
       <ActionLinks onActionClick={props.onActionClick} />
 
       <div>arrange</div>
 
       <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+        <div>
+          <Tooltip title="zoom in">
+            <IconButton
+              onClick={() => {
+                const newScale = scale / 2;
+                setScale(newScale);
+                changeSongScale(newScale);
+              }}
+            >
+              <Add />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="zoom out">
+            <IconButton
+              onClick={() => {
+                const newScale = scale * 2;
+                setScale(newScale);
+                changeSongScale(newScale);
+              }}
+            >
+              <Remove />
+            </IconButton>
+          </Tooltip>
+        </div>
         <div
           style={{
             fontSize: "1em",
@@ -221,9 +246,7 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
           copy track
         </div>
         <div
-          style={{
-            backgroundColor: isActive ? "lightblue" : "inherit",
-          }}
+          style={{ backgroundColor: isActive ? "lightblue" : "inherit" }}
           className="tracklist-container"
           ref={drop}
           onScroll={(evt) => {
@@ -310,7 +333,6 @@ export const AudioTrackList = (props: IAudioTrackListProps) => {
                   {(
                     tracks[0].waveformData.seconds_per_pixel *
                     70 *
-                    TRACK_LENGTH_MODIFIDER *
                     index
                   ).toFixed(1)}
                 </div>
@@ -433,8 +455,7 @@ const PlayLine = (props: IPlayLineProps) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setPosition(
-        (props.audio.currentTime * props.pixelsPerSecond) /
-          TRACK_LENGTH_MODIFIDER
+        props.audio.currentTime * props.pixelsPerSecond // / waveformModifier
       );
     }, 50);
 

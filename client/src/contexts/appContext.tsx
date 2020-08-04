@@ -3,12 +3,10 @@ import React from "react";
 interface IAppStateContext {
   shareSong?: Blob;
   isIOS: boolean;
-  //   setShareSong: (song: Blob) => void;
+  waveformLength: number;
 }
 
 export const AppStateContext = React.createContext<IAppStateContext>({
   isIOS: false,
-  //   setShareSong: () => {},
+  waveformLength: 0,
 });
-
-// export default UserContext
