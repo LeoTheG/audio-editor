@@ -21,13 +21,15 @@ export const WaveformItem = React.forwardRef(
       }),
     });
 
+    const width = window.innerWidth < 600 ? 100 : 200;
+
     return (
       <div
         ref={drag}
         style={{
           display: "flex",
           flexDirection: "column",
-          width: 200,
+          width,
           left,
           top,
           position: "absolute",
@@ -38,7 +40,7 @@ export const WaveformItem = React.forwardRef(
           <div>{file.name}</div>
           <canvas
             ref={ref}
-            width={200}
+            width={width}
             height={150}
             style={{ border: "1px solid black" }}
           />
