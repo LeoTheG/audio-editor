@@ -12,11 +12,11 @@ import { LibraryButton } from "../components/LibraryButton";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { PlayerLogo } from "../components/PlayerButton";
 import WaveformData from "waveform-data";
+import { isiOS } from "../util";
 // import { WidgetButton } from "../components/WidgetButton";
 import update from "immutability-helper";
 import { useHistory } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import { isiOS } from "../util";
 
 enum drawerTypes {
   music = "music",
@@ -73,6 +73,9 @@ export const Homepage: React.FC = () => {
     []
   );
   const [shareSong, setShareSong] = useState<Blob | undefined>();
+  const [waveformLength, setWaveformLength] = useState(
+    window.innerWidth < 600 ? 100 : 200
+  );
   const firebaseContext = useContext(FirebaseContext);
 
   const history = useHistory();
@@ -270,6 +273,7 @@ export const Homepage: React.FC = () => {
       value={{
         shareSong,
         isIOS: isiOS(),
+        waveformLength,
         //   setShareSong: (blob: Blob) => setShareSong(blob)
       }}
     >
