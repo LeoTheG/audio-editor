@@ -68,7 +68,7 @@ export const PlayerPage = () => {
         }
       }
     }
-  }, [userSongs, songPlayingIndex]);
+  }, [userSongs, songPlayingIndex, selectedSongLiveEmojis]);
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
@@ -81,11 +81,11 @@ export const PlayerPage = () => {
       );
       setSelectedSongEmojis(selectedSongEmojis);
 
-      const selectedSongliveEmojis = songs.reduce<any>((acc, song) => {
+      const selectedSongLiveEmojis = songs.reduce<any>((acc, song) => {
         acc[song.id] = song.liveEmojis || {};
         return acc;
       }, {});
-      setSelectedSongLiveEmojis(selectedSongliveEmojis);
+      setSelectedSongLiveEmojis(selectedSongLiveEmojis);
       setUserSongs(songs);
     });
   }, [firebaseContext]);
@@ -124,7 +124,7 @@ export const PlayerPage = () => {
         return newSongEmojiSelections;
       });
     },
-    [updateEmojis, updateLiveEmojis]
+    [updateEmojis, updateLiveEmojis, selectedSongLiveEmojis]
   );
 
   const onEndAudio = () => {
@@ -133,7 +133,6 @@ export const PlayerPage = () => {
 
   useEffect(() => {
     if (audio === null) return;
-
     audio.addEventListener("ended", onEndAudio);
     return onEndAudio;
   }, [audio]);

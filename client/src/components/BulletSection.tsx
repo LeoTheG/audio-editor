@@ -17,7 +17,6 @@ class BulletSection extends React.Component {
 
   initializeEmojis(liveEmojis: { number: Array<string> }) {
     this.chosenEmoji = liveEmojis;
-    console.log("Live Emoji initialized");
   }
 
   initializeAudio(audio: HTMLAudioElement) {
@@ -25,17 +24,14 @@ class BulletSection extends React.Component {
       this.audio = audio;
       // if the song is playing, we keep outputing emojis every .5 sec
       this.audio.onplaying = (element: any) => {
-        console.log("playing");
         this.clearBulletInterval();
         this.interval = setInterval(this.bulletScreen, 500);
       };
 
       // if paused or ended, stop outputing emojis
       this.audio.onpause = (element: any) => {
-        console.log("paused");
         this.clearBulletInterval();
       };
-      console.log("Audio initialized");
     }
   }
 
@@ -124,7 +120,7 @@ class BulletSection extends React.Component {
     if (this.audio != null && this.audio.played) {
       const time = this.getTimeStamp();
       if (time in this.chosenEmoji) {
-        this.chosenEmoji[time].map((emoji: string) => {
+        this.chosenEmoji[time].forEach((emoji: string) => {
           const node = this.createEmojiNode(emoji);
           if (node !== undefined) {
             // have a random time offset for each emoji (dont clutter together)
