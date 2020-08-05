@@ -1,8 +1,16 @@
 .music-controller-container {
-  background: gray;
-  color: white;
-  width: 500px;
+  background: transparent;
+  color: gray;
+  width: auto;
   height: fit-content;
+  padding-right: 1.3rem;
+  margin-top: 1.6rem;
+  margin-bottom: 1.2rem;
+  align-self: center
+}
+
+.music-controller-container .MuiButtonBase-root {
+  color: gray !important;
 }
 
 .player-page-container {

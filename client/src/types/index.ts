@@ -17,6 +17,7 @@ export interface userSong {
   gifUrl?: string;
   gifId?: string;
   emojiSelections?: IEmojiSelections;
+  liveEmojis?: any;
 }
 
 export interface ILibraryMetadata {

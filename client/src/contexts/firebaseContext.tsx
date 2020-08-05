@@ -30,6 +30,7 @@ interface firebaseContext {
   getSongURL: (songId: string) => Promise<string>;
   getLibraryMetadata: () => Promise<ILibraryMetadata[]>;
   updateEmojis: (songId: string, emojiSelections: IEmojiSelections) => void;
+  updateLiveEmojis: (songId: string, data: any) => void;
 }
 
 export const FirebaseContext = React.createContext<firebaseContext>({
@@ -38,6 +39,7 @@ export const FirebaseContext = React.createContext<firebaseContext>({
   getSongURL: () => Promise.resolve(""),
   getLibraryMetadata: () => Promise.resolve([]),
   updateEmojis: () => {},
+  updateLiveEmojis: () => {},
 });
 
 export function withFirebaseContext(Component: JSX.Element) {
@@ -134,6 +136,14 @@ export function withFirebaseContext(Component: JSX.Element) {
       //   .then(() => {
       //     resolve(songId);
       //   });
+    },
+    updateLiveEmojis: (songId: string, data: any) => {
+      db.collection("userSongs").doc(songId).set(
+        {
+          liveEmojis: data,
+        },
+        { merge: true }
+      );
     },
   };
 
