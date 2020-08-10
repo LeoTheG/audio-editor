@@ -77,21 +77,11 @@
   100% { transform: scale(1,1)      translateY(0); }
 }
 
-.live_emoji {
-  width: 30px;
-  height: 30px;
-  position: absolute;
-  left: -2rem;
-  overflow: hidden
-}
-
 #emojis {
-  width: 100vw;
-  height: 15rem;
-  margin-top: 1.2rem;
-  margin-bottom: auto;
+  margin-top: 2vh;
   align-self: center;
   position:relative;
   overflow: hidden
-
 }
+
+

@@ -8,15 +8,47 @@ const testEmojiData = {
   2.0: ["1f3e0"],
 };
 
+const emojiSize = 33;
+
 class BulletSection extends React.Component {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
-  id: number = 0;
   interval: any = -1; //Timeout object
-  emojiSecRef: React.RefObject<HTMLDivElement> | undefined = React.createRef();
+  emojiSecRef:
+    | React.RefObject<HTMLCanvasElement>
+    | undefined = React.createRef();
+  ctx: CanvasRenderingContext2D | null = null;
+
+  componentDidMount() {
+    this.initializeCanvas();
+    this.initializeClearOnUpdate(this.ctx);
+  }
 
   initializeEmojis(liveEmojis: { number: Array<string> }) {
     this.chosenEmoji = liveEmojis;
+  }
+
+  initializeCanvas() {
+    if (this.emojiSecRef && this.emojiSecRef.current) {
+      const canvasEl = this.emojiSecRef.current;
+      this.ctx = canvasEl.getContext("2d");
+      canvasEl.width = window.innerWidth;
+      canvasEl.height = window.innerHeight / 4;
+      canvasEl.style.width = canvasEl.width + "px";
+      canvasEl.style.height = canvasEl.height + "px";
+    }
+  }
+
+  initializeClearOnUpdate(ctx: CanvasRenderingContext2D | null) {
+    if (this.emojiSecRef && this.emojiSecRef.current) {
+      const canvasEl = this.emojiSecRef.current;
+      anime({
+        duration: Infinity,
+        update: function () {
+          if (ctx) ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        },
+      });
+    }
   }
 
   initializeAudio(audio: HTMLAudioElement) {
@@ -70,47 +102,55 @@ class BulletSection extends React.Component {
 
   createEmojiNode(emoji: string) {
     const node = document.createElement("img");
-    node.className = "live_emoji";
     node.src = getEmojiImageURL(emoji);
-    node.id = "emoji" + this.id;
 
     if (this.emojiSecRef && this.emojiSecRef.current) {
+      const canvasEl = this.emojiSecRef.current;
+      const ctx = this.ctx;
       // the number of emojis in a column the screen can hold
-      const options =
-        Math.floor(this.emojiSecRef.current.clientHeight / 30) - 1;
+      const options = Math.floor(canvasEl.height / emojiSize);
       // randomly picks a row and calculate the respective height
-      let random = Math.floor(Math.random() * options) * 30 + 10;
-      node.style.top = [random + "px"] as any;
+      let random = Math.floor(Math.random() * options) * emojiSize + 10;
+      const result = {
+        node: node,
+        x: -30,
+        y: random,
+        endPos: {
+          x: canvasEl.width + 30,
+          y: random,
+        },
+        draw: function () {
+          if (ctx) ctx.drawImage(node, this.x, this.y, emojiSize, emojiSize);
+        },
+      };
+      return result;
     }
-
-    // id is necessary to keep track of the animations for each emoji
-    // assuming no more than 1024 emojis are being rendered to screen at once
-    this.id++;
-    if (this.id >= 1024) this.id = 0;
-    return node;
+    return undefined;
   }
 
+  onLiveEmojiClick = (node: HTMLDivElement, animation: any) => {};
+
   // add the emoji to screen and animate it
-  emojiToScreen(node: HTMLDivElement) {
+  emojiToScreen(node: any) {
     if (this.emojiSecRef && this.emojiSecRef.current) {
-      this.emojiSecRef.current.appendChild(node);
-      let width = this.emojiSecRef.current.clientWidth;
-      anime({
-        targets: "#" + node.id,
-        translateX: function () {
-          return width + 40;
+      const canvasEl = this.emojiSecRef.current;
+
+      const renderParticule = (anim: any) => {
+        for (var i = 0; i < anim.animatables.length; i++) {
+          anim.animatables[i].target.draw();
+        }
+      };
+      anime.timeline().add({
+        targets: [node],
+        x: function (node: any) {
+          return node.endPos.x;
         },
-        scale: function () {
-          return anime.random(13, 17) / 10;
+        y: function (node: any) {
+          return node.endPos.y;
         },
-        duration: function () {
-          return width * 4.8;
-        },
+        duration: canvasEl.width * 3.5,
+        update: renderParticule,
         easing: "linear",
-        complete: () => {
-          if (this.emojiSecRef && this.emojiSecRef.current)
-            this.emojiSecRef.current.removeChild(node);
-        },
       });
     }
   }
@@ -134,7 +174,7 @@ class BulletSection extends React.Component {
   };
 
   render() {
-    return <div id="emojis" ref={this.emojiSecRef}></div>;
+    return <canvas id="emojis" ref={this.emojiSecRef}></canvas>;
   }
 }
 
