@@ -77,6 +77,11 @@
   100% { transform: scale(1,1)      translateY(0); }
 }
 
+.emoji_picker {
+  position: relative;
+  
+}
+
 .live_emoji {
   width: 30px;
   height: 30px;
@@ -88,10 +93,18 @@
 #emojis {
   width: 100vw;
   height: 27vh;
-  margin-top: 1.2rem;
   align-self: center;
-  position:relative;
+  position: relative;
   overflow: hidden;
 }
 
+.instruction {
+  position: relative;
+  left: -30rem
+}
 
+#bullet_sec {
+  position: relative;
+  overflow: hidden;
+  align-self: center;
+}

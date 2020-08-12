@@ -25,6 +25,22 @@ class BulletSection extends React.Component {
     this.initializeListener();
   }
 
+  showInstruction() {
+    if (this.emojiDiv.current) {
+      let width = this.emojiDiv.current.clientWidth;
+      anime({
+        targets: ".instruction",
+        translateX: function () {
+          return width + 100;
+        },
+        duration: function () {
+          return width * 4.8;
+        },
+        easing: "linear",
+      });
+    }
+  }
+
   initializeListener() {
     const updateCoords = (e: any) => {
       if (this.emojiCanvas.current) {
@@ -83,6 +99,7 @@ class BulletSection extends React.Component {
       // if the song is playing, we keep outputing emojis every .5 sec
       this.audio.onplaying = (element: any) => {
         this.clearBulletInterval();
+        this.showInstruction();
         this.interval = setInterval(this.bulletScreen, 500);
       };
 
@@ -326,8 +343,12 @@ class BulletSection extends React.Component {
 
   render() {
     return (
-      <div id="emojis" ref={this.emojiDiv}>
-        <canvas ref={this.emojiCanvas}></canvas>
+      <div id="bullet_sec">
+        <div className="instruction"> {"Click emojis to add to stream"} </div>
+        <div className="instruction"> {"Click flowing emojis for bonus"} </div>
+        <div id="emojis" ref={this.emojiDiv}>
+          <canvas ref={this.emojiCanvas}></canvas>
+        </div>
       </div>
     );
   }
