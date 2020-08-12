@@ -366,5 +366,5 @@ const getEmojiImageURL = (code: string) => {
 
 const generateUrl = (song?: userSong) => {
   if (!song) return "";
-  return `${document.location.href}player?id=${song.id}`;
+  return `${window.location.origin}/#/player?id=${song.id}`;
 };
