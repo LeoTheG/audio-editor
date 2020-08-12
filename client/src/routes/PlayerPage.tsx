@@ -1,7 +1,7 @@
 import "../css/PlayerPage.css";
 
-import { Button, IconButton, Tooltip } from "@material-ui/core";
-import { Close, InsertEmoticon } from "@material-ui/icons";
+import { Button, IconButton, Popover, Tooltip } from "@material-ui/core";
+import { Close, InsertEmoticon, Share } from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
 import React, {
@@ -30,6 +30,11 @@ export const PlayerPage = () => {
     ISongEmojiSelections
   >({});
   const [selectedSongLiveEmojis, setSelectedSongLiveEmojis] = useState<any>({});
+  const [shareAnchor, setShareAnchor] = useState<HTMLButtonElement | null>(
+    null
+  );
+
+  const history = useHistory();
 
   const selectedEmojis =
     userSongs.length && userSongs[songPlayingIndex]
@@ -41,6 +46,13 @@ export const PlayerPage = () => {
   const [song, setSong] = useState<userSong>();
 
   const bulletRef = useRef<BulletSection>(null);
+
+  const onClickShare = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setShareAnchor(event.currentTarget);
+    },
+    []
+  );
 
   const updateEmojis = useCallback(
     _.debounce((song: userSong, emojiSelections: IEmojiSelections) => {
@@ -56,6 +68,13 @@ export const PlayerPage = () => {
     }, 1000),
     [song]
   );
+
+  useEffect(() => {
+    if (songPlayingIndex !== -1) {
+      const song = userSongs[songPlayingIndex];
+      history.push(`/player?id=${song.id}`);
+    }
+  }, [history, songPlayingIndex, userSongs]);
 
   useEffect(() => {
     if (userSongs.length) {
@@ -91,8 +110,6 @@ export const PlayerPage = () => {
   }, [firebaseContext]);
 
   const id = useParam("id") || "";
-
-  const history = useHistory();
 
   const onEmojiClick = useCallback(
     (song?: userSong) => (_: MouseEvent, emoji: IEmojiData) => {
@@ -142,9 +159,7 @@ export const PlayerPage = () => {
     const songIndex = userSongs.findIndex((upload) => upload.id === id);
     if (songIndex === -1) {
       if (id.length) alert("Song with id " + id + " not found");
-      else {
-        setSongPlayingIndex(0);
-      }
+      setSongPlayingIndex(0);
     } else {
       setSongPlayingIndex(songIndex);
     }
@@ -250,6 +265,14 @@ export const PlayerPage = () => {
               onTogglePlay={onTogglePlaySong}
               song={convertedSong}
             />
+            <Tooltip title="shareable url">
+              <IconButton
+                style={{ width: "fit-content" }}
+                onClick={onClickShare}
+              >
+                <Share style={{ width: 50, height: 30 }} />
+              </IconButton>
+            </Tooltip>
           </div>
 
           <div
@@ -319,6 +342,16 @@ export const PlayerPage = () => {
         </div>
       </div>
 
+      <Popover
+        open={Boolean(shareAnchor)}
+        anchorEl={shareAnchor}
+        onClose={() => setShareAnchor(null)}
+      >
+        <a target="_blank" rel="noopener noreferrer" href={generateUrl(song)}>
+          {generateUrl(song)}
+        </a>
+      </Popover>
+
       <AdventureLogo />
     </div>
   );
@@ -329,4 +362,9 @@ const baseEmojiUrl =
 
 const getEmojiImageURL = (code: string) => {
   return `${baseEmojiUrl}${code}.png`;
+};
+
+const generateUrl = (song?: userSong) => {
+  if (!song) return "";
+  return `${document.location.href}player?id=${song.id}`;
 };
