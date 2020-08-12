@@ -8,13 +8,13 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
   useRef,
+  useState,
 } from "react";
 
 import { AdventureLogo } from "../components/AdventureLogo";
-import { FirebaseContext } from "../contexts/firebaseContext";
 import BulletSection from "../components/BulletSection";
+import { FirebaseContext } from "../contexts/firebaseContext";
 import { MusicController } from "adventure-component-library";
 import _ from "underscore";
 import { useHistory } from "react-router-dom";
@@ -241,76 +241,84 @@ export const PlayerPage = () => {
 
         <BulletSection ref={bulletRef} />
 
-        <div className="music-controller-container">
-          <MusicController
-            isPlaying={isPlaying}
-            onClickPrev={onClickPrevSong}
-            onClickNext={onClickNextSong}
-            onTogglePlay={onTogglePlaySong}
-            song={convertedSong}
-          />
-        </div>
-        <div
-          style={{
-            width: 400,
-            display: "flex",
-            overflowX: "hidden",
-            overflowWrap: "break-word",
-            flexWrap: "wrap",
-            maxHeight: 300,
-            overflowY: "auto",
-          }}
-        >
-          {Object.entries(selectedEmojis || {}).map(([key, value]) => (
-            <div key={key} style={{ textAlign: "center" }}>
-              <IconButton
-                onClick={() => {
-                  const song = userSongs[songPlayingIndex];
+        <div className="music-controller-emoji-container">
+          <div className="music-controller-container">
+            <MusicController
+              isPlaying={isPlaying}
+              onClickPrev={onClickPrevSong}
+              onClickNext={onClickNextSong}
+              onTogglePlay={onTogglePlaySong}
+              song={convertedSong}
+            />
+          </div>
 
-                  setSelectedSongEmojis((selectedSongEmojis) => ({
-                    ...selectedSongEmojis,
-                    [song.id]: {
-                      ...selectedSongEmojis[song.id],
-                      [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
-                    },
-                  }));
+          <div
+            style={{
+              display: isEmojiPickerOpen ? "flex" : "none",
+            }}
+            className="emoji-picker-container"
+          >
+            <IconButton onClick={() => setIsEmojiPickerOpen(false)}>
+              <Close htmlColor="red" />
+            </IconButton>
+            <Picker key={song?.id} onEmojiClick={onEmojiClick(song)} />
+          </div>
 
-                  if (bulletRef && bulletRef.current)
-                    bulletRef.current.addEmoji(key);
-                  updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
-                }}
-              >
-                <img
-                  style={{ width: 30, height: 30 }}
-                  src={getEmojiImageURL(key)}
-                  alt="emoji"
-                />
+          <div
+            style={{
+              width: 400,
+              display: "flex",
+              overflowX: "hidden",
+              overflowWrap: "break-word",
+              flexWrap: "wrap",
+              maxHeight: 300,
+              overflowY: "auto",
+            }}
+          >
+            {Object.entries(selectedEmojis || {}).map(([key, value]) => (
+              <div key={key} style={{ textAlign: "center" }}>
+                <IconButton
+                  onClick={() => {
+                    const song = userSongs[songPlayingIndex];
+
+                    setSelectedSongEmojis((selectedSongEmojis) => {
+                      const newSelectedSongEmojis = {
+                        ...selectedSongEmojis,
+                        [song.id]: {
+                          ...selectedSongEmojis[song.id],
+                          [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
+                        },
+                      };
+                      updateEmojis(song, newSelectedSongEmojis[song.id]);
+                      return newSelectedSongEmojis;
+                    });
+
+                    if (bulletRef && bulletRef.current)
+                      bulletRef.current.addEmoji(key);
+                    updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
+                  }}
+                >
+                  <img
+                    style={{ width: 30, height: 30 }}
+                    src={getEmojiImageURL(key)}
+                    alt="emoji"
+                  />
+                </IconButton>
+                <div>{value}</div>
+              </div>
+            ))}
+          </div>
+          <div>
+            add emoji
+            <Tooltip title="insert emoji">
+              <IconButton onClick={() => setIsEmojiPickerOpen(true)}>
+                <InsertEmoticon />
               </IconButton>
-              <div>{value}</div>
-            </div>
-          ))}
+            </Tooltip>
+          </div>
         </div>
-
-        <Tooltip title="insert emoji">
-          <IconButton onClick={() => setIsEmojiPickerOpen(true)}>
-            <InsertEmoticon />
-          </IconButton>
-        </Tooltip>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          visibility: isEmojiPickerOpen ? "visible" : "hidden",
-        }}
-      >
-        <IconButton onClick={() => setIsEmojiPickerOpen(false)}>
-          <Close htmlColor="red" />
-        </IconButton>
-        <Picker key={song?.id} onEmojiClick={onEmojiClick(song)} />
-      </div>
       <AdventureLogo />
     </div>
   );
