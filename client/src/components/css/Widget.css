@@ -78,8 +78,9 @@
 }
 
 .emoji_picker {
-  position: relative;
-  
+  position: fixed;
+  bottom: 0.7rem;
+  right: 0.7rem;
 }
 
 .live_emoji {

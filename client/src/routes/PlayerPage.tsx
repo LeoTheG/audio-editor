@@ -306,10 +306,12 @@ export const PlayerPage = () => {
           visibility: isEmojiPickerOpen ? "visible" : "hidden",
         }}
       >
-        <IconButton onClick={() => setIsEmojiPickerOpen(false)}>
-          <Close htmlColor="red" />
-        </IconButton>
-        <Picker key={song?.id} onEmojiClick={onEmojiClick(song)} />
+        <div className="emoji_picker">
+          <IconButton onClick={() => setIsEmojiPickerOpen(false)}>
+            <Close htmlColor="red" />
+          </IconButton>
+          <Picker key={song?.id} onEmojiClick={onEmojiClick(song)} />
+        </div>
       </div>
       <AdventureLogo />
     </div>
