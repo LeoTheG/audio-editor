@@ -14,6 +14,8 @@ class BulletSection extends React.Component {
   interval: any = -1; //Timeout object
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   emojiCanvas: React.RefObject<HTMLCanvasElement> = React.createRef();
+
+  // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
     "ontouchstart" in window || navigator.msMaxTouchPoints
       ? "touchstart"
@@ -316,7 +318,7 @@ class BulletSection extends React.Component {
         easing: "linear",
         complete: () => {
           try {
-            if (this.emojiDiv.current) this.emojiDiv.current.removeChild(node);
+            node.parentElement?.removeChild(node);
           } catch (e) {}
         },
       });
@@ -344,8 +346,8 @@ class BulletSection extends React.Component {
   render() {
     return (
       <div id="bullet_sec">
-        <div className="instruction"> {"Click emojis to add to stream"} </div>
-        <div className="instruction"> {"Click flowing emojis for bonus"} </div>
+        <div className="instruction"> Click emojis to add to stream </div>
+        <div className="instruction"> Click flowing emojis for points </div>
         <div id="emojis" ref={this.emojiDiv}>
           <canvas ref={this.emojiCanvas}></canvas>
         </div>
