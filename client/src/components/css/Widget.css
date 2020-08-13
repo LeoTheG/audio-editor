@@ -116,7 +116,6 @@
 .instruction {
   position: relative;
   left: -30rem;
-  align-self: center;
   position: relative;
   overflow: hidden;
 }
