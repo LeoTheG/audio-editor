@@ -43,7 +43,13 @@ export const Homepage: React.FC = () => {
 
   useEffect(() => {
     if (!libraryMetadata.length) {
-      firebaseContext.getLibraryMetadata().then(setLibraryMetadata);
+      firebaseContext.getLibraryMetadata().then((result) => {
+        if (result instanceof Error) {
+          console.log("got error result", result);
+        } else {
+          setLibraryMetadata(result);
+        }
+      });
     }
   }, [libraryMetadata.length, firebaseContext]);
 

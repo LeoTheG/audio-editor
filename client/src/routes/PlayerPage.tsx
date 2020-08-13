@@ -17,11 +17,13 @@ import BulletSection from "../components/BulletSection";
 import { FirebaseContext } from "../contexts/firebaseContext";
 import { MusicController } from "adventure-component-library";
 import _ from "underscore";
+import errorImg from "../assets/error-gif.gif";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
 
 export const PlayerPage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [songPlayingIndex, setSongPlayingIndex] = useState(-1);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const firebaseContext = useContext(FirebaseContext);
@@ -226,6 +228,10 @@ export const PlayerPage = () => {
         songName: "",
       };
 
+  //   if (error !== null) {
+  //     return <div className="error-container">{error}</div>;
+  //   }
+
   return (
     <div className="player-page-container">
       <div style={{ width: "100%" }}>
@@ -244,17 +250,44 @@ export const PlayerPage = () => {
       </div>
 
       <div className="player-body">
-        {song && song.gifUrl ? (
+        {error === null && song && song.gifUrl ? (
           <img
             alt="corresponding media"
             style={{ width: 200, height: 200 }}
             src={song.gifUrl}
+            onError={(e) =>
+              setError(
+                "whoops, looks like there's too much activity, try the player tomorrow"
+              )
+            }
           />
         ) : (
           <div style={{ width: 200, height: 200 }} />
         )}
 
-        <BulletSection ref={bulletRef} />
+        {error === null && <BulletSection ref={bulletRef} />}
+
+        {error !== null && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <img
+              //   src="https://i.giphy.com/media/fDO2Nk0ImzvvW/giphy.webp"
+              src={errorImg}
+              width="480"
+              height="365"
+              alt="error-gif"
+              //   frameBorder="0"
+              //   className="giphy-embed"
+              //   allowFullScreen
+            />
+            <div className="error-container">{error}</div>
+          </div>
+        )}
 
         <div className="music-controller-emoji-container">
           <div className="music-controller-container">
@@ -346,6 +379,7 @@ export const PlayerPage = () => {
         open={Boolean(shareAnchor)}
         anchorEl={shareAnchor}
         onClose={() => setShareAnchor(null)}
+        className="url-popover-container"
       >
         <a target="_blank" rel="noopener noreferrer" href={generateUrl(song)}>
           {generateUrl(song)}
