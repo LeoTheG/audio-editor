@@ -101,9 +101,20 @@
 
 #emojis {
   width: 100vw;
-  height: 15rem;
-  margin-top: 1.2rem;
+  height: 27vh;
   align-self: center;
   position: relative;
+
+}
+
+.instruction {
+  position: relative;
+  left: -30rem;
+  position: relative;
   overflow: hidden;
+}
+
+#bullet_sec {
+  position: relative;
+  align-self: center;
 }
