@@ -8,11 +8,10 @@ const testEmojiData = {
   2.0: ["1f3e0"],
 };
 
-class BulletSection extends React.Component {
+class BulletSection extends React.Component<{}, { total_points: number }> {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
   interval: any = -1; //Timeout object
-  total_points: number = 0;
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   emojiCanvas: React.RefObject<HTMLCanvasElement> = React.createRef();
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
@@ -23,6 +22,12 @@ class BulletSection extends React.Component {
       ? "touchstart"
       : "mousedown";
 
+  constructor(props: Readonly<{}>) {
+    super(props);
+    this.state = {
+      total_points: 0,
+    };
+  }
   componentDidMount() {
     this.initializeCanvas();
     this.initializeListener();
@@ -299,8 +304,9 @@ class BulletSection extends React.Component {
         y <= rect.bottom - rect.top
       ) {
         console.log("U got a point!");
-        this.total_points++;
-        this.setState({});
+        this.setState({
+          total_points: this.state.total_points + 1,
+        });
       }
     }
   }
@@ -373,7 +379,7 @@ class BulletSection extends React.Component {
         <div className="instruction"> Click emojis to add to stream </div>
         <div className="instruction">
           {" "}
-          Click flowing emojis for points: {this.total_points}{" "}
+          Click flowing emojis for points: {this.state.total_points}{" "}
         </div>
         <div className="clickzone" ref={this.clickZone} />
         <div id="emojis" ref={this.emojiDiv}>
