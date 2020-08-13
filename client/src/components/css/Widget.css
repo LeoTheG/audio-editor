@@ -114,6 +114,15 @@
   overflow: hidden;
 }
 
+.clickzone {
+  width: 100vw;
+  height: 27vh;
+  position: absolute;
+  align-self:center;
+  border: 3px red dashed;
+  vertical-align: middle;
+}
+
 #bullet_sec {
   position: relative;
   align-self: center;
