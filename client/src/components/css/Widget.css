@@ -119,7 +119,7 @@
   height: 27vh;
   position: absolute;
   align-self:center;
-  border: 3px red dashed;
+  /* border: 3px red dashed; */
   vertical-align: middle;
 }
 
