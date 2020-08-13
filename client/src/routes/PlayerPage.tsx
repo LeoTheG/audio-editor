@@ -268,13 +268,14 @@ export const PlayerPage = () => {
 
         {error !== null && (
           <div className="error-container">
-            <iframe
-              src="https://giphy.com/embed/fDO2Nk0ImzvvW"
+            <img
+              src="https://i.giphy.com/media/fDO2Nk0ImzvvW/giphy.webp"
               width="480"
               height="365"
-              frameBorder="0"
-              className="giphy-embed"
-              allowFullScreen
+              alt="error-gif"
+              //   frameBorder="0"
+              //   className="giphy-embed"
+              //   allowFullScreen
             />
             {error}
           </div>
