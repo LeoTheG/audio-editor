@@ -267,13 +267,17 @@ export const PlayerPage = () => {
                 onClick={() => {
                   const song = userSongs[songPlayingIndex];
 
-                  setSelectedSongEmojis((selectedSongEmojis) => ({
-                    ...selectedSongEmojis,
-                    [song.id]: {
-                      ...selectedSongEmojis[song.id],
-                      [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
-                    },
-                  }));
+                  setSelectedSongEmojis((selectedSongEmojis) => {
+                    const newSelectedSongEmojis = {
+                      ...selectedSongEmojis,
+                      [song.id]: {
+                        ...selectedSongEmojis[song.id],
+                        [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
+                      },
+                    };
+                    updateEmojis(song, newSelectedSongEmojis[song.id]);
+                    return newSelectedSongEmojis;
+                  });
 
                   if (bulletRef && bulletRef.current)
                     bulletRef.current.addEmoji(key);

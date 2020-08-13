@@ -11,7 +11,6 @@ const testEmojiData = {
 class BulletSection extends React.Component {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
-  id: number = 0;
   interval: any = -1; //Timeout object
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   emojiCanvas: React.RefObject<HTMLCanvasElement> = React.createRef();
@@ -100,7 +99,7 @@ class BulletSection extends React.Component {
       this.audio.onplaying = (element: any) => {
         this.clearBulletInterval();
         this.showInstruction();
-        this.interval = setInterval(this.bulletScreen, 500);
+        this.interval = setInterval(this.bulletScreen, 200);
       };
 
       // if paused or ended, stop outputing emojis
@@ -120,7 +119,7 @@ class BulletSection extends React.Component {
 
   // round to half a sec
   round = (num: number) => {
-    return (Math.floor(num * 2) / 2).toFixed(1);
+    return (Math.floor(num * 5) / 5).toFixed(1);
   };
 
   getTimeStamp = () => {
@@ -131,6 +130,7 @@ class BulletSection extends React.Component {
   // manually add the emoji to screen
   async addEmoji(emoji: any) {
     const time = this.getTimeStamp();
+    if (time < 0) return;
     const node = this.createEmojiNode(emoji);
     if (node !== undefined) {
       this.emojiToScreen(node);
@@ -140,7 +140,7 @@ class BulletSection extends React.Component {
     setTimeout(() => {
       if (!(time in this.chosenEmoji)) this.chosenEmoji[time] = [];
       this.chosenEmoji[time].push(emoji);
-    }, 500);
+    }, 200);
   }
 
   animateParticules = (x: number, y: number) => {
@@ -255,7 +255,7 @@ class BulletSection extends React.Component {
     );
     this.animateParticules(x, y);
     anime({
-      targets: "#" + node.id,
+      targets: node,
       scale: function () {
         return 0.01;
       },
@@ -277,8 +277,6 @@ class BulletSection extends React.Component {
     const node = document.createElement("img");
     node.className = "live_emoji";
     node.src = getEmojiImageURL(emoji);
-    node.id = "emoji" + this.id;
-
     node.addEventListener(this.tap, () => this.onLiveEmojiClick(node), false);
 
     if (this.emojiDiv.current) {
@@ -289,11 +287,6 @@ class BulletSection extends React.Component {
       node.style.top = [random + "px"] as any;
     }
 
-    // id is necessary to keep track of the animations for each emoji
-    // assuming no more than 1024 emojis are being rendered to screen at once
-    this.id++;
-    if (this.id >= 1024) this.id = 0;
-
     return node;
   }
 
@@ -303,7 +296,7 @@ class BulletSection extends React.Component {
       this.emojiDiv.current.appendChild(node);
       let width = this.emojiDiv.current.clientWidth;
       anime({
-        targets: "#" + node.id,
+        targets: node,
         translateX: function () {
           return width + 40;
         },
@@ -334,7 +327,7 @@ class BulletSection extends React.Component {
             // have a random time offset for each emoji (dont clutter together)
             setTimeout(() => {
               this.emojiToScreen(node);
-            }, Math.random() * 500);
+            }, Math.random() * 200);
           }
         });
       }
