@@ -370,6 +370,7 @@ export const PlayerPage = () => {
         open={Boolean(shareAnchor)}
         anchorEl={shareAnchor}
         onClose={() => setShareAnchor(null)}
+        className="url-popover-container"
       >
         <a target="_blank" rel="noopener noreferrer" href={generateUrl(song)}>
           {generateUrl(song)}
