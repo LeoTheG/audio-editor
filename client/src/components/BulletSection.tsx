@@ -273,7 +273,7 @@ class BulletSection extends React.Component {
         try {
           node.parentElement?.removeChild(node);
         } catch (e) {
-          console.log(e);
+          //console.log(e);
         }
       },
     });
