@@ -68,14 +68,15 @@ class BulletSection extends React.Component {
   // The dimension of canvas matches the parent div element
   initializeCanvas() {
     const initializeDimension = () => {
-      if (this.emojiCanvas.current) {
+      if (this.emojiCanvas.current && this.emojiDiv.current) {
         const canvasEl = this.emojiCanvas.current;
-        canvasEl.style.width = "100vw";
-        canvasEl.style.height = "100vh";
+        canvasEl.width = this.emojiDiv.current.clientWidth;
+        canvasEl.height = this.emojiDiv.current.clientHeight;
         canvasEl.width = canvasEl.offsetWidth;
         canvasEl.height = canvasEl.offsetHeight;
       }
     };
+
     initializeDimension();
     window.addEventListener("resize", initializeDimension);
 
@@ -121,14 +122,15 @@ class BulletSection extends React.Component {
     }
   }
 
-  getTimeStamp = () => {
-    // round the current time stamp to nearest 0.2 value
-    const round = (num: number) => {
-      return (Math.floor(num * 5) / 5).toFixed(1);
-    };
-    if (this.audio) return round(this.audio.currentTime);
+  // round the current time stamp to nearest 0.2 value
+  round(num: number) {
+    return (Math.floor(num * 5) / 5).toFixed(1);
+  }
+
+  getTimeStamp() {
+    if (this.audio) return this.round(this.audio.currentTime);
     return -1;
-  };
+  }
 
   // manually add the emoji to screen
   async addEmoji(emoji: any) {
@@ -146,81 +148,79 @@ class BulletSection extends React.Component {
     }, 200);
   }
 
+  createParticule(x: number, y: number) {
+    const colors = ["#FF1461", "#18FF92", "#5A87FF", "#FBF38C"];
+    if (this.emojiCanvas.current) {
+      const ctx = this.emojiCanvas.current.getContext("2d");
+      const p = {
+        x: x,
+        y: y,
+        color: colors[anime.random(0, colors.length - 1)],
+        radius: anime.random(16, 24),
+        endPos: this.setParticuleDirection(x, y),
+        draw: function () {
+          if (ctx) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI, true);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+          }
+        },
+      };
+      return p;
+    }
+    return undefined;
+  }
+
+  createCircle(x: number, y: number) {
+    if (this.emojiCanvas.current) {
+      const ctx = this.emojiCanvas.current.getContext("2d");
+      const p = {
+        x: x,
+        y: y,
+        color: "#FFFFFF",
+        radius: 0.1,
+        alpha: 0.5,
+        lineWidth: 6,
+        draw: function () {
+          if (ctx) {
+            ctx.globalAlpha = p.alpha;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI, true);
+            ctx.lineWidth = p.lineWidth;
+            ctx.strokeStyle = p.color;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
+        },
+      };
+      return p;
+    }
+    return undefined;
+  }
+
+  setParticuleDirection(x: number, y: number) {
+    var angle = (anime.random(0, 360) * Math.PI) / 180;
+    var value = anime.random(25, 90);
+    var radius = [-1, 1][anime.random(0, 1)] * value;
+    return {
+      x: x + radius * Math.cos(angle),
+      y: y + radius * Math.sin(angle),
+    };
+  }
+
+  // create particles for the firework
+  renderParticule = (anim: any) => {
+    for (var i = 0; i < anim.animatables.length; i++) {
+      anim.animatables[i].target.draw();
+    }
+  };
   // The animation for the firework
   animateParticules = (x: number, y: number) => {
-    // create particles for the firework
-    const createParticule = (x: number, y: number) => {
-      const colors = ["#FF1461", "#18FF92", "#5A87FF", "#FBF38C"];
-      if (this.emojiCanvas.current) {
-        const ctx = this.emojiCanvas.current.getContext("2d");
-        const p = {
-          x: x,
-          y: y,
-          color: colors[anime.random(0, colors.length - 1)],
-          radius: anime.random(16, 24),
-          endPos: setParticuleDirection(x, y),
-          draw: function () {
-            if (ctx) {
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI, true);
-              ctx.fillStyle = p.color;
-              ctx.fill();
-            }
-          },
-        };
-        return p;
-      }
-      return undefined;
-    };
-
-    // the circle
-    const createCircle = (x: number, y: number) => {
-      if (this.emojiCanvas.current) {
-        const ctx = this.emojiCanvas.current.getContext("2d");
-        const p = {
-          x: x,
-          y: y,
-          color: "#FFFFFF",
-          radius: 0.1,
-          alpha: 0.5,
-          lineWidth: 6,
-          draw: function () {
-            if (ctx) {
-              ctx.globalAlpha = p.alpha;
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI, true);
-              ctx.lineWidth = p.lineWidth;
-              ctx.strokeStyle = p.color;
-              ctx.stroke();
-              ctx.globalAlpha = 1;
-            }
-          },
-        };
-        return p;
-      }
-      return undefined;
-    };
-
-    const setParticuleDirection = (x: number, y: number) => {
-      var angle = (anime.random(0, 360) * Math.PI) / 180;
-      var value = anime.random(25, 90);
-      var radius = [-1, 1][anime.random(0, 1)] * value;
-      return {
-        x: x + radius * Math.cos(angle),
-        y: y + radius * Math.sin(angle),
-      };
-    };
-
-    const renderParticule = (anim: any) => {
-      for (var i = 0; i < anim.animatables.length; i++) {
-        anim.animatables[i].target.draw();
-      }
-    };
-
-    var circle = createCircle(x, y);
-    var particules = [];
+    const circle = this.createCircle(x, y);
+    const particules = [];
     for (var i = 0; i < 30; i++) {
-      particules.push(createParticule(x, y));
+      particules.push(this.createParticule(x, y));
     }
     anime
       .timeline()
@@ -235,7 +235,7 @@ class BulletSection extends React.Component {
         radius: 0.1,
         duration: anime.random(1200, 1800),
         easing: "easeOutExpo",
-        update: renderParticule,
+        update: this.renderParticule,
       })
       .add({
         targets: circle,
@@ -248,7 +248,7 @@ class BulletSection extends React.Component {
         },
         duration: anime.random(1200, 1800),
         easing: "easeOutExpo",
-        update: renderParticule,
+        update: this.renderParticule,
         offset: 0,
       });
   };
