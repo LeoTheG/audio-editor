@@ -48,6 +48,9 @@ export function withFirebaseContext(Component: JSX.Element) {
       return storage.ref(`userSongs/${songId}.wav`).getDownloadURL();
     },
     getSongs: () => {
+      //   if (process.env.NODE_ENV === "development") {
+      //     return Promise.resolve([]);
+      //   }
       return new Promise((resolve) => {
         db.collection("userSongs")
           .get()

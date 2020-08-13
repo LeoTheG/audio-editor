@@ -24,7 +24,7 @@ class BulletSection extends React.Component {
     this.initializeListener();
   }
 
-  showInstruction() {
+  animateInstruction() {
     if (this.emojiDiv.current) {
       let width = this.emojiDiv.current.clientWidth;
       anime({
@@ -40,21 +40,23 @@ class BulletSection extends React.Component {
     }
   }
 
+  // will be used for future usage, detects clicks on the canvas
   initializeListener() {
+    /*
     const updateCoords = (e: any) => {
       if (this.emojiCanvas.current) {
         const rect = this.emojiCanvas.current.getBoundingClientRect();
         const pointerX = (e.clientX || e.touches[0].clientX) - rect.left;
         const pointerY = (e.clientY || e.touches[0].clientY) - rect.top;
-        this.animateParticules(pointerX, pointerY);
       }
     };
+    */
 
     if (this.emojiCanvas.current) {
       this.emojiCanvas.current.addEventListener(
         this.tap,
         function (e) {
-          //updateCoords(e);
+          // updateCoords(e);
         },
         false
       );
@@ -93,37 +95,36 @@ class BulletSection extends React.Component {
   }
 
   initializeAudio(audio: HTMLAudioElement) {
+    // helper function
+    const clearBulletInterval = () => {
+      if (this.interval !== -1) {
+        clearInterval(this.interval);
+        this.interval = -1;
+      }
+    };
+
     if (audio) {
       this.audio = audio;
       // if the song is playing, we keep outputing emojis every .5 sec
       this.audio.onplaying = (element: any) => {
-        this.clearBulletInterval();
-        this.showInstruction();
+        clearBulletInterval();
+        this.animateInstruction();
         this.interval = setInterval(this.bulletScreen, 200);
       };
 
       // if paused or ended, stop outputing emojis
       this.audio.onpause = (element: any) => {
-        this.clearBulletInterval();
+        clearBulletInterval();
       };
     }
   }
 
-  // helper function
-  clearBulletInterval() {
-    if (this.interval !== -1) {
-      clearInterval(this.interval);
-      this.interval = -1;
-    }
-  }
-
-  // round to half a sec
-  round = (num: number) => {
-    return (Math.floor(num * 5) / 5).toFixed(1);
-  };
-
   getTimeStamp = () => {
-    if (this.audio) return this.round(this.audio.currentTime);
+    // round the current time stamp to nearest 0.2 value
+    const round = (num: number) => {
+      return (Math.floor(num * 5) / 5).toFixed(1);
+    };
+    if (this.audio) return round(this.audio.currentTime);
     return -1;
   };
 
@@ -143,7 +144,9 @@ class BulletSection extends React.Component {
     }, 200);
   }
 
+  // The animation for the firework
   animateParticules = (x: number, y: number) => {
+    // create particles for the firework
     const createParticule = (x: number, y: number) => {
       const colors = ["#FF1461", "#18FF92", "#5A87FF", "#FBF38C"];
       if (this.emojiCanvas.current) {
@@ -168,13 +171,14 @@ class BulletSection extends React.Component {
       return undefined;
     };
 
+    // the circle
     const createCircle = (x: number, y: number) => {
       if (this.emojiCanvas.current) {
         const ctx = this.emojiCanvas.current.getContext("2d");
         const p = {
           x: x,
           y: y,
-          color: "#FFF",
+          color: "#FFFFFF",
           radius: 0.1,
           alpha: 0.5,
           lineWidth: 6,
@@ -195,7 +199,7 @@ class BulletSection extends React.Component {
       return undefined;
     };
 
-    function setParticuleDirection(x: number, y: number) {
+    const setParticuleDirection = (x: number, y: number) => {
       var angle = (anime.random(0, 360) * Math.PI) / 180;
       var value = anime.random(25, 90);
       var radius = [-1, 1][anime.random(0, 1)] * value;
@@ -203,7 +207,7 @@ class BulletSection extends React.Component {
         x: x + radius * Math.cos(angle),
         y: y + radius * Math.sin(angle),
       };
-    }
+    };
 
     const renderParticule = (anim: any) => {
       for (var i = 0; i < anim.animatables.length; i++) {
@@ -254,6 +258,8 @@ class BulletSection extends React.Component {
       transInfo.substring(transInfo.indexOf("(") + 1, transInfo.indexOf("px"))
     );
     this.animateParticules(x, y);
+
+    // shrinks the emoji and make it disappear
     anime({
       targets: node,
       scale: function () {
@@ -273,6 +279,7 @@ class BulletSection extends React.Component {
     });
   }
 
+  // create the img node for emoji
   createEmojiNode(emoji: string) {
     const node = document.createElement("img");
     node.className = "live_emoji";

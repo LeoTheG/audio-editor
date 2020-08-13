@@ -1,20 +1,20 @@
 import "../css/PlayerPage.css";
 
-import { Button, IconButton, Tooltip } from "@material-ui/core";
-import { Close, InsertEmoticon } from "@material-ui/icons";
+import { Button, IconButton, Popover, Tooltip } from "@material-ui/core";
+import { Close, InsertEmoticon, Share } from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
 import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
   useRef,
+  useState,
 } from "react";
 
 import { AdventureLogo } from "../components/AdventureLogo";
-import { FirebaseContext } from "../contexts/firebaseContext";
 import BulletSection from "../components/BulletSection";
+import { FirebaseContext } from "../contexts/firebaseContext";
 import { MusicController } from "adventure-component-library";
 import _ from "underscore";
 import { useHistory } from "react-router-dom";
@@ -30,6 +30,11 @@ export const PlayerPage = () => {
     ISongEmojiSelections
   >({});
   const [selectedSongLiveEmojis, setSelectedSongLiveEmojis] = useState<any>({});
+  const [shareAnchor, setShareAnchor] = useState<HTMLButtonElement | null>(
+    null
+  );
+
+  const history = useHistory();
 
   const selectedEmojis =
     userSongs.length && userSongs[songPlayingIndex]
@@ -41,6 +46,13 @@ export const PlayerPage = () => {
   const [song, setSong] = useState<userSong>();
 
   const bulletRef = useRef<BulletSection>(null);
+
+  const onClickShare = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setShareAnchor(event.currentTarget);
+    },
+    []
+  );
 
   const updateEmojis = useCallback(
     _.debounce((song: userSong, emojiSelections: IEmojiSelections) => {
@@ -56,6 +68,13 @@ export const PlayerPage = () => {
     }, 1000),
     [song]
   );
+
+  useEffect(() => {
+    if (songPlayingIndex !== -1) {
+      const song = userSongs[songPlayingIndex];
+      history.push(`/player?id=${song.id}`);
+    }
+  }, [history, songPlayingIndex, userSongs]);
 
   useEffect(() => {
     if (userSongs.length) {
@@ -91,8 +110,6 @@ export const PlayerPage = () => {
   }, [firebaseContext]);
 
   const id = useParam("id") || "";
-
-  const history = useHistory();
 
   const onEmojiClick = useCallback(
     (song?: userSong) => (_: MouseEvent, emoji: IEmojiData) => {
@@ -142,9 +159,7 @@ export const PlayerPage = () => {
     const songIndex = userSongs.findIndex((upload) => upload.id === id);
     if (songIndex === -1) {
       if (id.length) alert("Song with id " + id + " not found");
-      else {
-        setSongPlayingIndex(0);
-      }
+      setSongPlayingIndex(0);
     } else {
       setSongPlayingIndex(songIndex);
     }
@@ -241,82 +256,102 @@ export const PlayerPage = () => {
 
         <BulletSection ref={bulletRef} />
 
-        <div className="music-controller-container">
-          <MusicController
-            isPlaying={isPlaying}
-            onClickPrev={onClickPrevSong}
-            onClickNext={onClickNextSong}
-            onTogglePlay={onTogglePlaySong}
-            song={convertedSong}
-          />
-        </div>
-        <div
-          style={{
-            width: 400,
-            display: "flex",
-            overflowX: "hidden",
-            overflowWrap: "break-word",
-            flexWrap: "wrap",
-            maxHeight: 300,
-            overflowY: "auto",
-          }}
-        >
-          {Object.entries(selectedEmojis || {}).map(([key, value]) => (
-            <div key={key} style={{ textAlign: "center" }}>
+        <div className="music-controller-emoji-container">
+          <div className="music-controller-container">
+            <MusicController
+              isPlaying={isPlaying}
+              onClickPrev={onClickPrevSong}
+              onClickNext={onClickNextSong}
+              onTogglePlay={onTogglePlaySong}
+              song={convertedSong}
+            />
+            <Tooltip title="shareable url">
               <IconButton
-                onClick={() => {
-                  const song = userSongs[songPlayingIndex];
-
-                  setSelectedSongEmojis((selectedSongEmojis) => {
-                    const newSelectedSongEmojis = {
-                      ...selectedSongEmojis,
-                      [song.id]: {
-                        ...selectedSongEmojis[song.id],
-                        [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
-                      },
-                    };
-                    updateEmojis(song, newSelectedSongEmojis[song.id]);
-                    return newSelectedSongEmojis;
-                  });
-
-                  if (bulletRef && bulletRef.current)
-                    bulletRef.current.addEmoji(key);
-                  updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
-                }}
+                style={{ width: "fit-content" }}
+                onClick={onClickShare}
               >
-                <img
-                  style={{ width: 30, height: 30 }}
-                  src={getEmojiImageURL(key)}
-                  alt="emoji"
-                />
+                <Share style={{ width: 50, height: 30 }} />
               </IconButton>
-              <div>{value}</div>
-            </div>
-          ))}
-        </div>
+            </Tooltip>
+          </div>
 
-        <Tooltip title="insert emoji">
-          <IconButton onClick={() => setIsEmojiPickerOpen(true)}>
-            <InsertEmoticon />
-          </IconButton>
-        </Tooltip>
+          <div
+            style={{
+              display: isEmojiPickerOpen ? "flex" : "none",
+            }}
+            className="emoji-picker-container"
+          >
+            <IconButton onClick={() => setIsEmojiPickerOpen(false)}>
+              <Close htmlColor="red" />
+            </IconButton>
+            <Picker key={song?.id} onEmojiClick={onEmojiClick(song)} />
+          </div>
+
+          <div
+            style={{
+              width: 400,
+              display: "flex",
+              overflowX: "hidden",
+              overflowWrap: "break-word",
+              flexWrap: "wrap",
+              maxHeight: 300,
+              overflowY: "auto",
+            }}
+          >
+            {Object.entries(selectedEmojis || {}).map(([key, value]) => (
+              <div key={key} style={{ textAlign: "center" }}>
+                <IconButton
+                  onClick={() => {
+                    const song = userSongs[songPlayingIndex];
+
+                    setSelectedSongEmojis((selectedSongEmojis) => {
+                      const newSelectedSongEmojis = {
+                        ...selectedSongEmojis,
+                        [song.id]: {
+                          ...selectedSongEmojis[song.id],
+                          [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
+                        },
+                      };
+                      updateEmojis(song, newSelectedSongEmojis[song.id]);
+                      return newSelectedSongEmojis;
+                    });
+
+                    if (bulletRef && bulletRef.current)
+                      bulletRef.current.addEmoji(key);
+                    updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
+                  }}
+                >
+                  <img
+                    style={{ width: 30, height: 30 }}
+                    src={getEmojiImageURL(key)}
+                    alt="emoji"
+                  />
+                </IconButton>
+                <div>{value}</div>
+              </div>
+            ))}
+          </div>
+          <div>
+            add emoji
+            <Tooltip title="insert emoji">
+              <IconButton onClick={() => setIsEmojiPickerOpen(true)}>
+                <InsertEmoticon />
+              </IconButton>
+            </Tooltip>
+          </div>
+        </div>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          visibility: isEmojiPickerOpen ? "visible" : "hidden",
-        }}
+      <Popover
+        open={Boolean(shareAnchor)}
+        anchorEl={shareAnchor}
+        onClose={() => setShareAnchor(null)}
       >
-        <div className="emoji_picker">
-          <IconButton onClick={() => setIsEmojiPickerOpen(false)}>
-            <Close htmlColor="red" />
-          </IconButton>
-          <Picker key={song?.id} onEmojiClick={onEmojiClick(song)} />
-        </div>
-      </div>
+        <a target="_blank" rel="noopener noreferrer" href={generateUrl(song)}>
+          {generateUrl(song)}
+        </a>
+      </Popover>
+
       <AdventureLogo />
     </div>
   );
@@ -327,4 +362,9 @@ const baseEmojiUrl =
 
 const getEmojiImageURL = (code: string) => {
   return `${baseEmojiUrl}${code}.png`;
+};
+
+const generateUrl = (song?: userSong) => {
+  if (!song) return "";
+  return `${window.location.origin}/#/player?id=${song.id}`;
 };
