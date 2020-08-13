@@ -91,12 +91,6 @@
   }
 }
 
-.emoji_picker {
-  position: fixed;
-  bottom: 0.7rem;
-  right: 0.7rem;
-}
-
 .live_emoji {
   width: 30px;
   height: 30px;
