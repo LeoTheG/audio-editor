@@ -50,6 +50,19 @@
   height: 320px;
 }
 
+.error-container {
+  /* width: 100vw;
+  height: 100vh; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  color: red;
+  padding: 50px;
+  box-sizing: border-box;
+  flex-direction: column;
+}
+
 @media screen and (max-width: 400px) {
   .music-controller-container {
     max-width: 100%;

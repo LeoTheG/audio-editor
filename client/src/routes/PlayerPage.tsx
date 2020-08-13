@@ -22,6 +22,7 @@ import { useParam } from "../util";
 
 export const PlayerPage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [songPlayingIndex, setSongPlayingIndex] = useState(-1);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const firebaseContext = useContext(FirebaseContext);
@@ -226,6 +227,10 @@ export const PlayerPage = () => {
         songName: "",
       };
 
+  //   if (error !== null) {
+  //     return <div className="error-container">{error}</div>;
+  //   }
+
   return (
     <div className="player-page-container">
       <div style={{ width: "100%" }}>
@@ -244,17 +249,36 @@ export const PlayerPage = () => {
       </div>
 
       <div className="player-body">
-        {song && song.gifUrl ? (
+        {error === null && song && song.gifUrl ? (
           <img
             alt="corresponding media"
             style={{ width: 200, height: 200 }}
             src={song.gifUrl}
+            onError={(e) =>
+              setError(
+                "whoops, looks like there's too much activity, try the player tomorrow"
+              )
+            }
           />
         ) : (
           <div style={{ width: 200, height: 200 }} />
         )}
 
-        <BulletSection ref={bulletRef} />
+        {error === null && <BulletSection ref={bulletRef} />}
+
+        {error !== null && (
+          <div className="error-container">
+            <iframe
+              src="https://giphy.com/embed/fDO2Nk0ImzvvW"
+              width="480"
+              height="365"
+              frameBorder="0"
+              className="giphy-embed"
+              allowFullScreen
+            />
+            {error}
+          </div>
+        )}
 
         <div className="music-controller-emoji-container">
           <div className="music-controller-container">

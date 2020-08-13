@@ -28,7 +28,7 @@ interface firebaseContext {
   ) => Promise<string>;
   getSongs: () => Promise<userSong[]>;
   getSongURL: (songId: string) => Promise<string>;
-  getLibraryMetadata: () => Promise<ILibraryMetadata[]>;
+  getLibraryMetadata: () => Promise<ILibraryMetadata[] | Error>;
   updateEmojis: (songId: string, emojiSelections: IEmojiSelections) => void;
   updateLiveEmojis: (songId: string, data: any) => void;
 }
@@ -56,6 +56,9 @@ export function withFirebaseContext(Component: JSX.Element) {
           .get()
           .then((result) => {
             resolve(result.docs.map((doc) => doc.data() as userSong));
+          })
+          .catch((e) => {
+            resolve(e);
           });
       });
     },
@@ -112,20 +115,27 @@ export function withFirebaseContext(Component: JSX.Element) {
       //     { name: "test3", downloadURL: "" },
       //   ]);
       // }
-      return new Promise<ILibraryMetadata[]>((resolve) => {
+      return new Promise<ILibraryMetadata[] | Error>((resolve) => {
         storage
           .ref("audio")
           .listAll()
           .then((result) => {
-            Promise.all(
-              result.items.map(async (item) => {
-                const name = item.name;
-                const downloadURL = (await item.getDownloadURL()) as string;
-                return { name, downloadURL };
-              })
-            ).then((result) => {
-              resolve(result);
-            });
+            try {
+              Promise.all(
+                result.items.map(async (item) => {
+                  const name = item.name;
+                  const downloadURL = (await item.getDownloadURL()) as string;
+                  return { name, downloadURL };
+                })
+              ).then((result) => {
+                resolve(result);
+              });
+            } catch (e) {
+              resolve(e);
+            }
+          })
+          .catch((e) => {
+            resolve(e);
           });
       });
     },
