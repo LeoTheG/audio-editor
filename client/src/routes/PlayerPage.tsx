@@ -17,6 +17,7 @@ import BulletSection from "../components/BulletSection";
 import { FirebaseContext } from "../contexts/firebaseContext";
 import { MusicController } from "adventure-component-library";
 import _ from "underscore";
+import errorImg from "../assets/error-gif.gif";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
 
@@ -267,9 +268,16 @@ export const PlayerPage = () => {
         {error === null && <BulletSection ref={bulletRef} />}
 
         {error !== null && (
-          <div className="error-container">
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             <img
-              src="https://i.giphy.com/media/fDO2Nk0ImzvvW/giphy.webp"
+              //   src="https://i.giphy.com/media/fDO2Nk0ImzvvW/giphy.webp"
+              src={errorImg}
               width="480"
               height="365"
               alt="error-gif"
@@ -277,7 +285,7 @@ export const PlayerPage = () => {
               //   className="giphy-embed"
               //   allowFullScreen
             />
-            {error}
+            <div className="error-container">{error}</div>
           </div>
         )}
 
