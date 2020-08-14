@@ -54,13 +54,6 @@ class BulletSection extends React.Component<
     }
   }
 
-  resetPoints() {
-    this.setState({
-      total_points: 0,
-      streak_points: 0,
-    });
-  }
-
   // will be used for future usage, detects clicks on the canvas
   initializeListener() {
     /*
@@ -76,13 +69,19 @@ class BulletSection extends React.Component<
     if (this.emojiCanvas.current) {
       this.emojiCanvas.current.addEventListener(
         this.tap,
-        function (e) {
-          // updateCoords(e);
-        },
+        this.resetStreak,
         false
       );
     }
   }
+
+  resetStreak = () => {
+    this.setState({
+      streak_points: 0,
+    });
+    console.log("reset streak");
+    this.animateStreak();
+  };
 
   // The dimension of canvas matches the parent div element
   initializeCanvas() {
@@ -101,17 +100,6 @@ class BulletSection extends React.Component<
 
     if (this.emojiCanvas.current) {
       const canvasEl = this.emojiCanvas.current;
-
-      canvasEl.addEventListener(
-        this.tap,
-        () => {
-          this.setState({
-            streak_points: 0,
-          });
-          this.animateStreak();
-        },
-        false
-      );
 
       // this clears the canvas screen on each update (avoid leaving the trace of animating objects)
       const ctx = canvasEl.getContext("2d");
@@ -140,6 +128,13 @@ class BulletSection extends React.Component<
         );
       }
     }
+  }
+
+  resetPoints() {
+    this.setState({
+      total_points: 0,
+      streak_points: 0,
+    });
   }
 
   initializeEmojis(liveEmojis: { number: Array<string> }) {
@@ -269,6 +264,7 @@ class BulletSection extends React.Component<
       anim.animatables[i].target.draw();
     }
   };
+
   // The animation for the firework
   animateParticules = (x: number, y: number) => {
     const circle = this.createCircle(x, y);
@@ -307,6 +303,32 @@ class BulletSection extends React.Component<
       });
   };
 
+  addPoint() {
+    const streak_points = this.state.streak_points + 1;
+    const total_points =
+      this.state.total_points + 1 + Math.floor(streak_points / 5);
+    this.setState({
+      total_points: total_points,
+      streak_points: streak_points,
+    });
+    this.animateStreak();
+  }
+
+  withinClickZone(x: number, y: number) {
+    if (this.clickZone.current) {
+      const rect = this.clickZone.current.getBoundingClientRect();
+      if (
+        x >= rect.left &&
+        x <= rect.right &&
+        y >= 0 &&
+        y <= rect.bottom - rect.top
+      ) {
+        console.log("U got a point!");
+        this.addPoint();
+      }
+    }
+  }
+
   onLiveEmojiClick(node: HTMLDivElement) {
     const y = parseFloat(node.style.top);
     const transInfo = node.style.transform;
@@ -337,25 +359,6 @@ class BulletSection extends React.Component<
     });
   }
 
-  withinClickZone(x: number, y: number) {
-    if (this.clickZone.current) {
-      const rect = this.clickZone.current.getBoundingClientRect();
-      if (
-        x >= rect.left &&
-        x <= rect.right &&
-        y >= 0 &&
-        y <= rect.bottom - rect.top
-      ) {
-        console.log("U got a point!");
-        this.setState({
-          total_points: this.state.total_points + 1,
-          streak_points: this.state.streak_points + 1,
-        });
-        this.animateStreak();
-      }
-    }
-  }
-
   // create the img node for emoji
   createEmojiNode(emoji: string) {
     const node = document.createElement("img");
@@ -379,10 +382,11 @@ class BulletSection extends React.Component<
     if (this.emojiDiv.current) {
       this.emojiDiv.current.appendChild(node);
       let width = this.emojiDiv.current.clientWidth;
+      const resetStreak = this.resetStreak;
       anime({
         targets: node,
         translateX: function () {
-          return width + 40;
+          return width + 30;
         },
         scale: function () {
           return anime.random(13, 17) / 10;
@@ -393,6 +397,7 @@ class BulletSection extends React.Component<
         easing: "linear",
         complete: () => {
           try {
+            console.log("removing");
             node.parentElement?.removeChild(node);
           } catch (e) {}
         },
