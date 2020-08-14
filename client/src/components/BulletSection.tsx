@@ -18,6 +18,7 @@ class BulletSection extends React.Component<
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   emojiCanvas: React.RefObject<HTMLCanvasElement> = React.createRef();
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
+  streakDisplay: React.RefObject<HTMLCanvasElement> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -34,6 +35,7 @@ class BulletSection extends React.Component<
   }
   componentDidMount() {
     this.initializeCanvas();
+    // this.animateStreak();
     this.initializeListener();
   }
 
@@ -51,6 +53,13 @@ class BulletSection extends React.Component<
         easing: "linear",
       });
     }
+  }
+
+  resetPoints() {
+    this.setState({
+      total_points: 0,
+      streak_points: 0,
+    });
   }
 
   // will be used for future usage, detects clicks on the canvas
@@ -93,6 +102,18 @@ class BulletSection extends React.Component<
 
     if (this.emojiCanvas.current) {
       const canvasEl = this.emojiCanvas.current;
+
+      canvasEl.addEventListener(
+        this.tap,
+        () => {
+          this.setState({
+            streak_points: 0,
+          });
+          // this.animateStreak();
+        },
+        false
+      );
+
       // this clears the canvas screen on each update (avoid leaving the trace of animating objects)
       const ctx = canvasEl.getContext("2d");
       anime({
@@ -104,8 +125,27 @@ class BulletSection extends React.Component<
     }
   }
 
+  animateStreak() {
+    if (this.streakDisplay.current) {
+      const display = this.streakDisplay.current;
+      const ctx = display.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, display.width, display.height);
+        ctx.font = "30px Comic Sans MS";
+        ctx.fillStyle = "red";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          "Streak: " + this.state.streak_points,
+          display.width / 2,
+          display.height / 2
+        );
+      }
+    }
+  }
+
   initializeEmojis(liveEmojis: { number: Array<string> }) {
     this.chosenEmoji = liveEmojis;
+    this.resetPoints();
   }
 
   initializeAudio(audio: HTMLAudioElement) {
@@ -310,7 +350,9 @@ class BulletSection extends React.Component<
         console.log("U got a point!");
         this.setState({
           total_points: this.state.total_points + 1,
+          streak_points: this.state.streak_points + 1,
         });
+        // this.animateStreak();
       }
     }
   }
@@ -382,12 +424,15 @@ class BulletSection extends React.Component<
       <div id="bullet_sec">
         <div className="instruction"> Click emojis to add to stream </div>
         <div className="instruction">
-          {" "}
-          Click flowing emojis for points: {this.state.total_points}{" "}
+          Click flowing emojis for points: {this.state.total_points}
         </div>
         <div className="clickzone" ref={this.clickZone} />
         <div id="emojis" ref={this.emojiDiv}>
           <canvas ref={this.emojiCanvas}></canvas>
+          <canvas
+            className="streak_container"
+            ref={this.streakDisplay}
+          ></canvas>
         </div>
       </div>
     );

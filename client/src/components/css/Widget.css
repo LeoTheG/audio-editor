@@ -123,6 +123,15 @@
   vertical-align: middle;
 }
 
+.streak_container {
+  width: fit-content;
+  height: fit-content;
+  position: absolute;
+  left: 80vw;
+  height: 20vh;
+  /* border: 3px red solid; */
+}
+
 #bullet_sec {
   position: relative;
   align-self: center;
