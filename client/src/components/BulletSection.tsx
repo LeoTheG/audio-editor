@@ -8,12 +8,16 @@ const testEmojiData = {
   2.0: ["1f3e0"],
 };
 
-class BulletSection extends React.Component {
+class BulletSection extends React.Component<
+  {},
+  { totalPoints: number; streakPoints: number }
+> {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
   interval: any = -1; //Timeout object
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   emojiCanvas: React.RefObject<HTMLCanvasElement> = React.createRef();
+  clickZone: React.RefObject<HTMLDivElement> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -21,6 +25,13 @@ class BulletSection extends React.Component {
       ? "touchstart"
       : "mousedown";
 
+  constructor(props: Readonly<{}>) {
+    super(props);
+    this.state = {
+      totalPoints: 0,
+      streakPoints: 0,
+    };
+  }
   componentDidMount() {
     this.initializeCanvas();
     this.initializeListener();
@@ -112,7 +123,7 @@ class BulletSection extends React.Component {
       this.audio.onplaying = (element: any) => {
         clearBulletInterval();
         this.animateInstruction();
-        this.interval = setInterval(this.bulletScreen, 200);
+        this.interval = setInterval(this.bulletScreen, 50);
       };
 
       // if paused or ended, stop outputing emojis
@@ -124,7 +135,11 @@ class BulletSection extends React.Component {
 
   // round the current time stamp to nearest 0.2 value
   round(num: number) {
-    return (Math.floor(num * 5) / 5).toFixed(1);
+    const result = Math.floor(num * 20) / 20;
+    // being compatible with previous data
+    if (parseFloat(result.toFixed(1)) === parseFloat(result.toFixed(2)))
+      return result.toFixed(1);
+    return result.toFixed(2);
   }
 
   getTimeStamp() {
@@ -145,7 +160,7 @@ class BulletSection extends React.Component {
     setTimeout(() => {
       if (!(time in this.chosenEmoji)) this.chosenEmoji[time] = [];
       this.chosenEmoji[time].push(emoji);
-    }, 200);
+    }, 50);
   }
 
   createParticule(x: number, y: number) {
@@ -261,6 +276,8 @@ class BulletSection extends React.Component {
     );
     this.animateParticules(x, y);
 
+    this.withinClickZone(x, y);
+
     // shrinks the emoji and make it disappear
     anime({
       targets: node,
@@ -279,6 +296,22 @@ class BulletSection extends React.Component {
         }
       },
     });
+  }
+
+  withinClickZone(x: number, y: number) {
+    if (this.clickZone.current) {
+      const rect = this.clickZone.current.getBoundingClientRect();
+      if (
+        x >= rect.left &&
+        x <= rect.right &&
+        y >= 0 &&
+        y <= rect.bottom - rect.top
+      ) {
+        this.setState({
+          totalPoints: this.state.totalPoints + 1,
+        });
+      }
+    }
   }
 
   // create the img node for emoji
@@ -336,7 +369,7 @@ class BulletSection extends React.Component {
             // have a random time offset for each emoji (dont clutter together)
             setTimeout(() => {
               this.emojiToScreen(node);
-            }, Math.random() * 200);
+            }, Math.random() * 50);
           }
         });
       }
@@ -347,7 +380,11 @@ class BulletSection extends React.Component {
     return (
       <div id="bullet_sec">
         <div className="instruction"> Click emojis to add to stream </div>
-        <div className="instruction"> Click flowing emojis for points </div>
+        <div className="instruction">
+          {" "}
+          Click flowing emojis for points: {this.state.totalPoints}{" "}
+        </div>
+        <div className="clickzone" ref={this.clickZone} />
         <div id="emojis" ref={this.emojiDiv}>
           <canvas ref={this.emojiCanvas}></canvas>
         </div>
