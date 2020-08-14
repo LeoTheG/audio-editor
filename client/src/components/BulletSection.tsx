@@ -35,7 +35,6 @@ class BulletSection extends React.Component<
   }
   componentDidMount() {
     this.initializeCanvas();
-    // this.animateStreak();
     this.initializeListener();
   }
 
@@ -109,7 +108,7 @@ class BulletSection extends React.Component<
           this.setState({
             streak_points: 0,
           });
-          // this.animateStreak();
+          this.animateStreak();
         },
         false
       );
@@ -352,7 +351,7 @@ class BulletSection extends React.Component<
           total_points: this.state.total_points + 1,
           streak_points: this.state.streak_points + 1,
         });
-        // this.animateStreak();
+        this.animateStreak();
       }
     }
   }
