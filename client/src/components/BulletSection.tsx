@@ -8,7 +8,10 @@ const testEmojiData = {
   2.0: ["1f3e0"],
 };
 
-class BulletSection extends React.Component<{}, { total_points: number }> {
+class BulletSection extends React.Component<
+  {},
+  { total_points: number; streak_points: number }
+> {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
   interval: any = -1; //Timeout object
@@ -26,6 +29,7 @@ class BulletSection extends React.Component<{}, { total_points: number }> {
     super(props);
     this.state = {
       total_points: 0,
+      streak_points: 0,
     };
   }
   componentDidMount() {
