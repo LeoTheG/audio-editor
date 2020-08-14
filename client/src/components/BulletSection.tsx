@@ -10,15 +10,19 @@ const testEmojiData = {
 
 class BulletSection extends React.Component<
   {},
-  { total_points: number; streak_points: number }
+  { totalPoints: number; streakPoints: number }
 > {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
   interval: any = -1; //Timeout object
+  id: number = 0;
+  streakId: number = 0;
+  emojiAnimations: any = {};
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   emojiCanvas: React.RefObject<HTMLCanvasElement> = React.createRef();
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
   streakDisplay: React.RefObject<HTMLCanvasElement> = React.createRef();
+  streakCount: React.RefObject<HTMLSpanElement> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -29,13 +33,22 @@ class BulletSection extends React.Component<
   constructor(props: Readonly<{}>) {
     super(props);
     this.state = {
-      total_points: 0,
-      streak_points: 0,
+      totalPoints: 0,
+      streakPoints: 0,
     };
   }
   componentDidMount() {
     this.initializeCanvas();
     this.initializeListener();
+    this.initializeStreak();
+  }
+
+  initializeStreak() {
+    if (this.streakCount.current) {
+      const countRef = this.streakCount.current;
+      countRef.style.color = "rgb(255, 0, 0)";
+      countRef.hidden = true;
+    }
   }
 
   animateInstruction() {
@@ -77,7 +90,7 @@ class BulletSection extends React.Component<
 
   resetStreak = () => {
     this.setState({
-      streak_points: 0,
+      streakPoints: 0,
     });
     console.log("reset streak");
     this.animateStreak();
@@ -118,22 +131,36 @@ class BulletSection extends React.Component<
       const ctx = display.getContext("2d");
       if (ctx) {
         ctx.clearRect(0, 0, display.width, display.height);
-        ctx.font = "30px Comic Sans MS";
-        ctx.fillStyle = "red";
-        ctx.textAlign = "center";
-        ctx.fillText(
-          "Streak: " + this.state.streak_points,
-          display.width / 2,
-          display.height / 2
-        );
       }
     }
+
+    if (this.streakCount.current) {
+      const countRef = this.streakCount.current;
+      if (this.state.streakPoints >= 5) countRef.hidden = false;
+      else countRef.hidden = true;
+      countRef.style.color =
+        "rgb(255," + Math.min(200, (this.state.streakPoints - 5) * 10) + ", 0)";
+    }
+    var ml4 = {
+      opacityIn: [0, 1],
+      scaleIn: [0.2, 1],
+      scaleOut: 3,
+      durationIn: 800,
+      durationOut: 600,
+      delay: 500,
+    };
+
+    anime.timeline().add({
+      targets: ".streak-count-text",
+      scale: ml4.scaleIn,
+      duration: ml4.durationIn,
+    });
   }
 
   resetPoints() {
     this.setState({
-      total_points: 0,
-      streak_points: 0,
+      totalPoints: 0,
+      streakPoints: 0,
     });
   }
 
@@ -157,6 +184,7 @@ class BulletSection extends React.Component<
       this.audio.onplaying = (element: any) => {
         clearBulletInterval();
         this.animateInstruction();
+        if (this.audio && this.audio.currentTime < 0.1) this.resetPoints();
         this.interval = setInterval(this.bulletScreen, 50);
       };
 
@@ -184,7 +212,7 @@ class BulletSection extends React.Component<
   // manually add the emoji to screen
   async addEmoji(emoji: any) {
     const time = this.getTimeStamp();
-    if (time < 0) return;
+    if (time <= 0) return;
     const node = this.createEmojiNode(emoji);
     if (node !== undefined) {
       this.emojiToScreen(node);
@@ -221,33 +249,6 @@ class BulletSection extends React.Component<
     return undefined;
   }
 
-  createCircle(x: number, y: number) {
-    if (this.emojiCanvas.current) {
-      const ctx = this.emojiCanvas.current.getContext("2d");
-      const p = {
-        x: x,
-        y: y,
-        color: "#FFFFFF",
-        radius: 0.1,
-        alpha: 0.5,
-        lineWidth: 6,
-        draw: function () {
-          if (ctx) {
-            ctx.globalAlpha = p.alpha;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI, true);
-            ctx.lineWidth = p.lineWidth;
-            ctx.strokeStyle = p.color;
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-          }
-        },
-      };
-      return p;
-    }
-    return undefined;
-  }
-
   setParticuleDirection(x: number, y: number) {
     var angle = (anime.random(0, 360) * Math.PI) / 180;
     var value = anime.random(25, 90);
@@ -267,54 +268,37 @@ class BulletSection extends React.Component<
 
   // The animation for the firework
   animateParticules = (x: number, y: number) => {
-    const circle = this.createCircle(x, y);
     const particules = [];
     for (var i = 0; i < 30; i++) {
       particules.push(this.createParticule(x, y));
     }
-    anime
-      .timeline()
-      .add({
-        targets: particules,
-        x: function (p: any) {
-          return p.endPos.x;
-        },
-        y: function (p: any) {
-          return p.endPos.y;
-        },
-        radius: 0.1,
-        duration: anime.random(1200, 1800),
-        easing: "easeOutExpo",
-        update: this.renderParticule,
-      })
-      .add({
-        targets: circle,
-        radius: anime.random(80, 160),
-        lineWidth: 0,
-        alpha: {
-          value: 0,
-          easing: "linear",
-          duration: anime.random(600, 800),
-        },
-        duration: anime.random(1200, 1800),
-        easing: "easeOutExpo",
-        update: this.renderParticule,
-        offset: 0,
-      });
+    anime.timeline().add({
+      targets: particules,
+      x: function (p: any) {
+        return p.endPos.x;
+      },
+      y: function (p: any) {
+        return p.endPos.y;
+      },
+      radius: 0.1,
+      duration: anime.random(1200, 1800),
+      easing: "easeOutExpo",
+      update: this.renderParticule,
+    });
   };
 
   addPoint() {
-    const streak_points = this.state.streak_points + 1;
-    const total_points =
-      this.state.total_points + 1 + Math.floor(streak_points / 5);
+    const streakPoints = this.state.streakPoints + 1;
+    const totalPoints =
+      this.state.totalPoints + 1 + Math.floor(streakPoints / 5);
     this.setState({
-      total_points: total_points,
-      streak_points: streak_points,
+      totalPoints: totalPoints,
+      streakPoints: streakPoints,
     });
     this.animateStreak();
   }
 
-  withinClickZone(x: number, y: number) {
+  withinClickZone(x: number, y: number, node: HTMLDivElement) {
     if (this.clickZone.current) {
       const rect = this.clickZone.current.getBoundingClientRect();
       if (
@@ -324,6 +308,12 @@ class BulletSection extends React.Component<
         y <= rect.bottom - rect.top
       ) {
         console.log("U got a point!");
+        if (this.streakId !== parseInt(node.id) - 1) {
+          this.resetStreak();
+          this.streakId = parseInt(node.id);
+        } else {
+          this.streakId++;
+        }
         this.addPoint();
       }
     }
@@ -337,7 +327,8 @@ class BulletSection extends React.Component<
     );
     this.animateParticules(x, y);
 
-    this.withinClickZone(x, y);
+    this.withinClickZone(x, y, node);
+    this.emojiAnimations[node.id].pause();
 
     // shrinks the emoji and make it disappear
     anime({
@@ -362,7 +353,7 @@ class BulletSection extends React.Component<
   // create the img node for emoji
   createEmojiNode(emoji: string) {
     const node = document.createElement("img");
-    node.className = "live_emoji";
+    node.className = "live-emoji";
     node.src = getEmojiImageURL(emoji);
     node.addEventListener(this.tap, () => this.onLiveEmojiClick(node), false);
 
@@ -382,8 +373,7 @@ class BulletSection extends React.Component<
     if (this.emojiDiv.current) {
       this.emojiDiv.current.appendChild(node);
       let width = this.emojiDiv.current.clientWidth;
-      const resetStreak = this.resetStreak;
-      anime({
+      const animation = anime({
         targets: node,
         translateX: function () {
           return width + 30;
@@ -397,11 +387,14 @@ class BulletSection extends React.Component<
         easing: "linear",
         complete: () => {
           try {
-            console.log("removing");
             node.parentElement?.removeChild(node);
+            this.resetStreak();
           } catch (e) {}
         },
       });
+      node.id = this.id.toString();
+      this.emojiAnimations[this.id] = animation;
+      this.id++;
     }
   }
 
@@ -425,18 +418,21 @@ class BulletSection extends React.Component<
 
   render() {
     return (
-      <div id="bullet_sec">
+      <div id="bullet-sec">
         <div className="instruction"> Click emojis to add to stream </div>
         <div className="instruction">
-          Click flowing emojis for points: {this.state.total_points}
+          Click flowing emojis for points: {this.state.totalPoints}
         </div>
         <div className="clickzone" ref={this.clickZone} />
         <div id="emojis" ref={this.emojiDiv}>
           <canvas ref={this.emojiCanvas}></canvas>
           <canvas
-            className="streak_container"
+            className="streak-container"
             ref={this.streakDisplay}
           ></canvas>
+          <span className="streak-count-text" ref={this.streakCount}>
+            {this.state.streakPoints}
+          </span>
         </div>
       </div>
     );

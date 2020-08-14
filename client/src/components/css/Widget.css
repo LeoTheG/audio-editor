@@ -91,7 +91,7 @@
   }
 }
 
-.live_emoji {
+.live-emoji {
   width: 30px;
   height: 30px;
   position: absolute;
@@ -122,7 +122,7 @@
   vertical-align: middle;
 }
 
-.streak_container {
+.streak-container {
   width: fit-content;
   height: fit-content;
   position: absolute;
@@ -131,7 +131,14 @@
   /* border: 3px red solid; */
 }
 
-#bullet_sec {
+#bullet-sec {
   position: relative;
   align-self: center;
+}
+
+.streak-count-text {
+  font: "30px Comic Sans MS";
+  align-self: top;
+  position: absolute;
+  left: 80vw;
 }
