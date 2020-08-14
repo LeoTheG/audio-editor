@@ -10,7 +10,7 @@ const testEmojiData = {
 
 class BulletSection extends React.Component<
   {},
-  { total_points: number; streak_points: number }
+  { totalPoints: number; streakPoints: number }
 > {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
@@ -28,8 +28,8 @@ class BulletSection extends React.Component<
   constructor(props: Readonly<{}>) {
     super(props);
     this.state = {
-      total_points: 0,
-      streak_points: 0,
+      totalPoints: 0,
+      streakPoints: 0,
     };
   }
   componentDidMount() {
@@ -307,9 +307,8 @@ class BulletSection extends React.Component<
         y >= 0 &&
         y <= rect.bottom - rect.top
       ) {
-        console.log("U got a point!");
         this.setState({
-          total_points: this.state.total_points + 1,
+          totalPoints: this.state.totalPoints + 1,
         });
       }
     }
@@ -383,7 +382,7 @@ class BulletSection extends React.Component<
         <div className="instruction"> Click emojis to add to stream </div>
         <div className="instruction">
           {" "}
-          Click flowing emojis for points: {this.state.total_points}{" "}
+          Click flowing emojis for points: {this.state.totalPoints}{" "}
         </div>
         <div className="clickzone" ref={this.clickZone} />
         <div id="emojis" ref={this.emojiDiv}>
