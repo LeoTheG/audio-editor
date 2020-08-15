@@ -71,6 +71,16 @@
   width: fit-content;
 }
 
+.emoji-panel-container {
+  width: 400px;
+  display: flex;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  flex-wrap: wrap;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 @media screen and (max-width: 500px) {
   .music-controller-container {
     max-width: 100%;
