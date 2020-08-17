@@ -13,24 +13,19 @@ class AnimationCanvas extends React.Component<
 
   componentDidMount() {
     this.initializeCanvas();
-    this.initializeListener(this.props.resetStreak);
+    this.initializeListener();
   }
 
-  initializeListener(resetStreak: EventListenerOrEventListenerObject) {
-    /*
-        const updateCoords = (e: any) => {
-          if (this.emojiCanvas.current) {
-            const rect = this.emojiCanvas.current.getBoundingClientRect();
-            const pointerX = (e.clientX || e.touches[0].clientX) - rect.left;
-            const pointerY = (e.clientY || e.touches[0].clientY) - rect.top;
-          }
-        };
-        */
-
+  initializeListener() {
     if (this.emojiCanvas.current) {
-      this.emojiCanvas.current.addEventListener(this.tap, resetStreak, false);
+      this.emojiCanvas.current.addEventListener(
+        this.tap,
+        this.props.resetStreak,
+        false
+      );
     }
   }
+
   // The dimension of canvas matches the parent div element
   initializeCanvas() {
     const initializeDimension = () => {

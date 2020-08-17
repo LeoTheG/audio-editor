@@ -2,6 +2,8 @@ import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
 import AnimationCanvas from "./AnimationCanvas";
+import streakBonusBuildsGif from "../assets/builds.gif";
+import letsGoGoombaGif from "../assets/goomba.gif";
 
 // a sample data for chosenEmoji
 const testEmojiData = {
@@ -174,6 +176,7 @@ class BulletSection extends React.Component<
       streakPoints: streakPoints,
     });
     this.animateStreak();
+    if (this.state.streakPoints === 10) this.streakBonusToScreen();
   }
 
   withinClickZone(x: number, y: number, node: HTMLDivElement) {
@@ -247,7 +250,8 @@ class BulletSection extends React.Component<
   }
 
   // add the emoji to screen and animate it
-  emojiToScreen(node: HTMLDivElement) {
+  emojiToScreen(node: HTMLImageElement) {
+    node.id = this.id.toString();
     if (this.emojiDiv.current) {
       this.emojiDiv.current.appendChild(node);
       let width = this.emojiDiv.current.clientWidth;
@@ -270,9 +274,50 @@ class BulletSection extends React.Component<
           } catch (e) {}
         },
       });
-      node.id = this.id.toString();
       this.emojiAnimations[this.id] = animation;
       this.id++;
+    }
+  }
+
+  createStreakBonusNode() {
+    const node = document.createElement("div");
+    node.className = "streak-bonus-text";
+    node.innerText = " builder bonus 10+ ";
+
+    const gifNodeBegin = document.createElement("img");
+    gifNodeBegin.className = "live_gif";
+    gifNodeBegin.src = streakBonusBuildsGif;
+    node.insertAdjacentElement("afterbegin", gifNodeBegin);
+
+    const gifNodeEnd = document.createElement("img");
+    gifNodeEnd.className = "live_gif";
+    gifNodeEnd.src = streakBonusBuildsGif;
+    node.insertAdjacentElement("beforeend", gifNodeEnd);
+
+    return node;
+  }
+
+  streakBonusToScreen() {
+    const node = this.createStreakBonusNode();
+    if (this.emojiDiv.current) {
+      this.emojiDiv.current.appendChild(node);
+      let width = this.emojiDiv.current.clientWidth;
+      const animation = anime({
+        targets: node,
+        translateX: function () {
+          return width + node.clientWidth * 1.5;
+        },
+        duration: function () {
+          return width * 3.6;
+        },
+        easing: "linear",
+        complete: () => {
+          try {
+            node.parentElement?.removeChild(node);
+          } catch (e) {}
+        },
+      });
+      return animation;
     }
   }
 
@@ -287,7 +332,7 @@ class BulletSection extends React.Component<
             // have a random time offset for each emoji (dont clutter together)
             setTimeout(() => {
               this.emojiToScreen(node);
-            }, Math.random() * 25);
+            }, Math.random() * 50);
           }
         });
       }
@@ -302,6 +347,7 @@ class BulletSection extends React.Component<
           Click flowing emojis for points: {this.state.totalPoints}
         </div>
         <div className="clickzone" ref={this.clickZone} />
+        <div className="streak-bonus-text"></div>
         <div id="emojis" ref={this.emojiDiv}>
           <AnimationCanvas
             ref={this.animeCanvas}

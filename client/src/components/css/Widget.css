@@ -134,6 +134,7 @@
 #bullet-sec {
   position: relative;
   align-self: center;
+  margin-bottom: 1rem;
 }
 
 .streak-count-text {
@@ -141,4 +142,19 @@
   align-self: top;
   position: absolute;
   left: 80vw;
+}
+
+.streak-bonus-text
+{
+  font-size: 25px;
+  font-style: italic;
+  position: absolute;
+  color: red;
+  left: -14.5rem;
+}
+
+.live_gif
+{
+  width: 35px;
+  height: 35px;
 }
