@@ -153,7 +153,15 @@
   left: -14.5rem;
 }
 
-.live_gif
+.goomba-bonus-text
+{
+  font-size: 25px;
+  font-style: italic;
+  position: absolute;
+  color: rgb(255, 115, 0);
+  left: -10rem;
+}
+.live-gif
 {
   width: 35px;
   height: 35px;

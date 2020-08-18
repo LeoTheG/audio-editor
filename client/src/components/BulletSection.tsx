@@ -177,6 +177,7 @@ class BulletSection extends React.Component<
     });
     this.animateStreak();
     if (this.state.streakPoints === 10) this.streakBonusToScreen();
+    if (Math.random() < 0.2) this.goombaToScreen();
   }
 
   withinClickZone(x: number, y: number, node: HTMLDivElement) {
@@ -285,12 +286,12 @@ class BulletSection extends React.Component<
     node.innerText = " builder bonus 10+ ";
 
     const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live_gif";
+    gifNodeBegin.className = "live-gif";
     gifNodeBegin.src = streakBonusBuildsGif;
     node.insertAdjacentElement("afterbegin", gifNodeBegin);
 
     const gifNodeEnd = document.createElement("img");
-    gifNodeEnd.className = "live_gif";
+    gifNodeEnd.className = "live-gif";
     gifNodeEnd.src = streakBonusBuildsGif;
     node.insertAdjacentElement("beforeend", gifNodeEnd);
 
@@ -299,6 +300,44 @@ class BulletSection extends React.Component<
 
   streakBonusToScreen() {
     const node = this.createStreakBonusNode();
+    if (this.emojiDiv.current) {
+      this.emojiDiv.current.appendChild(node);
+      let width = this.emojiDiv.current.clientWidth;
+      const animation = anime({
+        targets: node,
+        translateX: function () {
+          return width + node.clientWidth * 1.5;
+        },
+        duration: function () {
+          return width * 3.6;
+        },
+        easing: "linear",
+        complete: () => {
+          try {
+            node.parentElement?.removeChild(node);
+          } catch (e) {}
+        },
+      });
+      return animation;
+    }
+  }
+
+  createGoombaNode() {
+    const node = document.createElement("div");
+    node.className = "goomba-bonus-text";
+    node.innerHTML = "yee ";
+
+    const gifNodeBegin = document.createElement("img");
+    gifNodeBegin.className = "live-gif";
+    gifNodeBegin.src = letsGoGoombaGif;
+    node.insertAdjacentElement("beforeend", gifNodeBegin);
+
+    node.innerHTML += " lets go";
+    return node;
+  }
+
+  goombaToScreen() {
+    const node = this.createGoombaNode();
     if (this.emojiDiv.current) {
       this.emojiDiv.current.appendChild(node);
       let width = this.emojiDiv.current.clientWidth;
