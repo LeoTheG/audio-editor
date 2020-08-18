@@ -18,6 +18,7 @@ export interface userSong {
   gifId?: string;
   emojiSelections?: IEmojiSelections;
   liveEmojis?: any;
+  isLocked?: boolean;
 }
 
 export interface ILibraryMetadata {

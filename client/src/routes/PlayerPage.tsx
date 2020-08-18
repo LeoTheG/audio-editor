@@ -1,7 +1,7 @@
 import "../css/PlayerPage.css";
 
 import { Button, IconButton, Popover, Tooltip } from "@material-ui/core";
-import { Close, InsertEmoticon, Share } from "@material-ui/icons";
+import { Close, InsertEmoticon, Lock, Share } from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
 import React, {
@@ -228,9 +228,34 @@ export const PlayerPage = () => {
         songName: "",
       };
 
-  //   if (error !== null) {
-  //     return <div className="error-container">{error}</div>;
-  //   }
+  const onClickEmojiPanel = useCallback(
+    (key: string) => () => {
+      const song = userSongs[songPlayingIndex];
+
+      setSelectedSongEmojis((selectedSongEmojis) => {
+        const newSelectedSongEmojis = {
+          ...selectedSongEmojis,
+          [song.id]: {
+            ...selectedSongEmojis[song.id],
+            [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
+          },
+        };
+        updateEmojis(song, newSelectedSongEmojis[song.id]);
+        return newSelectedSongEmojis;
+      });
+
+      if (bulletRef && bulletRef.current) bulletRef.current.addEmoji(key);
+      updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
+    },
+    [
+      userSongs,
+      bulletRef,
+      selectedSongLiveEmojis,
+      songPlayingIndex,
+      updateEmojis,
+      updateLiveEmojis,
+    ]
+  );
 
   return (
     <div className="player-page-container">
@@ -275,16 +300,7 @@ export const PlayerPage = () => {
               alignItems: "center",
             }}
           >
-            <img
-              //   src="https://i.giphy.com/media/fDO2Nk0ImzvvW/giphy.webp"
-              src={errorImg}
-              width="480"
-              height="365"
-              alt="error-gif"
-              //   frameBorder="0"
-              //   className="giphy-embed"
-              //   allowFullScreen
-            />
+            <img src={errorImg} width="480" height="365" alt="error-gif" />
             <div className="error-container">{error}</div>
           </div>
         )}
@@ -320,58 +336,29 @@ export const PlayerPage = () => {
             <Picker key={song?.id} onEmojiClick={onEmojiClick(song)} />
           </div>
 
-          <div
-            style={{
-              width: 400,
-              display: "flex",
-              overflowX: "hidden",
-              overflowWrap: "break-word",
-              flexWrap: "wrap",
-              maxHeight: 300,
-              overflowY: "auto",
-            }}
-          >
-            {Object.entries(selectedEmojis || {}).map(([key, value]) => (
-              <div key={key} style={{ textAlign: "center" }}>
-                <IconButton
-                  onClick={() => {
-                    const song = userSongs[songPlayingIndex];
+          <EmojiPanel
+            selectedEmojis={selectedEmojis}
+            onClickEmoji={onClickEmojiPanel}
+            isDisabled={song?.isLocked}
+          />
 
-                    setSelectedSongEmojis((selectedSongEmojis) => {
-                      const newSelectedSongEmojis = {
-                        ...selectedSongEmojis,
-                        [song.id]: {
-                          ...selectedSongEmojis[song.id],
-                          [key]: (selectedSongEmojis[song.id][key] || 0) + 1,
-                        },
-                      };
-                      updateEmojis(song, newSelectedSongEmojis[song.id]);
-                      return newSelectedSongEmojis;
-                    });
-
-                    if (bulletRef && bulletRef.current)
-                      bulletRef.current.addEmoji(key);
-                    updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
-                  }}
-                >
-                  <img
-                    style={{ width: 30, height: 30 }}
-                    src={getEmojiImageURL(key)}
-                    alt="emoji"
-                  />
-                </IconButton>
-                <div>{value}</div>
-              </div>
-            ))}
-          </div>
           <div>
             add emoji
             <Tooltip title="insert emoji">
-              <IconButton onClick={() => setIsEmojiPickerOpen(true)}>
+              <IconButton
+                disabled={song?.isLocked}
+                onClick={() => setIsEmojiPickerOpen(true)}
+              >
                 <InsertEmoticon />
               </IconButton>
             </Tooltip>
           </div>
+
+          {song?.isLocked && (
+            <Tooltip title="emojis cannot be added to this song">
+              <Lock />
+            </Tooltip>
+          )}
         </div>
       </div>
 
@@ -401,4 +388,31 @@ const getEmojiImageURL = (code: string) => {
 const generateUrl = (song?: userSong) => {
   if (!song) return "";
   return `${window.location.origin}/#/player?id=${song.id}`;
+};
+
+interface IEmojiPanelProps {
+  selectedEmojis: IEmojiSelections;
+  onClickEmoji: (emoji: string) => () => void;
+  isDisabled?: boolean;
+}
+
+const EmojiPanel = (props: IEmojiPanelProps) => {
+  const { selectedEmojis, onClickEmoji, isDisabled } = props;
+
+  return (
+    <div className="emoji-panel-container">
+      {Object.entries(selectedEmojis).map(([key, value]) => (
+        <div key={key} style={{ textAlign: "center" }}>
+          <IconButton disabled={isDisabled} onClick={onClickEmoji(key)}>
+            <img
+              style={{ width: 30, height: 30 }}
+              src={getEmojiImageURL(key)}
+              alt="emoji"
+            />
+          </IconButton>
+          <div>{value}</div>
+        </div>
+      ))}
+    </div>
+  );
 };
