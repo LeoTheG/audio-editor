@@ -1,31 +1,13 @@
 import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
-import AnimationCanvas from "./AnimationCanvas";
-import streakBonusBuildsGif from "../assets/builds.gif";
-import letsGoGoombaGif from "../assets/goomba.gif";
 
-// a sample data for chosenEmoji
-const testEmojiData = {
-  1.5: ["1f605", "1f605"],
-  2.0: ["1f3e0"],
-};
-
-class BulletSection extends React.Component<
-  {},
-  { totalPoints: number; streakPoints: number }
-> {
-  chosenEmoji: any = testEmojiData;
+class BulletSection extends React.Component {
   audio: HTMLAudioElement | null = null;
   interval: any = -1; //Timeout object
   id: number = 0;
-  streakId: number = 0;
-  emojiAnimations: any = {};
-  emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
-  animeCanvas: React.RefObject<AnimationCanvas> = React.createRef();
-  clickZone: React.RefObject<HTMLDivElement> = React.createRef();
-  streakDisplay: React.RefObject<HTMLCanvasElement> = React.createRef();
-  streakCount: React.RefObject<HTMLSpanElement> = React.createRef();
+  bulletDiv: React.RefObject<HTMLDivElement> = React.createRef();
+  bulletInput: React.RefObject<HTMLInputElement> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -33,83 +15,7 @@ class BulletSection extends React.Component<
       ? "touchstart"
       : "mousedown";
 
-  constructor(props: Readonly<{}>) {
-    super(props);
-    this.state = {
-      totalPoints: 0,
-      streakPoints: 0,
-    };
-  }
-  componentDidMount() {
-    this.initializeStreak();
-  }
-
-  initializeStreak() {
-    if (this.streakCount.current) {
-      const countRef = this.streakCount.current;
-      countRef.style.color = "rgb(255, 0, 0)";
-      countRef.hidden = true;
-    }
-  }
-
-  animateInstruction() {
-    if (this.emojiDiv.current) {
-      let width = this.emojiDiv.current.clientWidth;
-      anime({
-        targets: ".instruction",
-        translateX: function () {
-          return width + 100;
-        },
-        duration: function () {
-          return width * 4.8;
-        },
-        easing: "linear",
-      });
-    }
-  }
-
-  resetStreak = () => {
-    this.setState({
-      streakPoints: 0,
-    });
-    this.animateStreak();
-  };
-
-  animateStreak() {
-    if (this.streakDisplay.current) {
-      const display = this.streakDisplay.current;
-      const ctx = display.getContext("2d");
-      if (ctx) {
-        ctx.clearRect(0, 0, display.width, display.height);
-      }
-    }
-
-    if (this.streakCount.current) {
-      const countRef = this.streakCount.current;
-      if (this.state.streakPoints >= 5) countRef.hidden = false;
-      else countRef.hidden = true;
-      countRef.style.color =
-        "rgb(255," + Math.min(200, (this.state.streakPoints - 5) * 10) + ", 0)";
-    }
-
-    anime.timeline().add({
-      targets: ".streak-count-text",
-      scale: [0.2, 1],
-      duration: 800,
-    });
-  }
-
-  resetPoints() {
-    this.setState({
-      totalPoints: 0,
-      streakPoints: 0,
-    });
-  }
-
-  initializeEmojis(liveEmojis: { number: Array<string> }) {
-    this.chosenEmoji = liveEmojis;
-    this.resetPoints();
-  }
+  componentDidMount() {}
 
   initializeAudio(audio: HTMLAudioElement) {
     // helper function
@@ -125,9 +31,6 @@ class BulletSection extends React.Component<
       // if the song is playing, we keep outputing emojis every .5 sec
       this.audio.onplaying = (element: any) => {
         clearBulletInterval();
-        this.animateInstruction();
-        if (this.audio && this.audio.currentTime < 0.1) this.resetPoints();
-        this.interval = setInterval(this.bulletScreen, 50);
       };
 
       // if paused or ended, stop outputing emojis
@@ -139,11 +42,8 @@ class BulletSection extends React.Component<
 
   // round the current time stamp to nearest 0.2 value
   round(num: number) {
-    const result = Math.floor(num * 20) / 20;
-    // being compatible with previous data
-    if (parseFloat(result.toFixed(1)) === parseFloat(result.toFixed(2)))
-      return result.toFixed(1);
-    return result.toFixed(2);
+    const result = Math.floor(num * 2) / 2;
+    return result.toFixed(1);
   }
 
   getTimeStamp() {
@@ -151,265 +51,59 @@ class BulletSection extends React.Component<
     return -1;
   }
 
-  // manually add the emoji to screen
-  async addEmoji(emoji: any) {
-    const time = this.getTimeStamp();
-    if (time <= 0) return;
-    const node = this.createEmojiNode(emoji);
-    if (node !== undefined) {
-      this.emojiToScreen(node);
-    }
-
-    // add the emoji to the list 0.5 sec later to avoid outputing emoji twice
-    setTimeout(() => {
-      if (!(time in this.chosenEmoji)) this.chosenEmoji[time] = [];
-      this.chosenEmoji[time].push(emoji);
-    }, 50);
-  }
-
-  addPoint() {
-    const streakPoints = this.state.streakPoints + 1;
-    const totalPoints =
-      this.state.totalPoints + 1 + Math.floor(streakPoints / 5);
-    this.setState({
-      totalPoints: totalPoints,
-      streakPoints: streakPoints,
-    });
-    this.animateStreak();
-    if (this.state.streakPoints === 10) this.streakBonusToScreen();
-    if (Math.random() < 0.2) this.goombaToScreen();
-  }
-
-  withinClickZone(x: number, y: number, node: HTMLDivElement) {
-    if (this.clickZone.current) {
-      const rect = this.clickZone.current.getBoundingClientRect();
-      if (
-        x >= rect.left &&
-        x <= rect.right &&
-        y >= 0 &&
-        y <= rect.bottom - rect.top
-      ) {
-        if (this.streakId !== parseInt(node.id) - 1) {
-          this.resetStreak();
-          this.streakId = parseInt(node.id);
-        } else {
-          this.streakId++;
-        }
-        this.addPoint();
-      }
-    }
-  }
-
-  onLiveEmojiClick(node: HTMLDivElement) {
-    const y = parseFloat(node.style.top);
-    const transInfo = node.style.transform;
-    const x = parseFloat(
-      transInfo.substring(transInfo.indexOf("(") + 1, transInfo.indexOf("px"))
-    );
-
-    this.animeCanvas.current?.animateParticules(x, y);
-
-    this.withinClickZone(x, y, node);
-    this.emojiAnimations[node.id].pause();
-
-    // shrinks the emoji and make it disappear
-    anime({
-      targets: node,
-      scale: function () {
-        return 0.01;
-      },
-      duration: function () {
-        return 100;
-      },
-      easing: "linear",
-      complete: () => {
-        try {
-          node.parentElement?.removeChild(node);
-        } catch (e) {
-          //console.log(e);
-        }
-      },
-    });
-  }
-
-  // create the img node for emoji
-  createEmojiNode(emoji: string) {
-    const node = document.createElement("img");
-    node.className = "live-emoji";
-    node.src = getEmojiImageURL(emoji);
-    node.addEventListener(this.tap, () => this.onLiveEmojiClick(node), false);
-
-    if (this.emojiDiv.current) {
-      // the number of emojis in a column the screen can hold
-      const options = Math.floor(this.emojiDiv.current.clientHeight / 30) - 1;
-      // randomly picks a row and calculate the respective height
-      let random = Math.floor(Math.random() * options) * 30 + 10;
-      node.style.top = [random + "px"] as any;
-    }
-
-    return node;
-  }
-
-  // add the emoji to screen and animate it
-  emojiToScreen(node: HTMLImageElement) {
-    node.id = this.id.toString();
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: function () {
-          return width + 30;
-        },
-        scale: function () {
-          return anime.random(13, 17) / 10;
-        },
-        duration: function () {
-          return width * 4.8;
-        },
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-            this.resetStreak();
-          } catch (e) {}
-        },
-      });
-      this.emojiAnimations[this.id] = animation;
-      this.id++;
-    }
-  }
-
-  createStreakBonusNode() {
+  createBulletNode(text: string) {
     const node = document.createElement("div");
-    node.className = "streak-bonus-text";
-    node.innerText = " builder bonus 10+ ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = streakBonusBuildsGif;
-    node.insertAdjacentElement("afterbegin", gifNodeBegin);
-
-    const gifNodeEnd = document.createElement("img");
-    gifNodeEnd.className = "live-gif";
-    gifNodeEnd.src = streakBonusBuildsGif;
-    node.insertAdjacentElement("beforeend", gifNodeEnd);
-
+    node.className = "bullet-text";
+    node.innerText = text;
     return node;
   }
 
-  streakBonusToScreen() {
-    const node = this.createStreakBonusNode();
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: function () {
-          return width + node.clientWidth * 1.5;
-        },
-        duration: function () {
-          return width * 3.6;
-        },
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-          } catch (e) {}
-        },
-      });
-      return animation;
-    }
-  }
-
-  createGoombaNode() {
-    const node = document.createElement("div");
-    node.className = "goomba-bonus-text";
-    node.innerHTML = "yee ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = letsGoGoombaGif;
-    node.insertAdjacentElement("beforeend", gifNodeBegin);
-
-    node.innerHTML += " lets go";
-    return node;
-  }
-
-  goombaToScreen() {
-    const node = this.createGoombaNode();
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: function () {
-          return width + node.clientWidth * 1.5;
-        },
-        duration: function () {
-          return width * 3.6;
-        },
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-          } catch (e) {}
-        },
-      });
-      return animation;
-    }
-  }
-
-  // add all emojis at the current timestamp to the screen
-  bulletScreen = () => {
-    if (this.audio != null && this.audio.played) {
-      const time = this.getTimeStamp();
-      if (time in this.chosenEmoji) {
-        this.chosenEmoji[time].forEach((emoji: string) => {
-          const node = this.createEmojiNode(emoji);
-          if (node !== undefined) {
-            // have a random time offset for each emoji (dont clutter together)
-            setTimeout(() => {
-              this.emojiToScreen(node);
-            }, Math.random() * 50);
-          }
+  bulletToScreen = () => {
+    if (this.bulletInput.current) {
+      const text = this.bulletInput.current.value;
+      console.log(text);
+      if (!text || text === "") return;
+      const node = this.createBulletNode(text);
+      if (this.bulletDiv.current) {
+        this.bulletDiv.current.appendChild(node);
+        let width = this.bulletDiv.current.clientWidth;
+        anime({
+          targets: node,
+          translateX: function () {
+            return width + 200;
+          },
+          duration: function () {
+            return width * 5;
+          },
+          easing: "linear",
+          complete: () => {
+            try {
+              node.parentElement?.removeChild(node);
+            } catch (e) {}
+          },
         });
       }
+      this.bulletInput.current.value = "";
     }
   };
 
   render() {
     return (
       <div id="bullet-sec">
-        <div className="instruction"> Click emojis to add to stream </div>
-        <div className="instruction">
-          Click flowing emojis for points: {this.state.totalPoints}
-        </div>
-        <div className="clickzone" ref={this.clickZone} />
-        <div className="streak-bonus-text"></div>
-        <div id="emojis" ref={this.emojiDiv}>
-          <AnimationCanvas
-            ref={this.animeCanvas}
-            resetStreak={this.resetStreak}
-          />
-          <canvas
-            className="streak-container"
-            ref={this.streakDisplay}
-          ></canvas>
-          <span className="streak-count-text" ref={this.streakCount}>
-            {this.state.streakPoints}
-          </span>
+        <div className="bullet-screen" ref={this.bulletDiv}></div>
+        <div className="bullet-input">
+          <input
+            type="text"
+            placeholder="What do u think?"
+            ref={this.bulletInput}
+          ></input>
+          <button type="submit" onClick={this.bulletToScreen}>
+            <i className="fas">{"=>"}</i>
+          </button>
         </div>
       </div>
     );
   }
 }
-
-const baseEmojiUrl =
-  "https://cdn.jsdelivr.net/gh/iamcal/emoji-data@master/img-apple-64/";
-
-const getEmojiImageURL = (code: string) => {
-  return `${baseEmojiUrl}${code}.png`;
-};
 
 export default BulletSection;

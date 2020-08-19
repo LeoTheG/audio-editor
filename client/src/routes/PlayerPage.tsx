@@ -13,6 +13,7 @@ import React, {
 } from "react";
 
 import { AdventureLogo } from "../components/AdventureLogo";
+import LiveEmojiSection from "../components/LiveEmojiSection";
 import BulletSection from "../components/BulletSection";
 import { FirebaseContext } from "../contexts/firebaseContext";
 import { MusicController } from "adventure-component-library";
@@ -47,6 +48,7 @@ export const PlayerPage = () => {
 
   const [song, setSong] = useState<userSong>();
 
+  const liveEmojiRef = useRef<LiveEmojiSection>(null);
   const bulletRef = useRef<BulletSection>(null);
 
   const onClickShare = useCallback(
@@ -82,8 +84,8 @@ export const PlayerPage = () => {
     if (userSongs.length) {
       if (userSongs[songPlayingIndex]) {
         setSong(userSongs[songPlayingIndex]);
-        if (bulletRef && bulletRef.current) {
-          bulletRef.current.initializeEmojis(
+        if (liveEmojiRef && liveEmojiRef.current) {
+          liveEmojiRef.current.initializeEmojis(
             selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
           );
         }
@@ -136,8 +138,8 @@ export const PlayerPage = () => {
 
         updateEmojis(song, newSongEmojiSelections[song.id]);
 
-        if (bulletRef && bulletRef.current) {
-          bulletRef.current.addEmoji(emoji.unified);
+        if (liveEmojiRef && liveEmojiRef.current) {
+          liveEmojiRef.current.addEmoji(emoji.unified);
         }
         updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
         return newSongEmojiSelections;
@@ -197,8 +199,8 @@ export const PlayerPage = () => {
       _audio?.play();
       if (!audio) {
         setAudio(_audio);
-        if (bulletRef && bulletRef.current)
-          bulletRef.current.initializeAudio(_audio);
+        if (liveEmojiRef && liveEmojiRef.current)
+          liveEmojiRef.current.initializeAudio(_audio);
       }
       setSongPlayingIndex(index);
     }
@@ -244,12 +246,13 @@ export const PlayerPage = () => {
         return newSelectedSongEmojis;
       });
 
-      if (bulletRef && bulletRef.current) bulletRef.current.addEmoji(key);
+      if (liveEmojiRef && liveEmojiRef.current)
+        liveEmojiRef.current.addEmoji(key);
       updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
     },
     [
       userSongs,
-      bulletRef,
+      liveEmojiRef,
       selectedSongLiveEmojis,
       songPlayingIndex,
       updateEmojis,
@@ -290,6 +293,7 @@ export const PlayerPage = () => {
           <div style={{ width: 200, height: 200 }} />
         )}
 
+        {error === null && <LiveEmojiSection ref={liveEmojiRef} />}
         {error === null && <BulletSection ref={bulletRef} />}
 
         {error !== null && (
@@ -319,7 +323,7 @@ export const PlayerPage = () => {
                 style={{ width: "fit-content" }}
                 onClick={onClickShare}
               >
-                <Share style={{ width: 50, height: 30 }} />
+                <Share style={{ width: 50, height: 30, color: "#75d56c" }} />
               </IconButton>
             </Tooltip>
           </div>
