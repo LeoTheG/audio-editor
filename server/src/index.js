@@ -19,8 +19,8 @@ io.on("connection", (client) => {
   });
 
   client.on("cursor move", (position) => {
-    const [x, y] = position;
-    console.log("got position ", x, y);
+    console.log("got position ", position);
+    const { x, y } = position;
     clientPositions[client.id] = { x, y };
     const clientRoom = Object.keys(client.rooms).forEach(
       (room) => client.id !== room
