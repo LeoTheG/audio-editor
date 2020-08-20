@@ -104,7 +104,7 @@ class BulletSection extends React.Component {
         <div className="bullet-input">
           <input
             type="text"
-            placeholder="What do u think? (WIP)"
+            placeholder="What do u think? ("
             ref={this.bulletInput}
           ></input>
           <button type="submit" onClick={this.bulletToScreen}>

@@ -67,7 +67,7 @@ export const PlayerPage = () => {
 
   const id = useParam("id") || "";
 
-  // find the data for song id "spacecat" and use that for the page
+  // find the data for song id and use that for the page
   useEffect(() => {
     if (userSongs.length) {
       for (var i = 0; i < userSongs.length; i++)
@@ -172,6 +172,10 @@ export const PlayerPage = () => {
     }
   };
 
+  const onPauseCallback = () => {
+    if (liveEmojiRef.current) liveEmojiRef.current.onPauseCallback();
+  };
+
   return (
     <div className="player-page-container">
       <div style={{ width: "100%" }}>
@@ -195,6 +199,7 @@ export const PlayerPage = () => {
           controls={true}
           ref={youtubeRef}
           onPlay={onPlayCallback}
+          onPause={onPauseCallback}
         />
 
         {error === null && (
