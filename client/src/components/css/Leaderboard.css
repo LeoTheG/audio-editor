@@ -3,11 +3,10 @@
   flex-direction: column;
 }
 
-.leaderboard-name {
-  width: 100px;
-  border: 1px solid black;
-}
+.leaderboard-name,
 .leaderboard-score {
   width: 100px;
-  border: 1px solid black;
+  /* border: 1px dashed black; */
+  padding: 5px;
+  background: white;
 }

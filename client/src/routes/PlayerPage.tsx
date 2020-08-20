@@ -3,10 +3,10 @@ import "../css/PlayerPage.css";
 import {
   Button,
   IconButton,
-  Popover,
-  Tooltip,
   Modal,
+  Popover,
   TextField,
+  Tooltip,
 } from "@material-ui/core";
 import { Close, InsertEmoticon, Lock, Share } from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
@@ -23,6 +23,7 @@ import React, {
 import { AdventureLogo } from "../components/AdventureLogo";
 import BulletSection from "../components/BulletSection";
 import { FirebaseContext } from "../contexts/firebaseContext";
+import { Leaderboard } from "../components/Leaderboard";
 import LiveEmojiSection from "../components/LiveEmojiSection";
 import { MusicController } from "adventure-component-library";
 import _ from "underscore";
@@ -389,23 +390,26 @@ export const PlayerPage = () => {
             <Picker key={song?.id} onEmojiClick={onEmojiClick(song)} />
           </div>
 
-          <EmojiPanel
-            selectedEmojis={selectedEmojis}
-            onClickEmoji={onClickEmojiPanel}
-            isDisabled={song?.isLocked}
-          />
-
-          <div>
-            add emoji
-            <Tooltip title="insert emoji">
-              <IconButton
-                disabled={song?.isLocked}
-                onClick={() => setIsEmojiPickerOpen(true)}
-              >
-                <InsertEmoticon />
-              </IconButton>
-            </Tooltip>
-          </div>
+          {!song?.isLocked && (
+            <>
+              <EmojiPanel
+                selectedEmojis={selectedEmojis}
+                onClickEmoji={onClickEmojiPanel}
+                isDisabled={song?.isLocked}
+              />
+              <div>
+                add emoji
+                <Tooltip title="insert emoji">
+                  <IconButton
+                    disabled={song?.isLocked}
+                    onClick={() => setIsEmojiPickerOpen(true)}
+                  >
+                    <InsertEmoticon />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            </>
+          )}
 
           {song?.isLocked && (
             <Tooltip title="emojis cannot be added to this song">
@@ -493,25 +497,6 @@ const EmojiPanel = (props: IEmojiPanelProps) => {
             />
           </IconButton>
           <div>{value}</div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-interface ILeaderboardProps {
-  scores: { name: string; score: number }[];
-}
-
-const Leaderboard = (props: ILeaderboardProps) => {
-  const inOrderScores = props.scores.sort((a, b) => a.score - b.score);
-  return (
-    <div className="leaderboard-container">
-      <div className="leaderboard-title">Leaderboard</div>
-      {inOrderScores.map((score) => (
-        <div key={score.name + score.score} style={{ display: "flex" }}>
-          <div className="leaderboard-name">{score.name}</div>
-          <div className="leaderboard-score">{score.score}</div>
         </div>
       ))}
     </div>
