@@ -22,15 +22,12 @@ io.on("connection", (client) => {
     console.log("got position ", position);
     const { x, y } = position;
     clientPositions[client.id] = { x, y };
-    const clientRoom = Object.keys(client.rooms).forEach(
+
+    const clientRoom = Object.keys(client.rooms).find(
       (room) => client.id !== room
     );
-    console.log("client room is ", clientRoom);
-    io.sockets.clients(clientRoom).forEach((roommate) => {
-      if (roommate.id !== client.id) {
-        roommate.emit("cursor move", client.id, [x, y]);
-      }
-    });
+
+    client.to(clientRoom).emit("cursor move", client.id, [x, y]);
   });
 
   client.on("disconnect", () => {

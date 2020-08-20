@@ -49,7 +49,8 @@ import { AppStateContext } from "../contexts/appContext";
 
 import io from "socket.io-client";
 
-const socket = io("ws://yeeplayer.herokuapp.com");
+// const socket = io("ws://yeeplayer.herokuapp.com");
+const socket = io("ws://localhost:8000");
 
 interface IUserConnections {
   [userId: string]: { location: { x: number; y: number } };
@@ -159,11 +160,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     socket.on("cursor move", (clientId: string, [x, y]: number[]) => {
       if (!playerBodyRef.current) return;
 
-      console.log("got cursor move emit with id and x,y = ", clientId, x, y);
-
       const rect = playerBodyRef.current.getBoundingClientRect();
-      // const x = event.clientX - rect.left; //x position within the element.
-      // const y = event.clientY - rect.top; //y position within the element.
 
       const width = rect.width;
       const height = rect.height;
@@ -514,10 +511,22 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         className="player-body"
         onMouseMove={onMouseMove}
       >
-        {Object.entries(userConnections).forEach(([key, value]) => {
+        {Object.entries(userConnections).map(([key, value]) => {
           const { x, y } = value.location;
+          console.log("returning cursor", key, value);
           return (
-            <div style={{ position: "absolute", top: x, left: y }}>
+            <div
+              style={{
+                position: "absolute",
+                top: y,
+                left: x,
+                background: "red",
+                width: 100,
+                height: 100,
+              }}
+              className="user-connection-cursor"
+              key={key}
+            >
               CURSOR {key}
             </div>
           );
