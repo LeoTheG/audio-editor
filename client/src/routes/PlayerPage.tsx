@@ -23,6 +23,7 @@ import React, {
 import { AdventureLogo } from "../components/AdventureLogo";
 import BulletSection from "../components/BulletSection";
 import { FirebaseContext } from "../contexts/firebaseContext";
+import { Leaderboard } from "../components/Leaderboard";
 import LiveEmojiSection from "../components/LiveEmojiSection";
 import { MusicController } from "adventure-component-library";
 import _ from "underscore";
@@ -484,25 +485,6 @@ const EmojiPanel = (props: IEmojiPanelProps) => {
             />
           </IconButton>
           <div>{value}</div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-interface ILeaderboardProps {
-  scores: { name: string; score: number }[];
-}
-
-const Leaderboard = (props: ILeaderboardProps) => {
-  const inOrderScores = props.scores.sort((a, b) => b.score - a.score);
-  return (
-    <div className="leaderboard-container">
-      <div className="leaderboard-title">Leaderboard</div>
-      {inOrderScores.map((score) => (
-        <div key={score.name + score.score} style={{ display: "flex" }}>
-          <div className="leaderboard-name">{score.name}</div>
-          <div className="leaderboard-score">{score.score}</div>
         </div>
       ))}
     </div>
