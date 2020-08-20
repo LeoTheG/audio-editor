@@ -42,6 +42,8 @@ export const PlayerPage = () => {
     ISongEmojiSelections
   >({});
   const [selectedSongLiveEmojis, setSelectedSongLiveEmojis] = useState<any>({});
+  const [selectedSongBullets, setSelectedSongBullets] = useState<any>({});
+
   const [shareAnchor, setShareAnchor] = useState<HTMLButtonElement | null>(
     null
   );
@@ -106,6 +108,13 @@ export const PlayerPage = () => {
     [song]
   );
 
+  const updateBullets = useCallback(
+    _.debounce((songId: string, data: any) => {
+      firebaseContext.updateBullets(songId, data);
+    }, 1000),
+    [song]
+  );
+
   useEffect(() => {
     if (songPlayingIndex !== -1) {
       const song = userSongs[songPlayingIndex];
@@ -117,14 +126,20 @@ export const PlayerPage = () => {
     if (userSongs.length) {
       if (userSongs[songPlayingIndex]) {
         setSong(userSongs[songPlayingIndex]);
-        if (liveEmojiRef.current) {
-          liveEmojiRef.current.initializeEmojis(
-            selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
-          );
-        }
+        liveEmojiRef.current?.initializeEmojis(
+          selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
+        );
+        bulletRef.current?.initializeBullets(
+          selectedSongBullets[userSongs[songPlayingIndex].id]
+        );
       }
     }
-  }, [userSongs, songPlayingIndex, selectedSongLiveEmojis]);
+  }, [
+    userSongs,
+    songPlayingIndex,
+    selectedSongLiveEmojis,
+    selectedSongBullets,
+  ]);
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
@@ -143,6 +158,13 @@ export const PlayerPage = () => {
         return acc;
       }, {});
       setSelectedSongLiveEmojis(selectedSongLiveEmojis);
+
+      const selectedSongBullets = songs.reduce<any>((acc, song) => {
+        acc[song.id] = song.bullets || {};
+        return acc;
+      }, {});
+      setSelectedSongBullets(selectedSongBullets);
+
       setUserSongs(songs);
     });
   }, [firebaseContext]);
@@ -342,7 +364,14 @@ export const PlayerPage = () => {
         {error === null && (
           <LiveEmojiSection ref={liveEmojiRef} onChangePoints={setPoints} />
         )}
-        {error === null && <BulletSection ref={bulletRef} />}
+        {error === null && (
+          <BulletSection
+            updateBullets={() => {
+              if (song) updateBullets(song.id, selectedSongBullets[song.id]);
+            }}
+            ref={bulletRef}
+          />
+        )}
 
         {error !== null && (
           <div

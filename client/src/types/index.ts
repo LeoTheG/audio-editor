@@ -18,6 +18,7 @@ export interface userSong {
   gifId?: string;
   emojiSelections?: IEmojiSelections;
   liveEmojis?: any;
+  bullets?: any;
   isLocked?: boolean;
   highscores?: { name: string; score: number }[];
 }

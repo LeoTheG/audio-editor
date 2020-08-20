@@ -43,6 +43,7 @@ export const YoutubePage = () => {
     ISongEmojiSelections
   >({});
   const [selectedSongLiveEmojis, setSelectedSongLiveEmojis] = useState<any>({});
+  const [selectedSongBullets, setSelectedSongBullets] = useState<any>({});
   const [shareAnchor, setShareAnchor] = useState<HTMLButtonElement | null>(
     null
   );
@@ -114,6 +115,13 @@ export const YoutubePage = () => {
     [song]
   );
 
+  const updateBullets = useCallback(
+    _.debounce((songId: string, data: any) => {
+      firebaseContext.updateBullets(songId, data);
+    }, 1000),
+    [song]
+  );
+
   const id = useParam("id") || "";
 
   // find the data for song id and use that for the page
@@ -131,13 +139,21 @@ export const YoutubePage = () => {
 
       setSongPlayingIndex(songIndex);
       setSong(userSongs[songIndex]);
-      if (liveEmojiRef.current) {
-        liveEmojiRef.current.initializeEmojis(
-          selectedSongLiveEmojis[userSongs[songIndex].id]
-        );
-      }
+      liveEmojiRef.current?.initializeEmojis(
+        selectedSongLiveEmojis[userSongs[songIndex].id]
+      );
+      bulletRef.current?.initializeBullets(
+        selectedSongBullets[userSongs[songIndex].id]
+      );
     }
-  }, [userSongs, songPlayingIndex, selectedSongLiveEmojis, id, history]);
+  }, [
+    userSongs,
+    songPlayingIndex,
+    selectedSongLiveEmojis,
+    selectedSongBullets,
+    id,
+    history,
+  ]);
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
@@ -156,6 +172,12 @@ export const YoutubePage = () => {
         return acc;
       }, {});
       setSelectedSongLiveEmojis(selectedSongLiveEmojis);
+
+      const selectedSongBullets = songs.reduce<any>((acc, song) => {
+        acc[song.id] = song.bullets || {};
+        return acc;
+      }, {});
+      setSelectedSongBullets(selectedSongBullets);
       setUserSongs(songs);
     });
   }, [firebaseContext]);
@@ -268,7 +290,13 @@ export const YoutubePage = () => {
           />
         )}
         {error === null && (
-          <BulletSection youtubeRef={youtubeRef} ref={bulletRef} />
+          <BulletSection
+            updateBullets={() => {
+              if (song) updateBullets(song.id, selectedSongBullets[song.id]);
+            }}
+            youtubeRef={youtubeRef}
+            ref={bulletRef}
+          />
         )}
 
         {error !== null && (

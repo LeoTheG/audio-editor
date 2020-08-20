@@ -5,6 +5,7 @@ import ReactPlayer from "react-player";
 
 interface IBulletSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
+  updateBullets: CallableFunction;
 }
 
 interface IBulletSectionState {
@@ -81,6 +82,10 @@ class BulletSection extends React.Component<
     }
   }
 
+  initializeBullets(bullets: any) {
+    this.bullets = bullets;
+  }
+
   // helper function
   clearBulletInterval = () => {
     if (this.interval !== -1) {
@@ -130,6 +135,7 @@ class BulletSection extends React.Component<
     setTimeout(() => {
       if (!(time in this.bullets)) this.bullets[time] = [];
       this.bullets[time].push(text);
+      this.props.updateBullets();
     }, 500);
   };
 
@@ -142,7 +148,7 @@ class BulletSection extends React.Component<
     this.lanes.delete(lane);
     setTimeout(() => {
       this.lanes.add(lane);
-    }, 500);
+    }, text.length * 7);
     return node;
   }
 
