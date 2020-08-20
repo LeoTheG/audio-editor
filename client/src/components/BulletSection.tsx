@@ -15,7 +15,17 @@ class BulletSection extends React.Component {
       ? "touchstart"
       : "mousedown";
 
-  componentDidMount() {}
+  componentDidMount() {
+    const initializeBulletScreen = () => {
+      if (this.bulletDiv.current) {
+        const screen = this.bulletDiv.current;
+        if (screen.parentElement)
+          screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
+      }
+    };
+    initializeBulletScreen();
+    window.addEventListener("resize", initializeBulletScreen);
+  }
 
   initializeAudio(audio: HTMLAudioElement) {
     // helper function

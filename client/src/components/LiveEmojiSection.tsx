@@ -5,6 +5,7 @@ import AnimationCanvas from "./AnimationCanvas";
 import streakBonusBuildsGif from "../assets/builds.gif";
 import letsGoGoombaGif from "../assets/goomba.gif";
 import bananadanceGif from "../assets/bananadance.gif";
+import ReactPlayer from "react-player";
 
 // a sample data for chosenEmoji
 const testEmojiData = {
@@ -13,7 +14,7 @@ const testEmojiData = {
 };
 
 class LiveEmojiSection extends React.Component<
-  {},
+  { youtubeRef: React.RefObject<ReactPlayer> },
   { totalPoints: number; streakPoints: number }
 > {
   chosenEmoji: any = testEmojiData;
@@ -27,6 +28,7 @@ class LiveEmojiSection extends React.Component<
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
   streakDisplay: React.RefObject<HTMLCanvasElement> = React.createRef();
   streakCount: React.RefObject<HTMLSpanElement> = React.createRef();
+  youtubeRef: React.RefObject<ReactPlayer> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -34,12 +36,13 @@ class LiveEmojiSection extends React.Component<
       ? "touchstart"
       : "mousedown";
 
-  constructor(props: Readonly<{}>) {
+  constructor(props: Readonly<{ youtubeRef: React.RefObject<ReactPlayer> }>) {
     super(props);
     this.state = {
       totalPoints: 0,
       streakPoints: 0,
     };
+    this.youtubeRef = props.youtubeRef;
   }
 
   componentDidMount() {
@@ -76,30 +79,39 @@ class LiveEmojiSection extends React.Component<
   }
 
   initializeAudio(audio: HTMLAudioElement) {
-    // helper function
-    const clearBulletInterval = () => {
-      if (this.interval !== -1) {
-        clearInterval(this.interval);
-        this.interval = -1;
-      }
-    };
-
     if (audio) {
       this.audio = audio;
+
       // if the song is playing, we keep outputing emojis every .5 sec
-      this.audio.onplaying = (element: any) => {
-        clearBulletInterval();
-        this.initializeInstruction();
-        if (this.audio && this.audio.currentTime < 0.1) this.resetPoints();
-        this.interval = setInterval(this.liveEmojiScreen, 50);
-      };
+      this.audio.onplaying = this.onPlayCallback;
 
       // if paused or ended, stop outputing emojis
-      this.audio.onpause = (element: any) => {
-        clearBulletInterval();
-      };
+      this.audio.onpause = this.onPauseCallback;
     }
   }
+
+  onPlayCallback = () => {
+    this.clearBulletInterval();
+    this.initializeInstruction();
+    // if (this.audio && this.audio.currentTime < 0.1) this.resetPoints();
+    if (
+      this.youtubeRef.current &&
+      this.youtubeRef.current.getCurrentTime() < 0.1
+    )
+      this.resetPoints();
+    this.interval = setInterval(this.liveEmojiScreen, 50);
+  };
+
+  onPauseCallback = () => {
+    this.clearBulletInterval();
+  };
+
+  clearBulletInterval = () => {
+    if (this.interval !== -1) {
+      clearInterval(this.interval);
+      this.interval = -1;
+    }
+  };
 
   // manually add the emoji to screen
   async addEmoji(emoji: any) {
@@ -127,7 +139,9 @@ class LiveEmojiSection extends React.Component<
   }
 
   getTimeStamp() {
-    if (this.audio) return this.round(this.audio.currentTime);
+    // if (this.audio) return this.round(this.audio.currentTime);
+    if (this.youtubeRef.current)
+      return this.round(this.youtubeRef.current.getCurrentTime());
     return -1;
   }
 
@@ -280,7 +294,7 @@ class LiveEmojiSection extends React.Component<
         complete: () => {
           try {
             node.parentElement?.removeChild(node);
-            this.resetStreak();
+            if (parseInt(node.id) > this.streakId) this.resetStreak();
           } catch (e) {}
         },
       });
@@ -409,19 +423,17 @@ class LiveEmojiSection extends React.Component<
 
   // add all emojis at the current timestamp to the screen
   liveEmojiScreen = () => {
-    if (this.audio != null && this.audio.played) {
-      const time = this.getTimeStamp();
-      if (time in this.chosenEmoji) {
-        this.chosenEmoji[time].forEach((emoji: string) => {
-          const node = this.createEmojiNode(emoji);
-          if (node !== undefined) {
-            // have a random time offset for each emoji (dont clutter together)
-            setTimeout(() => {
-              this.emojiToScreen(node);
-            }, Math.random() * 50);
-          }
-        });
-      }
+    const time = this.getTimeStamp();
+    if (time in this.chosenEmoji) {
+      this.chosenEmoji[time].forEach((emoji: string) => {
+        const node = this.createEmojiNode(emoji);
+        if (node !== undefined) {
+          // have a random time offset for each emoji (dont clutter together)
+          setTimeout(() => {
+            this.emojiToScreen(node);
+          }, Math.random() * 50);
+        }
+      });
     }
   };
 

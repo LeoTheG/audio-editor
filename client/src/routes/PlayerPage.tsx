@@ -4,6 +4,7 @@ import { Button, IconButton, Popover, Tooltip } from "@material-ui/core";
 import { Close, InsertEmoticon, Lock, Share } from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
+import ReactPlayer from "react-player";
 import React, {
   useCallback,
   useContext,
@@ -50,6 +51,7 @@ export const PlayerPage = () => {
 
   const liveEmojiRef = useRef<LiveEmojiSection>(null);
   const bulletRef = useRef<BulletSection>(null);
+  const youtubeRef = useRef<ReactPlayer>(null);
 
   const onClickShare = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -84,7 +86,7 @@ export const PlayerPage = () => {
     if (userSongs.length) {
       if (userSongs[songPlayingIndex]) {
         setSong(userSongs[songPlayingIndex]);
-        if (liveEmojiRef && liveEmojiRef.current) {
+        if (liveEmojiRef.current) {
           liveEmojiRef.current.initializeEmojis(
             selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
           );
@@ -138,7 +140,7 @@ export const PlayerPage = () => {
 
         updateEmojis(song, newSongEmojiSelections[song.id]);
 
-        if (liveEmojiRef && liveEmojiRef.current) {
+        if (liveEmojiRef.current) {
           liveEmojiRef.current.addEmoji(emoji.unified);
         }
         updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
@@ -199,8 +201,7 @@ export const PlayerPage = () => {
       _audio?.play();
       if (!audio) {
         setAudio(_audio);
-        if (liveEmojiRef && liveEmojiRef.current)
-          liveEmojiRef.current.initializeAudio(_audio);
+        if (liveEmojiRef.current) liveEmojiRef.current.initializeAudio(_audio);
       }
       setSongPlayingIndex(index);
     }
@@ -246,8 +247,7 @@ export const PlayerPage = () => {
         return newSelectedSongEmojis;
       });
 
-      if (liveEmojiRef && liveEmojiRef.current)
-        liveEmojiRef.current.addEmoji(key);
+      if (liveEmojiRef.current) liveEmojiRef.current.addEmoji(key);
       updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
     },
     [
@@ -259,6 +259,12 @@ export const PlayerPage = () => {
       updateLiveEmojis,
     ]
   );
+
+  const onPlayCallback = () => {
+    if (liveEmojiRef.current) {
+      liveEmojiRef.current.onPlayCallback();
+    }
+  };
 
   return (
     <div className="player-page-container">
@@ -278,7 +284,13 @@ export const PlayerPage = () => {
       </div>
 
       <div className="player-body">
-        {error === null && song && song.gifUrl ? (
+        <ReactPlayer
+          url="https://www.youtube.com/watch?v=5xG09d3WcGo"
+          controls={true}
+          ref={youtubeRef}
+          onPlay={onPlayCallback}
+        />
+        {/* {error === null && song && song.gifUrl ? (
           <img
             alt="corresponding media"
             style={{ width: 200, height: 200 }}
@@ -291,9 +303,11 @@ export const PlayerPage = () => {
           />
         ) : (
           <div style={{ width: 200, height: 200 }} />
-        )}
+        )} */}
 
-        {error === null && <LiveEmojiSection ref={liveEmojiRef} />}
+        {error === null && (
+          <LiveEmojiSection youtubeRef={youtubeRef} ref={liveEmojiRef} />
+        )}
         {error === null && <BulletSection ref={bulletRef} />}
 
         {error !== null && (
@@ -310,7 +324,7 @@ export const PlayerPage = () => {
         )}
 
         <div className="music-controller-emoji-container">
-          <div className="music-controller-container">
+          {/* <div className="music-controller-container">
             <MusicController
               isPlaying={isPlaying}
               onClickPrev={onClickPrevSong}
@@ -326,7 +340,7 @@ export const PlayerPage = () => {
                 <Share style={{ width: 50, height: 30, color: "#75d56c" }} />
               </IconButton>
             </Tooltip>
-          </div>
+          </div> */}
 
           <div
             style={{

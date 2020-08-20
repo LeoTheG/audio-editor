@@ -36,6 +36,7 @@ class AnimationCanvas extends React.Component<
           canvasEl.height = canvasEl.parentElement.clientHeight;
           canvasEl.width = canvasEl.offsetWidth;
           canvasEl.height = canvasEl.offsetHeight;
+          // canvasEl.style.border = "3px solid red"
         }
       }
     };
