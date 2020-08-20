@@ -41,14 +41,26 @@ class BulletSection extends React.Component<
     this.setState({ inputValue: e.target.value });
   };
 
+  matchPlayerDim = () => {
+    if (this.bulletDiv.current) {
+      const screen = this.bulletDiv.current;
+      if (
+        this.youtubeRef &&
+        this.youtubeRef.current &&
+        this.youtubeRef.current.props.height
+      )
+        screen.style.height = this.youtubeRef.current.props.height.toString();
+      if (screen.parentElement)
+        screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
+    }
+  };
+
   componentDidMount() {
     const initializeBulletScreen = () => {
       if (this.bulletDiv.current) {
         const screen = this.bulletDiv.current;
-        screen.style.height = "200px";
         if (screen.parentElement)
           screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
-
         const textHeight = 30;
         const options = Math.floor(screen.clientHeight / textHeight);
         for (var i = 0; i < options; i++) this.lanes.add(i * textHeight);

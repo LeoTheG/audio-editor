@@ -136,18 +136,6 @@ export const YoutubePage = () => {
           selectedSongLiveEmojis[userSongs[songIndex].id]
         );
       }
-
-      //   for (var i = 0; i < userSongs.length; i++)
-      //     if (userSongs[i].id === id) {
-      //       setSongPlayingIndex(i);
-      //       setSong(userSongs[i]);
-      //       if (liveEmojiRef.current) {
-      //         liveEmojiRef.current.initializeEmojis(
-      //           selectedSongLiveEmojis[userSongs[i].id]
-      //         );
-      //       }
-      //       break;
-      //     }
     }
   }, [userSongs, songPlayingIndex, selectedSongLiveEmojis, id, history]);
 
@@ -266,6 +254,7 @@ export const YoutubePage = () => {
           url={song?.url}
           controls={true}
           ref={youtubeRef}
+          onReady={bulletRef.current?.matchPlayerDim}
           onPlay={onPlayCallback}
           onPause={onPauseCallback}
           onEnded={onSongEnd}

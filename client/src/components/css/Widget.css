@@ -190,6 +190,7 @@
 
 .bullet-screen {
   width: 100vw;
+  height: 200px;
   position: absolute;
   border: 2px solid black;
   pointer-events: none;
