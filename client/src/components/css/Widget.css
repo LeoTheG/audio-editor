@@ -91,7 +91,7 @@
   }
 }
 
-.live_emoji {
+.live-emoji {
   width: 30px;
   height: 30px;
   position: absolute;
@@ -104,7 +104,6 @@
   height: 27vh;
   align-self: center;
   position: relative;
-
 }
 
 .instruction {
@@ -118,12 +117,163 @@
   width: 100vw;
   height: 27vh;
   position: absolute;
-  align-self:center;
+  align-self: center;
   /* border: 3px red dashed; */
   vertical-align: middle;
 }
 
-#bullet_sec {
+.streak-container {
+  width: fit-content;
+  height: fit-content;
+  position: absolute;
+  left: 80vw;
+  height: 20vh;
+  /* border: 3px red solid; */
+}
+
+.live-gif {
+  width: 35px;
+  height: 35px;
+}
+
+.streak-count-text {
+  font: "30px Comic Sans MS";
+  align-self: top;
+  position: absolute;
+  left: 80vw;
+}
+
+.streak-bonus-text {
+  font-size: 25px;
+  font-style: italic;
+  position: absolute;
+  color: red;
+  left: -14.5rem;
+}
+
+.goomba-bonus-text {
+  font-size: 25px;
+  font-style: italic;
+  position: absolute;
+  color: rgb(255, 115, 0);
+  left: -10rem;
+}
+
+.special-bonus-text {
+  font-size: 25px;
+  font-style: italic;
+  position: absolute;
+  color: rgb(255, 115, 0);
+  top: -27vh;
+  left: -10rem;
+}
+
+#live-emoji-sec {
   position: relative;
-  align-self: center;
+  margin-bottom: 1rem;
+}
+
+#bullet-sec {
+  width: 100vw;
+  position: relative;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.bullet-text {
+  font-size: 20px;
+  position: absolute;
+  color: black(255, 115, 0);
+  left: -200px;
+  width: fit-content;
+}
+
+.bullet-screen {
+  width: 100vw;
+  height: 200px;
+  position: absolute;
+  /* border: 2px solid black; */
+  pointer-events: none;
+}
+
+.bullet-input {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 2px;
+  padding: 0.25rem 0.25rem 0.25rem;
+  /* background: transparent; */
+}
+
+.bullet-input input {
+  flex-grow: 1;
+  color: rgb(97, 93, 93);
+  font-size: 1.3rem;
+  line-height: 2rem;
+  vertical-align: middle;
+  border-style: none;
+  /* background: transparent; */
+  outline: none;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+.bullet-input ::after {
+  content: "";
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  z-index: 999;
+  height: 2px;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+  background-position: 0% 0%;
+  background: linear-gradient(
+    to right,
+    #b294ff,
+    #57e6e6,
+    #feffb8,
+    #57e6e6,
+    #b294ff,
+    #57e6e6
+  );
+  background-size: 500% auto;
+  animation: gradient 3s linear infinite;
+}
+
+.bullet-input-container {
+  display: flex;
+  justify-content: center;
+}
+
+/* .bullet-input-container > *:not(:first-child) {
+  display: flex;
+  justify-content: center;
+  margin-left: 10px;
+} */
+
+.bullet-input button {
+  color:  #7881A1;
+  font-size: 1.4rem;
+  line-height: 2.4rem;
+  vertical-align: middle;
+  transition: color .25s;
+  padding: 0; 
+  background: none; 
+  border: none; 
+  outline: none; 
+}
+.bullet-input button :hover {
+  color: #bfd2ff;
 }

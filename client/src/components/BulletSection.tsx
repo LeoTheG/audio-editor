@@ -1,23 +1,23 @@
+import { Button, TextField } from "@material-ui/core";
+
 import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
 
-// a sample data for chosenEmoji
-const testEmojiData = {
-  1.5: ["1f605", "1f605"],
-  2.0: ["1f3e0"],
-};
+interface IBulletSectionProps {}
+
+interface IBulletSectionState {
+  inputValue: string;
+}
 
 class BulletSection extends React.Component<
-  {},
-  { totalPoints: number; streakPoints: number }
+  IBulletSectionProps,
+  IBulletSectionState
 > {
-  chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
   interval: any = -1; //Timeout object
-  emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
-  emojiCanvas: React.RefObject<HTMLCanvasElement> = React.createRef();
-  clickZone: React.RefObject<HTMLDivElement> = React.createRef();
+  id: number = 0;
+  bulletDiv: React.RefObject<HTMLDivElement> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -25,87 +25,27 @@ class BulletSection extends React.Component<
       ? "touchstart"
       : "mousedown";
 
-  constructor(props: Readonly<{}>) {
+  constructor(props: IBulletSectionProps) {
     super(props);
     this.state = {
-      totalPoints: 0,
-      streakPoints: 0,
+      inputValue: "",
     };
   }
+
+  onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ inputValue: e.target.value });
+  };
+
   componentDidMount() {
-    this.initializeCanvas();
-    this.initializeListener();
-  }
-
-  animateInstruction() {
-    if (this.emojiDiv.current) {
-      let width = this.emojiDiv.current.clientWidth;
-      anime({
-        targets: ".instruction",
-        translateX: function () {
-          return width + 100;
-        },
-        duration: function () {
-          return width * 4.8;
-        },
-        easing: "linear",
-      });
-    }
-  }
-
-  // will be used for future usage, detects clicks on the canvas
-  initializeListener() {
-    /*
-    const updateCoords = (e: any) => {
-      if (this.emojiCanvas.current) {
-        const rect = this.emojiCanvas.current.getBoundingClientRect();
-        const pointerX = (e.clientX || e.touches[0].clientX) - rect.left;
-        const pointerY = (e.clientY || e.touches[0].clientY) - rect.top;
+    const initializeBulletScreen = () => {
+      if (this.bulletDiv.current) {
+        const screen = this.bulletDiv.current;
+        if (screen.parentElement)
+          screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
       }
     };
-    */
-
-    if (this.emojiCanvas.current) {
-      this.emojiCanvas.current.addEventListener(
-        this.tap,
-        function (e) {
-          // updateCoords(e);
-        },
-        false
-      );
-    }
-  }
-
-  // The dimension of canvas matches the parent div element
-  initializeCanvas() {
-    const initializeDimension = () => {
-      if (this.emojiCanvas.current && this.emojiDiv.current) {
-        const canvasEl = this.emojiCanvas.current;
-        canvasEl.width = this.emojiDiv.current.clientWidth;
-        canvasEl.height = this.emojiDiv.current.clientHeight;
-        canvasEl.width = canvasEl.offsetWidth;
-        canvasEl.height = canvasEl.offsetHeight;
-      }
-    };
-
-    initializeDimension();
-    window.addEventListener("resize", initializeDimension);
-
-    if (this.emojiCanvas.current) {
-      const canvasEl = this.emojiCanvas.current;
-      // this clears the canvas screen on each update (avoid leaving the trace of animating objects)
-      const ctx = canvasEl.getContext("2d");
-      anime({
-        duration: Infinity,
-        update: function () {
-          ctx?.clearRect(0, 0, canvasEl.width, canvasEl.height);
-        },
-      });
-    }
-  }
-
-  initializeEmojis(liveEmojis: { number: Array<string> }) {
-    this.chosenEmoji = liveEmojis;
+    initializeBulletScreen();
+    window.addEventListener("resize", initializeBulletScreen);
   }
 
   initializeAudio(audio: HTMLAudioElement) {
@@ -122,8 +62,6 @@ class BulletSection extends React.Component<
       // if the song is playing, we keep outputing emojis every .5 sec
       this.audio.onplaying = (element: any) => {
         clearBulletInterval();
-        this.animateInstruction();
-        this.interval = setInterval(this.bulletScreen, 50);
       };
 
       // if paused or ended, stop outputing emojis
@@ -135,11 +73,8 @@ class BulletSection extends React.Component<
 
   // round the current time stamp to nearest 0.2 value
   round(num: number) {
-    const result = Math.floor(num * 20) / 20;
-    // being compatible with previous data
-    if (parseFloat(result.toFixed(1)) === parseFloat(result.toFixed(2)))
-      return result.toFixed(1);
-    return result.toFixed(2);
+    const result = Math.floor(num * 2) / 2;
+    return result.toFixed(1);
   }
 
   getTimeStamp() {
@@ -147,206 +82,27 @@ class BulletSection extends React.Component<
     return -1;
   }
 
-  // manually add the emoji to screen
-  async addEmoji(emoji: any) {
-    const time = this.getTimeStamp();
-    if (time < 0) return;
-    const node = this.createEmojiNode(emoji);
-    if (node !== undefined) {
-      this.emojiToScreen(node);
-    }
-
-    // add the emoji to the list 0.5 sec later to avoid outputing emoji twice
-    setTimeout(() => {
-      if (!(time in this.chosenEmoji)) this.chosenEmoji[time] = [];
-      this.chosenEmoji[time].push(emoji);
-    }, 50);
-  }
-
-  createParticule(x: number, y: number) {
-    const colors = ["#FF1461", "#18FF92", "#5A87FF", "#FBF38C"];
-    if (this.emojiCanvas.current) {
-      const ctx = this.emojiCanvas.current.getContext("2d");
-      const p = {
-        x: x,
-        y: y,
-        color: colors[anime.random(0, colors.length - 1)],
-        radius: anime.random(16, 24),
-        endPos: this.setParticuleDirection(x, y),
-        draw: function () {
-          if (ctx) {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI, true);
-            ctx.fillStyle = p.color;
-            ctx.fill();
-          }
-        },
-      };
-      return p;
-    }
-    return undefined;
-  }
-
-  createCircle(x: number, y: number) {
-    if (this.emojiCanvas.current) {
-      const ctx = this.emojiCanvas.current.getContext("2d");
-      const p = {
-        x: x,
-        y: y,
-        color: "#FFFFFF",
-        radius: 0.1,
-        alpha: 0.5,
-        lineWidth: 6,
-        draw: function () {
-          if (ctx) {
-            ctx.globalAlpha = p.alpha;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI, true);
-            ctx.lineWidth = p.lineWidth;
-            ctx.strokeStyle = p.color;
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-          }
-        },
-      };
-      return p;
-    }
-    return undefined;
-  }
-
-  setParticuleDirection(x: number, y: number) {
-    var angle = (anime.random(0, 360) * Math.PI) / 180;
-    var value = anime.random(25, 90);
-    var radius = [-1, 1][anime.random(0, 1)] * value;
-    return {
-      x: x + radius * Math.cos(angle),
-      y: y + radius * Math.sin(angle),
-    };
-  }
-
-  // create particles for the firework
-  renderParticule = (anim: any) => {
-    for (var i = 0; i < anim.animatables.length; i++) {
-      anim.animatables[i].target.draw();
-    }
-  };
-  // The animation for the firework
-  animateParticules = (x: number, y: number) => {
-    const circle = this.createCircle(x, y);
-    const particules = [];
-    for (var i = 0; i < 30; i++) {
-      particules.push(this.createParticule(x, y));
-    }
-    anime
-      .timeline()
-      .add({
-        targets: particules,
-        x: function (p: any) {
-          return p.endPos.x;
-        },
-        y: function (p: any) {
-          return p.endPos.y;
-        },
-        radius: 0.1,
-        duration: anime.random(1200, 1800),
-        easing: "easeOutExpo",
-        update: this.renderParticule,
-      })
-      .add({
-        targets: circle,
-        radius: anime.random(80, 160),
-        lineWidth: 0,
-        alpha: {
-          value: 0,
-          easing: "linear",
-          duration: anime.random(600, 800),
-        },
-        duration: anime.random(1200, 1800),
-        easing: "easeOutExpo",
-        update: this.renderParticule,
-        offset: 0,
-      });
-  };
-
-  onLiveEmojiClick(node: HTMLDivElement) {
-    const y = parseFloat(node.style.top);
-    const transInfo = node.style.transform;
-    const x = parseFloat(
-      transInfo.substring(transInfo.indexOf("(") + 1, transInfo.indexOf("px"))
-    );
-    this.animateParticules(x, y);
-
-    this.withinClickZone(x, y);
-
-    // shrinks the emoji and make it disappear
-    anime({
-      targets: node,
-      scale: function () {
-        return 0.01;
-      },
-      duration: function () {
-        return 100;
-      },
-      easing: "linear",
-      complete: () => {
-        try {
-          node.parentElement?.removeChild(node);
-        } catch (e) {
-          //console.log(e);
-        }
-      },
-    });
-  }
-
-  withinClickZone(x: number, y: number) {
-    if (this.clickZone.current) {
-      const rect = this.clickZone.current.getBoundingClientRect();
-      if (
-        x >= rect.left &&
-        x <= rect.right &&
-        y >= 0 &&
-        y <= rect.bottom - rect.top
-      ) {
-        this.setState({
-          totalPoints: this.state.totalPoints + 1,
-        });
-      }
-    }
-  }
-
-  // create the img node for emoji
-  createEmojiNode(emoji: string) {
-    const node = document.createElement("img");
-    node.className = "live_emoji";
-    node.src = getEmojiImageURL(emoji);
-    node.addEventListener(this.tap, () => this.onLiveEmojiClick(node), false);
-
-    if (this.emojiDiv.current) {
-      // the number of emojis in a column the screen can hold
-      const options = Math.floor(this.emojiDiv.current.clientHeight / 30) - 1;
-      // randomly picks a row and calculate the respective height
-      let random = Math.floor(Math.random() * options) * 30 + 10;
-      node.style.top = [random + "px"] as any;
-    }
-
+  createBulletNode(text: string) {
+    const node = document.createElement("div");
+    node.className = "bullet-text";
+    node.innerText = text;
     return node;
   }
 
-  // add the emoji to screen and animate it
-  emojiToScreen(node: HTMLDivElement) {
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
+  bulletToScreen = () => {
+    const text = this.state.inputValue;
+    if (!text || text === "") return;
+    const node = this.createBulletNode(text);
+    if (this.bulletDiv.current) {
+      this.bulletDiv.current.appendChild(node);
+      let width = this.bulletDiv.current.clientWidth;
       anime({
         targets: node,
         translateX: function () {
-          return width + 40;
-        },
-        scale: function () {
-          return anime.random(13, 17) / 10;
+          return width + 200;
         },
         duration: function () {
-          return width * 4.8;
+          return width * 5;
         },
         easing: "linear",
         complete: () => {
@@ -356,48 +112,45 @@ class BulletSection extends React.Component<
         },
       });
     }
-  }
-
-  // add all emojis at the current timestamp to the screen
-  bulletScreen = () => {
-    if (this.audio != null && this.audio.played) {
-      const time = this.getTimeStamp();
-      if (time in this.chosenEmoji) {
-        this.chosenEmoji[time].forEach((emoji: string) => {
-          const node = this.createEmojiNode(emoji);
-          if (node !== undefined) {
-            // have a random time offset for each emoji (dont clutter together)
-            setTimeout(() => {
-              this.emojiToScreen(node);
-            }, Math.random() * 50);
-          }
-        });
-      }
-    }
+    this.setState({ inputValue: "" });
   };
 
   render() {
     return (
-      <div id="bullet_sec">
-        <div className="instruction"> Click emojis to add to stream </div>
-        <div className="instruction">
-          {" "}
-          Click flowing emojis for points: {this.state.totalPoints}{" "}
-        </div>
-        <div className="clickzone" ref={this.clickZone} />
-        <div id="emojis" ref={this.emojiDiv}>
-          <canvas ref={this.emojiCanvas}></canvas>
+      <div id="bullet-sec">
+        <div className="bullet-screen" ref={this.bulletDiv}></div>
+        <div className="bullet-input">
+          <input
+            type="text"
+            placeholder="What do u think?"
+            value={this.state.inputValue}
+            onChange={this.onChangeInput}
+          ></input>
+          <button type="submit" onClick={this.bulletToScreen}>
+            <i className="fas">{"=>"}</i>
+          </button>
         </div>
       </div>
+
+      // <div id="bullet-sec">
+      //   <div className="bullet-screen" ref={this.bulletDiv}></div>
+      //   <div className="bullet-input">
+      //     <TextField
+      //       value={this.state.inputValue}
+      //       onChange={this.onChangeInput}
+      //       placeholder="What do you think?"
+      //     />
+      //     <Button
+      //       style={{ color: "white", backgroundColor: "grey"}}
+      //       variant="contained"
+      //       onClick={this.bulletToScreen}
+      //     >
+      //       submit
+      //     </Button>
+      //   </div>
+      // </div>
     );
   }
 }
-
-const baseEmojiUrl =
-  "https://cdn.jsdelivr.net/gh/iamcal/emoji-data@master/img-apple-64/";
-
-const getEmojiImageURL = (code: string) => {
-  return `${baseEmojiUrl}${code}.png`;
-};
 
 export default BulletSection;

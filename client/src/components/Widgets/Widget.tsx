@@ -3,8 +3,8 @@ import "../css/Widget.css";
 import { ItemTypes, WidgetTypes } from "../../types";
 import React, { useCallback, useEffect, useState } from "react";
 
-import { useDrag } from "react-dnd";
 import { GIFPreview } from "../GIFPreview";
+import { useDrag } from "react-dnd";
 
 export interface IWidgetProps {
   type: WidgetTypes;

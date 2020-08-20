@@ -1,10 +1,15 @@
-import "../css/PlayerPage.css";
+import "../css/YoutubePage.css";
 
 import { Button, IconButton, Popover, Tooltip } from "@material-ui/core";
-import { Close, InsertEmoticon, Lock, Share } from "@material-ui/icons";
+import {
+  Close,
+  InsertEmoticon,
+  Lock,
+  SkipNext,
+  SkipPrevious,
+} from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
-// import ReactPlayer from "react-player";
 import React, {
   useCallback,
   useContext,
@@ -17,17 +22,15 @@ import { AdventureLogo } from "../components/AdventureLogo";
 import BulletSection from "../components/BulletSection";
 import { FirebaseContext } from "../contexts/firebaseContext";
 import LiveEmojiSection from "../components/LiveEmojiSection";
-import { MusicController } from "adventure-component-library";
+import ReactPlayer from "react-player";
 import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
 
-export const PlayerPage = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export const YoutubePage = () => {
+  const [error] = useState<string | null>(null);
   const [songPlayingIndex, setSongPlayingIndex] = useState(-1);
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const firebaseContext = useContext(FirebaseContext);
   const [userSongs, setUserSongs] = useState<userSong[]>([]);
   const [selectedSongEmojis, setSelectedSongEmojis] = useState<
@@ -51,14 +54,18 @@ export const PlayerPage = () => {
 
   const liveEmojiRef = useRef<LiveEmojiSection>(null);
   const bulletRef = useRef<BulletSection>(null);
-  //   const youtubeRef = useRef<ReactPlayer>(null);
+  const youtubeRef = useRef<ReactPlayer>(null);
 
-  const onClickShare = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      setShareAnchor(event.currentTarget);
-    },
-    []
-  );
+  const onClickPrevious = () => {
+    const newIndex = (songPlayingIndex - 1) % userSongs.length;
+    console.log("new index is ", newIndex, songPlayingIndex);
+    setSongPlayingIndex(newIndex);
+  };
+
+  const onClickNext = () => {
+    const newIndex = (songPlayingIndex + 1) % userSongs.length;
+    setSongPlayingIndex(newIndex);
+  };
 
   const updateEmojis = useCallback(
     _.debounce((song: userSong, emojiSelections: IEmojiSelections) => {
@@ -75,29 +82,46 @@ export const PlayerPage = () => {
     [song]
   );
 
-  useEffect(() => {
-    if (songPlayingIndex !== -1) {
-      const song = userSongs[songPlayingIndex];
-      history.push(`/player?id=${song.id}`);
-    }
-  }, [history, songPlayingIndex, userSongs]);
+  const id = useParam("id") || "";
 
+  // find the data for song id and use that for the page
   useEffect(() => {
     if (userSongs.length) {
-      if (userSongs[songPlayingIndex]) {
-        setSong(userSongs[songPlayingIndex]);
-        if (liveEmojiRef.current) {
-          liveEmojiRef.current.initializeEmojis(
-            selectedSongLiveEmojis[userSongs[songPlayingIndex].id]
-          );
-        }
+      let songIndex =
+        songPlayingIndex !== -1
+          ? songPlayingIndex
+          : userSongs.findIndex((song) => song.id === id);
+      if (songIndex === -1) {
+        songIndex = 0;
       }
+      const song = userSongs[songIndex];
+      history.push("/youtube?id=" + song.id);
+
+      setSongPlayingIndex(songIndex);
+      setSong(userSongs[songIndex]);
+      if (liveEmojiRef.current) {
+        liveEmojiRef.current.initializeEmojis(
+          selectedSongLiveEmojis[userSongs[songIndex].id]
+        );
+      }
+
+      //   for (var i = 0; i < userSongs.length; i++)
+      //     if (userSongs[i].id === id) {
+      //       setSongPlayingIndex(i);
+      //       setSong(userSongs[i]);
+      //       if (liveEmojiRef.current) {
+      //         liveEmojiRef.current.initializeEmojis(
+      //           selectedSongLiveEmojis[userSongs[i].id]
+      //         );
+      //       }
+      //       break;
+      //     }
     }
-  }, [userSongs, songPlayingIndex, selectedSongLiveEmojis]);
+  }, [userSongs, songPlayingIndex, selectedSongLiveEmojis, id, history]);
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
-      songs = songs.filter((song) => song.authorName);
+      songs = songs.filter((song) => song.url.includes("youtube"));
       const selectedSongEmojis = songs.reduce<ISongEmojiSelections>(
         (acc, song) => {
           acc[song.id] = song.emojiSelections || {};
@@ -115,8 +139,6 @@ export const PlayerPage = () => {
       setUserSongs(songs);
     });
   }, [firebaseContext]);
-
-  const id = useParam("id") || "";
 
   const onEmojiClick = useCallback(
     (song?: userSong) => (_: MouseEvent, emoji: IEmojiData) => {
@@ -151,87 +173,6 @@ export const PlayerPage = () => {
     [updateEmojis, updateLiveEmojis, selectedSongLiveEmojis]
   );
 
-  const onEndAudio = () => {
-    setIsPlaying(false);
-  };
-
-  useEffect(() => {
-    if (audio === null) return;
-    audio.addEventListener("ended", onEndAudio);
-    return onEndAudio;
-  }, [audio]);
-
-  useEffect(() => {
-    if (!userSongs.length) return;
-    const songIndex = userSongs.findIndex((upload) => upload.id === id);
-    if (songIndex === -1) {
-      if (id.length) alert("Song with id " + id + " not found");
-      setSongPlayingIndex(0);
-    } else {
-      setSongPlayingIndex(songIndex);
-    }
-  }, [id, userSongs]);
-
-  const onClickPrevSong = () => {
-    let newSongIndex = songPlayingIndex - 1;
-    if (newSongIndex < 0) {
-      newSongIndex = userSongs.length - 1;
-    }
-    playSong(newSongIndex);
-  };
-
-  const onClickNextSong = () => {
-    let newSongIndex = songPlayingIndex + 1;
-    if (newSongIndex >= userSongs.length) {
-      newSongIndex = 0;
-    }
-    playSong(newSongIndex);
-  };
-
-  const playSong = (index: number) => {
-    if (index === songPlayingIndex && audio) {
-      audio.play();
-    } else {
-      audio?.pause();
-      const song = userSongs[index];
-      if (!song) return;
-
-      let _audio: HTMLAudioElement = audio || new window.Audio(song.url);
-
-      _audio.src = song.url;
-      _audio?.play();
-      if (!audio) {
-        setAudio(_audio);
-        if (liveEmojiRef.current) liveEmojiRef.current.initializeAudio(_audio);
-      }
-      setSongPlayingIndex(index);
-    }
-    setIsPlaying(true);
-  };
-
-  const onTogglePlaySong = () => {
-    if (userSongs.length && !isPlaying) {
-      if (songPlayingIndex !== -1) {
-        playSong(songPlayingIndex);
-      }
-    } else if (audio && isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
-    }
-  };
-
-  const convertedSong = song
-    ? {
-        url: song.url,
-        artist: song.authorName,
-        songName: song.songName,
-      }
-    : {
-        url: "",
-        artist: "",
-        songName: "",
-      };
-
   const onClickEmojiPanel = useCallback(
     (key: string) => () => {
       const song = userSongs[songPlayingIndex];
@@ -261,6 +202,16 @@ export const PlayerPage = () => {
     ]
   );
 
+  const onPlayCallback = () => {
+    if (liveEmojiRef.current) {
+      liveEmojiRef.current.onPlayCallback();
+    }
+  };
+
+  const onPauseCallback = () => {
+    if (liveEmojiRef.current) liveEmojiRef.current.onPauseCallback();
+  };
+
   return (
     <div className="player-page-container">
       <div style={{ width: "100%" }}>
@@ -279,22 +230,17 @@ export const PlayerPage = () => {
       </div>
 
       <div className="player-body">
-        {error === null && song && song.gifUrl ? (
-          <img
-            alt="corresponding media"
-            style={{ width: 200, height: 200 }}
-            src={song.gifUrl}
-            onError={(e) =>
-              setError(
-                "whoops, looks like there's too much activity, try the player tomorrow"
-              )
-            }
-          />
-        ) : (
-          <div style={{ width: 200, height: 200 }} />
-        )}
+        <ReactPlayer
+          url={song?.url}
+          controls={true}
+          ref={youtubeRef}
+          onPlay={onPlayCallback}
+          onPause={onPauseCallback}
+        />
 
-        {error === null && <LiveEmojiSection ref={liveEmojiRef} />}
+        {error === null && (
+          <LiveEmojiSection youtubeRef={youtubeRef} ref={liveEmojiRef} />
+        )}
         {error === null && <BulletSection ref={bulletRef} />}
 
         {error !== null && (
@@ -310,27 +256,16 @@ export const PlayerPage = () => {
           </div>
         )}
 
-        <div className="music-controller-emoji-container">
-          {
-            <div className="music-controller-container">
-              <MusicController
-                isPlaying={isPlaying}
-                onClickPrev={onClickPrevSong}
-                onClickNext={onClickNextSong}
-                onTogglePlay={onTogglePlaySong}
-                song={convertedSong}
-              />
-              <Tooltip title="shareable url">
-                <IconButton
-                  style={{ width: "fit-content" }}
-                  onClick={onClickShare}
-                >
-                  <Share style={{ width: 50, height: 30, color: "#75d56c" }} />
-                </IconButton>
-              </Tooltip>
-            </div>
-          }
+        <div>
+          <IconButton>
+            <SkipPrevious onClick={onClickPrevious} />
+          </IconButton>
+          <IconButton>
+            <SkipNext onClick={onClickNext} />
+          </IconButton>
+        </div>
 
+        <div className="music-controller-emoji-container">
           <div
             style={{
               display: isEmojiPickerOpen ? "flex" : "none",
@@ -374,11 +309,7 @@ export const PlayerPage = () => {
         anchorEl={shareAnchor}
         onClose={() => setShareAnchor(null)}
         className="url-popover-container"
-      >
-        <a target="_blank" rel="noopener noreferrer" href={generateUrl(song)}>
-          {generateUrl(song)}
-        </a>
-      </Popover>
+      ></Popover>
 
       <AdventureLogo />
     </div>
@@ -390,11 +321,6 @@ const baseEmojiUrl =
 
 const getEmojiImageURL = (code: string) => {
   return `${baseEmojiUrl}${code}.png`;
-};
-
-const generateUrl = (song?: userSong) => {
-  if (!song) return "";
-  return `${window.location.origin}/#/player?id=${song.id}`;
 };
 
 interface IEmojiPanelProps {
