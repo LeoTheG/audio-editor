@@ -91,7 +91,6 @@ class BulletSection extends React.Component<
 
   bulletToScreen = () => {
     const text = this.state.inputValue;
-    console.log(text);
     if (!text || text === "") return;
     const node = this.createBulletNode(text);
     if (this.bulletDiv.current) {
@@ -124,6 +123,7 @@ class BulletSection extends React.Component<
           <input
             type="text"
             placeholder="What do u think?"
+            value={this.state.inputValue}
             onChange={this.onChangeInput}
           ></input>
           <button type="submit" onClick={this.bulletToScreen}>
@@ -141,7 +141,7 @@ class BulletSection extends React.Component<
       //       placeholder="What do you think?"
       //     />
       //     <Button
-      //       style={{ color: "white", backgroundColor: "grey", height: 10 }}
+      //       style={{ color: "white", backgroundColor: "grey"}}
       //       variant="contained"
       //       onClick={this.bulletToScreen}
       //     >
