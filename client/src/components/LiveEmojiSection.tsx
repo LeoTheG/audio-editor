@@ -93,12 +93,12 @@ class LiveEmojiSection extends React.Component<
   onPlayCallback = () => {
     this.clearBulletInterval();
     this.initializeInstruction();
-    // if (this.audio && this.audio.currentTime < 0.1) this.resetPoints();
     if (
       this.youtubeRef.current &&
       this.youtubeRef.current.getCurrentTime() < 0.1
     )
       this.resetPoints();
+    else if (this.audio && this.audio.currentTime < 0.1) this.resetPoints();
     this.interval = setInterval(this.liveEmojiScreen, 50);
   };
 
@@ -139,9 +139,9 @@ class LiveEmojiSection extends React.Component<
   }
 
   getTimeStamp() {
-    // if (this.audio) return this.round(this.audio.currentTime);
     if (this.youtubeRef.current)
       return this.round(this.youtubeRef.current.getCurrentTime());
+    if (this.audio) return this.round(this.audio.currentTime);
     return -1;
   }
 
