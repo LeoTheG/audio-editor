@@ -120,21 +120,35 @@ class BulletSection extends React.Component<
     return (
       <div id="bullet-sec">
         <div className="bullet-screen" ref={this.bulletDiv}></div>
-        <div className="bullet-input-container">
-          <TextField
-            value={this.state.inputValue}
+        <div className="bullet-input">
+          <input
+            type="text"
+            placeholder="What do u think?"
             onChange={this.onChangeInput}
-            placeholder="What do you think?"
-          />
-          <Button
-            style={{ color: "white", backgroundColor: "grey" }}
-            variant="contained"
-            onClick={this.bulletToScreen}
-          >
-            submit
-          </Button>
+          ></input>
+          <button type="submit" onClick={this.bulletToScreen}>
+            <i className="fas">{"=>"}</i>
+          </button>
         </div>
       </div>
+
+      // <div id="bullet-sec">
+      //   <div className="bullet-screen" ref={this.bulletDiv}></div>
+      //   <div className="bullet-input">
+      //     <TextField
+      //       value={this.state.inputValue}
+      //       onChange={this.onChangeInput}
+      //       placeholder="What do you think?"
+      //     />
+      //     <Button
+      //       style={{ color: "white", backgroundColor: "grey", height: 10 }}
+      //       variant="contained"
+      //       onClick={this.bulletToScreen}
+      //     >
+      //       submit
+      //     </Button>
+      //   </div>
+      // </div>
     );
   }
 }

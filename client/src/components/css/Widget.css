@@ -257,13 +257,13 @@
   justify-content: center;
 }
 
-.bullet-input-container > *:not(:first-child) {
+/* .bullet-input-container > *:not(:first-child) {
   display: flex;
   justify-content: center;
   margin-left: 10px;
-}
+} */
 
-/* .bullet-input button {
+.bullet-input button {
   color:  #7881A1;
   font-size: 1.4rem;
   line-height: 2.4rem;
@@ -273,7 +273,7 @@
   background: none; 
   border: none; 
   outline: none; 
-} */
+}
 .bullet-input button :hover {
   color: #bfd2ff;
 }
