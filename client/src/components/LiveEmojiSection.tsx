@@ -160,6 +160,8 @@ class LiveEmojiSection extends React.Component<
       totalPoints: 0,
       streakPoints: 0,
     });
+    this.id = 0;
+    this.streakId = 0;
   }
 
   resetStreak = () => {
@@ -212,7 +214,7 @@ class LiveEmojiSection extends React.Component<
       totalPoints: totalPoints,
       streakPoints: streakPoints,
     });
-    this.props.onChangePoints(totalPoints);
+    //this.props.onChangePoints(totalPoints);
 
     // animate the streak number
     this.animateStreak();
@@ -229,6 +231,7 @@ class LiveEmojiSection extends React.Component<
         y <= rect.bottom - rect.top
       ) {
         if (this.streakId !== parseInt(node.id) - 1) {
+          console.log("reset");
           this.resetStreak();
           this.streakId = parseInt(node.id);
         } else {
