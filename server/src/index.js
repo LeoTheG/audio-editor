@@ -1,5 +1,6 @@
 const server = require("http").createServer();
 const io = require("socket.io")(server);
+const port = process.env.PORT || 8000;
 
 io.on("connection", (client) => {
   console.log("connected with", client);
@@ -11,4 +12,4 @@ io.on("connection", (client) => {
   });
 });
 
-server.listen(3000);
+server.listen(port);
