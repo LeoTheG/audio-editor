@@ -97,6 +97,7 @@ export const PlayerPage = () => {
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
+      songs = songs.filter((song) => song.authorName);
       const selectedSongEmojis = songs.reduce<ISongEmojiSelections>(
         (acc, song) => {
           acc[song.id] = song.emojiSelections || {};

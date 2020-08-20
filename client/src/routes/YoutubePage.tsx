@@ -1,7 +1,13 @@
 import "../css/YoutubePage.css";
 
 import { Button, IconButton, Popover, Tooltip } from "@material-ui/core";
-import { Close, InsertEmoticon, Lock } from "@material-ui/icons";
+import {
+  Close,
+  InsertEmoticon,
+  Lock,
+  SkipNext,
+  SkipPrevious,
+} from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
 import React, {
@@ -50,6 +56,17 @@ export const YoutubePage = () => {
   const bulletRef = useRef<BulletSection>(null);
   const youtubeRef = useRef<ReactPlayer>(null);
 
+  const onClickPrevious = () => {
+    const newIndex = (songPlayingIndex - 1) % userSongs.length;
+    console.log("new index is ", newIndex, songPlayingIndex);
+    setSongPlayingIndex(newIndex);
+  };
+
+  const onClickNext = () => {
+    const newIndex = (songPlayingIndex + 1) % userSongs.length;
+    setSongPlayingIndex(newIndex);
+  };
+
   const updateEmojis = useCallback(
     _.debounce((song: userSong, emojiSelections: IEmojiSelections) => {
       if (!song || !Object.keys(emojiSelections).length) return;
@@ -70,22 +87,41 @@ export const YoutubePage = () => {
   // find the data for song id "spacecat" and use that for the page
   useEffect(() => {
     if (userSongs.length) {
-      for (var i = 0; i < userSongs.length; i++)
-        if (userSongs[i].id === id) {
-          setSongPlayingIndex(i);
-          setSong(userSongs[i]);
-          if (liveEmojiRef.current) {
-            liveEmojiRef.current.initializeEmojis(
-              selectedSongLiveEmojis[userSongs[i].id]
-            );
-          }
-          break;
-        }
+      let songIndex =
+        songPlayingIndex !== -1
+          ? songPlayingIndex
+          : userSongs.findIndex((song) => song.id === id);
+      if (songIndex === -1) {
+        songIndex = 0;
+      }
+      const song = userSongs[songIndex];
+      history.push("/youtube?id=" + song.id);
+
+      setSongPlayingIndex(songIndex);
+      setSong(userSongs[songIndex]);
+      if (liveEmojiRef.current) {
+        liveEmojiRef.current.initializeEmojis(
+          selectedSongLiveEmojis[userSongs[songIndex].id]
+        );
+      }
+
+      //   for (var i = 0; i < userSongs.length; i++)
+      //     if (userSongs[i].id === id) {
+      //       setSongPlayingIndex(i);
+      //       setSong(userSongs[i]);
+      //       if (liveEmojiRef.current) {
+      //         liveEmojiRef.current.initializeEmojis(
+      //           selectedSongLiveEmojis[userSongs[i].id]
+      //         );
+      //       }
+      //       break;
+      //     }
     }
-  }, [userSongs, songPlayingIndex, selectedSongLiveEmojis]);
+  }, [userSongs, songPlayingIndex, selectedSongLiveEmojis, id]);
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
+      songs = songs.filter((song) => song.url.includes("youtube"));
       const selectedSongEmojis = songs.reduce<ISongEmojiSelections>(
         (acc, song) => {
           acc[song.id] = song.emojiSelections || {};
@@ -214,6 +250,15 @@ export const YoutubePage = () => {
             <div className="error-container">{error}</div>
           </div>
         )}
+
+        <div>
+          <IconButton>
+            <SkipPrevious onClick={onClickPrevious} />
+          </IconButton>
+          <IconButton>
+            <SkipNext onClick={onClickNext} />
+          </IconButton>
+        </div>
 
         <div className="music-controller-emoji-container">
           <div
