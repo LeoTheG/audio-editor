@@ -64,6 +64,7 @@ export const PlayerPage = () => {
     [song]
   );
 
+  // find the data for song id "spacecat" and use that for the page
   useEffect(() => {
     if (userSongs.length) {
       for (var i = 0; i < userSongs.length; i++)

@@ -138,6 +138,7 @@ class LiveEmojiSection extends React.Component<
     return result.toFixed(2);
   }
 
+  // check if we are on a youtube page first
   getTimeStamp() {
     if (this.youtubeRef.current)
       return this.round(this.youtubeRef.current.getCurrentTime());
@@ -188,6 +189,7 @@ class LiveEmojiSection extends React.Component<
     const totalPoints =
       this.state.totalPoints + 1 + Math.floor(streakPoints / 5);
 
+    // checking whether to send out a special message animation
     if (streakPoints === 5) this.streakBonusToScreen();
     else if (Math.random() < 0.1) this.bananadanceToScreen();
     else if (
@@ -196,13 +198,17 @@ class LiveEmojiSection extends React.Component<
     )
       this.goombaToScreen();
 
+    // update the state
     this.setState({
       totalPoints: totalPoints,
       streakPoints: streakPoints,
     });
+
+    // animate the streak number
     this.animateStreak();
   }
 
+  // check if the click should generate points (at this point anywhere within the canvas)
   withinClickZone(x: number, y: number, node: HTMLDivElement) {
     if (this.clickZone.current) {
       const rect = this.clickZone.current.getBoundingClientRect();
@@ -303,6 +309,7 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
+  // all functions below here are for bonus message calls
   createStreakBonusNode() {
     const node = document.createElement("div");
     node.className = "streak-bonus-text";
