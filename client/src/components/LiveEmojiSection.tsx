@@ -13,12 +13,19 @@ const testEmojiData = {
   2.0: ["1f3e0"],
 };
 
+interface ILiveEmojiSectionProps {
+  youtubeRef?: React.RefObject<ReactPlayer>;
+  onChangePoints: (points: number) => void;
+}
+
+interface ILiveEmojiSectionState {
+  totalPoints: number;
+  streakPoints: number;
+}
+
 class LiveEmojiSection extends React.Component<
-  {
-    youtubeRef?: React.RefObject<ReactPlayer>;
-    onChangePoints: (points: number) => void;
-  },
-  { totalPoints: number; streakPoints: number }
+  ILiveEmojiSectionProps,
+  ILiveEmojiSectionState
 > {
   chosenEmoji: any = testEmojiData;
   audio: HTMLAudioElement | null = null;
@@ -31,7 +38,7 @@ class LiveEmojiSection extends React.Component<
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
   streakDisplay: React.RefObject<HTMLCanvasElement> = React.createRef();
   streakCount: React.RefObject<HTMLSpanElement> = React.createRef();
-  youtubeRef: React.RefObject<ReactPlayer> = React.createRef();
+  youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -39,12 +46,7 @@ class LiveEmojiSection extends React.Component<
       ? "touchstart"
       : "mousedown";
 
-  constructor(
-    props: Readonly<{
-      youtubeRef: React.RefObject<ReactPlayer>;
-      onChangePoints: (num: number) => void;
-    }>
-  ) {
+  constructor(props: Readonly<ILiveEmojiSectionProps>) {
     super(props);
     this.state = {
       totalPoints: 0,
@@ -87,15 +89,7 @@ class LiveEmojiSection extends React.Component<
   }
 
   initializeAudio(audio: HTMLAudioElement) {
-    if (audio) {
-      this.audio = audio;
-
-      // if the song is playing, we keep outputing emojis every .5 sec
-      this.audio.onplaying = this.onPlayCallback;
-
-      // if paused or ended, stop outputing emojis
-      this.audio.onpause = this.onPauseCallback;
-    }
+    if (audio) this.audio = audio;
   }
 
   onPlayCallback = () => {
@@ -123,7 +117,7 @@ class LiveEmojiSection extends React.Component<
   };
 
   // manually add the emoji to screen
-  async addEmoji(emoji: any) {
+  async addEmoji(emoji: string) {
     const time = this.getTimeStamp();
     if (time <= 0) return;
     const node = this.createEmojiNode(emoji);
@@ -231,7 +225,6 @@ class LiveEmojiSection extends React.Component<
         y <= rect.bottom - rect.top
       ) {
         if (this.streakId !== parseInt(node.id) - 1) {
-          console.log("reset");
           this.resetStreak();
           this.streakId = parseInt(node.id);
         } else {

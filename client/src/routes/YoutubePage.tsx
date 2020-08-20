@@ -236,13 +236,13 @@ export const YoutubePage = () => {
   );
 
   const onPlayCallback = () => {
-    if (liveEmojiRef.current) {
-      liveEmojiRef.current.onPlayCallback();
-    }
+    liveEmojiRef.current?.onPlayCallback();
+    bulletRef.current?.onPlayCallback();
   };
 
   const onPauseCallback = () => {
-    if (liveEmojiRef.current) liveEmojiRef.current.onPauseCallback();
+    liveEmojiRef.current?.onPauseCallback();
+    bulletRef.current?.onPauseCallback();
   };
 
   return (
@@ -279,7 +279,9 @@ export const YoutubePage = () => {
             onChangePoints={setPoints}
           />
         )}
-        {error === null && <BulletSection ref={bulletRef} />}
+        {error === null && (
+          <BulletSection youtubeRef={youtubeRef} ref={bulletRef} />
+        )}
 
         {error !== null && (
           <div

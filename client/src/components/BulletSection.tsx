@@ -1,8 +1,11 @@
 import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
+import ReactPlayer from "react-player";
 
-interface IBulletSectionProps {}
+interface IBulletSectionProps {
+  youtubeRef?: React.RefObject<ReactPlayer>;
+}
 
 interface IBulletSectionState {
   inputValue: string;
@@ -12,10 +15,13 @@ class BulletSection extends React.Component<
   IBulletSectionProps,
   IBulletSectionState
 > {
+  bullets: any = {};
   audio: HTMLAudioElement | null = null;
   interval: any = -1; //Timeout object
   id: number = 0;
+  lanes: Set<number> = new Set();
   bulletDiv: React.RefObject<HTMLDivElement> = React.createRef();
+  youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -28,6 +34,7 @@ class BulletSection extends React.Component<
     this.state = {
       inputValue: "",
     };
+    this.youtubeRef = props.youtubeRef;
   }
 
   onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,8 +45,13 @@ class BulletSection extends React.Component<
     const initializeBulletScreen = () => {
       if (this.bulletDiv.current) {
         const screen = this.bulletDiv.current;
+        screen.style.height = "200px";
         if (screen.parentElement)
           screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
+
+        const textHeight = 30;
+        const options = Math.floor(screen.clientHeight / textHeight);
+        for (var i = 0; i < options; i++) this.lanes.add(i * textHeight);
       }
     };
     initializeBulletScreen();
@@ -47,27 +59,32 @@ class BulletSection extends React.Component<
   }
 
   initializeAudio(audio: HTMLAudioElement) {
-    // helper function
-    const clearBulletInterval = () => {
-      if (this.interval !== -1) {
-        clearInterval(this.interval);
-        this.interval = -1;
-      }
-    };
-
     if (audio) {
       this.audio = audio;
       // if the song is playing, we keep outputing emojis every .5 sec
-      this.audio.onplaying = (element: any) => {
-        clearBulletInterval();
-      };
+      this.audio.onplaying = this.onPlayCallback;
 
       // if paused or ended, stop outputing emojis
-      this.audio.onpause = (element: any) => {
-        clearBulletInterval();
-      };
+      this.audio.onpause = this.onPauseCallback;
     }
   }
+
+  // helper function
+  clearBulletInterval = () => {
+    if (this.interval !== -1) {
+      clearInterval(this.interval);
+      this.interval = -1;
+    }
+  };
+
+  onPlayCallback = () => {
+    this.clearBulletInterval();
+    this.interval = setInterval(this.bulletScreen, 500);
+  };
+
+  onPauseCallback = () => {
+    this.clearBulletInterval();
+  };
 
   // round the current time stamp to nearest 0.2 value
   round(num: number) {
@@ -76,20 +93,48 @@ class BulletSection extends React.Component<
   }
 
   getTimeStamp() {
+    if (this.youtubeRef && this.youtubeRef.current)
+      return this.round(this.youtubeRef.current.getCurrentTime());
     if (this.audio) return this.round(this.audio.currentTime);
     return -1;
   }
+
+  getRandomLane() {
+    const items = Array.from(this.lanes);
+    const lane = items[Math.floor(Math.random() * items.length)];
+    return lane;
+  }
+
+  addBullet = () => {
+    const text = this.state.inputValue;
+    if (text && text === "") return;
+
+    this.textToScreen(text);
+
+    const time = this.getTimeStamp();
+    if (time <= 0) return;
+
+    // add the emoji to the list 0.5 sec later to avoid outputing emoji twice
+    setTimeout(() => {
+      if (!(time in this.bullets)) this.bullets[time] = [];
+      this.bullets[time].push(text);
+    }, 500);
+  };
 
   createBulletNode(text: string) {
     const node = document.createElement("div");
     node.className = "bullet-text";
     node.innerText = text;
+    const lane = this.getRandomLane();
+    node.style.top = lane + "px";
+    this.lanes.delete(lane);
+    setTimeout(() => {
+      this.lanes.add(lane);
+    }, 500);
     return node;
   }
 
-  bulletToScreen = () => {
-    const text = this.state.inputValue;
-    if (!text || text === "") return;
+  textToScreen = (text: string) => {
     const node = this.createBulletNode(text);
     if (this.bulletDiv.current) {
       this.bulletDiv.current.appendChild(node);
@@ -100,7 +145,7 @@ class BulletSection extends React.Component<
           return width + 200;
         },
         duration: function () {
-          return width * 5;
+          return width * 6;
         },
         easing: "linear",
         complete: () => {
@@ -113,6 +158,19 @@ class BulletSection extends React.Component<
     this.setState({ inputValue: "" });
   };
 
+  bulletScreen = () => {
+    const time = this.getTimeStamp();
+    if (time in this.bullets) {
+      this.bullets[time].forEach((text: string) => {
+        if (text && text !== "") {
+          // have a random time offset for each emoji (dont clutter together)
+          setTimeout(() => {
+            this.textToScreen(text);
+          }, Math.random() * 500);
+        }
+      });
+    }
+  };
   render() {
     return (
       <div id="bullet-sec">
@@ -124,7 +182,7 @@ class BulletSection extends React.Component<
             value={this.state.inputValue}
             onChange={this.onChangeInput}
           ></input>
-          <button type="submit" onClick={this.bulletToScreen}>
+          <button type="submit" onClick={this.addBullet}>
             <i className="fas">{"=>"}</i>
           </button>
         </div>

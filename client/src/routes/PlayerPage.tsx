@@ -82,7 +82,6 @@ export const PlayerPage = () => {
 
   const liveEmojiRef = useRef<LiveEmojiSection>(null);
   const bulletRef = useRef<BulletSection>(null);
-  //   const youtubeRef = useRef<ReactPlayer>(null);
 
   const onClickShare = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -220,6 +219,16 @@ export const PlayerPage = () => {
     playSong(newSongIndex);
   };
 
+  const onPlayCallback = () => {
+    liveEmojiRef.current?.onPlayCallback();
+    bulletRef.current?.onPlayCallback();
+  };
+
+  const onPauseCallback = () => {
+    liveEmojiRef.current?.onPauseCallback();
+    bulletRef.current?.onPauseCallback();
+  };
+
   const playSong = (index: number) => {
     if (index === songPlayingIndex && audio) {
       audio.play();
@@ -234,7 +243,10 @@ export const PlayerPage = () => {
       _audio?.play();
       if (!audio) {
         setAudio(_audio);
-        if (liveEmojiRef.current) liveEmojiRef.current.initializeAudio(_audio);
+        liveEmojiRef.current?.initializeAudio(_audio);
+        bulletRef.current?.initializeAudio(_audio);
+        _audio.onplaying = onPlayCallback;
+        _audio.onpause = onPauseCallback;
       }
       setSongPlayingIndex(index);
     }
