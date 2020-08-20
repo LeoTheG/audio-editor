@@ -3,10 +3,10 @@ import "../components/css/Leaderboard.css";
 import {
   Button,
   IconButton,
-  Popover,
-  Tooltip,
   Modal,
+  Popover,
   TextField,
+  Tooltip,
 } from "@material-ui/core";
 import {
   Close,
@@ -317,23 +317,25 @@ export const YoutubePage = () => {
           </div>
 
           {!song?.isLocked && (
-            <EmojiPanel
-              selectedEmojis={selectedEmojis}
-              onClickEmoji={onClickEmojiPanel}
-              isDisabled={song?.isLocked}
-            />
+            <>
+              <EmojiPanel
+                selectedEmojis={selectedEmojis}
+                onClickEmoji={onClickEmojiPanel}
+                isDisabled={song?.isLocked}
+              />
+              <div>
+                add emoji
+                <Tooltip title="insert emoji">
+                  <IconButton
+                    disabled={song?.isLocked}
+                    onClick={() => setIsEmojiPickerOpen(true)}
+                  >
+                    <InsertEmoticon />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            </>
           )}
-          <div>
-            add emoji
-            <Tooltip title="insert emoji">
-              <IconButton
-                disabled={song?.isLocked}
-                onClick={() => setIsEmojiPickerOpen(true)}
-              >
-                <InsertEmoticon />
-              </IconButton>
-            </Tooltip>
-          </div>
 
           {song?.isLocked && (
             <Tooltip title="emojis cannot be added to this song">
@@ -422,7 +424,7 @@ interface ILeaderboardProps {
 }
 
 const Leaderboard = (props: ILeaderboardProps) => {
-  const inOrderScores = props.scores.sort((a, b) => a.score - b.score);
+  const inOrderScores = props.scores.sort((a, b) => b.score - a.score);
   return (
     <div className="leaderboard-container">
       <div className="leaderboard-title">Leaderboard</div>
