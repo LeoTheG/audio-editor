@@ -14,7 +14,10 @@ const testEmojiData = {
 };
 
 class LiveEmojiSection extends React.Component<
-  { youtubeRef?: React.RefObject<ReactPlayer> },
+  {
+    youtubeRef?: React.RefObject<ReactPlayer>;
+    onChangePoints: (points: number) => void;
+  },
   { totalPoints: number; streakPoints: number }
 > {
   chosenEmoji: any = testEmojiData;
@@ -36,7 +39,12 @@ class LiveEmojiSection extends React.Component<
       ? "touchstart"
       : "mousedown";
 
-  constructor(props: Readonly<{ youtubeRef: React.RefObject<ReactPlayer> }>) {
+  constructor(
+    props: Readonly<{
+      youtubeRef: React.RefObject<ReactPlayer>;
+      onChangePoints: (num: number) => void;
+    }>
+  ) {
     super(props);
     this.state = {
       totalPoints: 0,
@@ -204,6 +212,7 @@ class LiveEmojiSection extends React.Component<
       totalPoints: totalPoints,
       streakPoints: streakPoints,
     });
+    this.props.onChangePoints(totalPoints);
 
     // animate the streak number
     this.animateStreak();

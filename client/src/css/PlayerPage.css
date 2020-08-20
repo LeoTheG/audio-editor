@@ -14,7 +14,6 @@
   color: gray !important;
 }
 
-
 .music-controller-emoji-container {
   max-width: 100vw;
   display: flex;
@@ -82,6 +81,17 @@
   overflow-y: auto;
 }
 
+.streak-modal-container {
+  width: 500px;
+  height: 200px;
+  background: white;
+  margin: 0 auto;
+  margin-top: calc(50vh - 250px);
+  padding: 15px;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
 @media screen and (max-width: 500px) {
   .music-controller-container {
     max-width: 100%;

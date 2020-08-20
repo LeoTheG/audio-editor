@@ -19,6 +19,7 @@ export interface userSong {
   emojiSelections?: IEmojiSelections;
   liveEmojis?: any;
   isLocked?: boolean;
+  highscores?: { name: string; score: number }[];
 }
 
 export interface ILibraryMetadata {

@@ -1,0 +1,13 @@
+.leaderboard-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.leaderboard-name {
+  width: 100px;
+  border: 1px solid black;
+}
+.leaderboard-score {
+  width: 100px;
+  border: 1px solid black;
+}

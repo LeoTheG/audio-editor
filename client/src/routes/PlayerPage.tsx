@@ -1,6 +1,13 @@
 import "../css/PlayerPage.css";
 
-import { Button, IconButton, Popover, Tooltip } from "@material-ui/core";
+import {
+  Button,
+  IconButton,
+  Popover,
+  Tooltip,
+  Modal,
+  TextField,
+} from "@material-ui/core";
 import { Close, InsertEmoticon, Lock, Share } from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
@@ -37,6 +44,30 @@ export const PlayerPage = () => {
   const [shareAnchor, setShareAnchor] = useState<HTMLButtonElement | null>(
     null
   );
+
+  const [isDisplayingScoreModal, setDisplayingScoreModal] = useState(false);
+  const [points, setPoints] = useState<number>(-1);
+  const [scoreName, setScoreName] = useState<string>("");
+
+  const onSubmitPoints = () => {
+    if (song) {
+      const highscores = song.highscores || [];
+      highscores.push({ name: scoreName, score: points });
+      firebaseContext.updateLiveEmojiPoints(song.id, highscores);
+      setDisplayingScoreModal(false);
+      setUserSongs([
+        ...userSongs.slice(0, songPlayingIndex),
+        { ...song, highscores },
+        ...userSongs.slice(songPlayingIndex + 1),
+      ]);
+    }
+  };
+
+  useEffect(() => {
+    if (!isDisplayingScoreModal && liveEmojiRef.current) {
+      liveEmojiRef.current.resetPoints();
+    }
+  }, [isDisplayingScoreModal]);
 
   const history = useHistory();
 
@@ -153,6 +184,7 @@ export const PlayerPage = () => {
 
   const onEndAudio = () => {
     setIsPlaying(false);
+    setDisplayingScoreModal(true);
   };
 
   useEffect(() => {
@@ -294,7 +326,9 @@ export const PlayerPage = () => {
           <div style={{ width: 200, height: 200 }} />
         )}
 
-        {error === null && <LiveEmojiSection ref={liveEmojiRef} />}
+        {error === null && (
+          <LiveEmojiSection ref={liveEmojiRef} onChangePoints={setPoints} />
+        )}
         {error === null && <BulletSection ref={bulletRef} />}
 
         {error !== null && (
@@ -367,6 +401,8 @@ export const PlayerPage = () => {
             </Tooltip>
           )}
         </div>
+
+        {song?.highscores && <Leaderboard scores={song.highscores} />}
       </div>
 
       <Popover
@@ -379,6 +415,33 @@ export const PlayerPage = () => {
           {generateUrl(song)}
         </a>
       </Popover>
+
+      <Modal open={isDisplayingScoreModal}>
+        <div className="streak-modal-container">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              width: "100%",
+            }}
+          >
+            <IconButton onClick={() => setDisplayingScoreModal(false)}>
+              <div style={{ color: "red" }}>x</div>
+            </IconButton>
+          </div>
+          score: {points}
+          <div style={{ display: "flex", marginBottom: 10 }}>
+            <div style={{ marginRight: 10 }}>enter name:</div>
+            <TextField
+              value={scoreName}
+              onChange={(e) => setScoreName(e.target.value)}
+            />
+          </div>
+          <Button variant="contained" onClick={onSubmitPoints}>
+            submit
+          </Button>
+        </div>
+      </Modal>
 
       <AdventureLogo />
     </div>
@@ -418,6 +481,25 @@ const EmojiPanel = (props: IEmojiPanelProps) => {
             />
           </IconButton>
           <div>{value}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+interface ILeaderboardProps {
+  scores: { name: string; score: number }[];
+}
+
+const Leaderboard = (props: ILeaderboardProps) => {
+  const inOrderScores = props.scores.sort((a, b) => a.score - b.score);
+  return (
+    <div className="leaderboard-container">
+      <div className="leaderboard-title">Leaderboard</div>
+      {inOrderScores.map((score) => (
+        <div key={score.name + score.score} style={{ display: "flex" }}>
+          <div className="leaderboard-name">{score.name}</div>
+          <div className="leaderboard-score">{score.score}</div>
         </div>
       ))}
     </div>
