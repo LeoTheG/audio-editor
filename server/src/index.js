@@ -10,8 +10,8 @@ io.on("connection", (client) => {
   console.log("connected with", client);
   client.on("connect room", (id) => {
     // leave old rooms
-    for (room in socket.rooms) {
-      if (socket.id !== room) socket.leave(room);
+    for (room in client.rooms) {
+      if (client.id !== room) client.leave(room);
     }
     console.log("connecting to room ", id);
     client.join(id);
@@ -23,7 +23,7 @@ io.on("connection", (client) => {
     console.log("got position ", x, y);
     clientPositions[client.id] = { x, y };
     const clientRoom = Object.keys(client.rooms).forEach(
-      (room) => socket.id !== room
+      (room) => client.id !== room
     );
     console.log("client room is ", clientRoom);
     io.sockets.clients(clientRoom).forEach((roommate) => {
