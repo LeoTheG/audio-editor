@@ -1,9 +1,6 @@
-// const server = require('http').createServer();
-import http from "http";
-import socketIO from "socket.io";
-
+const server = require("http").createServer();
 const server = http.createServer();
-const io = socketIO(server);
+const io = require("socket.io")(server);
 
 io.on("connection", (client) => {
   console.log("connected with", client);
