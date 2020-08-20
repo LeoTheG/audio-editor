@@ -116,6 +116,13 @@
   background: white;
 }
 
+.collaboration-container {
+  width: 400px;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+}
+
 @media screen and (max-width: 500px) {
   .music-controller-container {
     max-width: 100%;

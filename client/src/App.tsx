@@ -16,19 +16,7 @@ import { YoutubePage } from "./routes/YoutubePage";
 import backgroundImage from "./assets/Polka-Dots.svg";
 import { withFirebaseContext } from "./contexts/firebaseContext";
 
-import io from "socket.io-client";
-
-const socket = io("ws://yeeplayer.herokuapp.com");
-
 function App() {
-  useEffect(() => {
-    socket.on("connect", function () {
-      console.log("connected client");
-    });
-    socket.on("event", function (data: any) {});
-    socket.on("disconnect", function () {});
-  }, []);
-
   return (
     <div
       className="App"

@@ -5,6 +5,8 @@ import {
   Popover,
   TextField,
   Tooltip,
+  Radio,
+  Switch,
 } from "@material-ui/core";
 import {
   Close,
@@ -43,6 +45,15 @@ import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
+import { AppStateContext } from "../contexts/appContext";
+
+import io from "socket.io-client";
+
+const socket = io("ws://yeeplayer.herokuapp.com");
+
+interface IUserConnections {
+  [userId: string]: { location: { x: number; y: number } };
+}
 
 interface IInteractivePlayerProps {
   isYoutube?: boolean;
@@ -54,9 +65,12 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const youtubeRef = useRef<ReactPlayer>(null);
 
+  const playerBodyRef = useRef<HTMLDivElement>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [songPlayingIndex, setSongPlayingIndex] = useState(-1);
   const firebaseContext = useContext(FirebaseContext);
+  const appStateContext = useContext(AppStateContext);
   const [userSongs, setUserSongs] = useState<userSong[]>([]);
   const [selectedSongEmojis, setSelectedSongEmojis] = useState<
     ISongEmojiSelections
@@ -81,6 +95,88 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const [playedSong, setPlayedSong] = useState<{ [songId: string]: boolean }>(
     {}
   );
+
+  const [isCollaborating, setCollaborating] = useState(false);
+  const [amountOnline, setAmountOnline] = useState(0);
+  // const [userConnections, setUserConnections] = useState<{[userId: string ]: {location: {x: number, y: number}}}>({})
+  const [userConnections, setUserConnections] = useState<IUserConnections>({});
+
+  // const onMouseMove = useCallback(
+  //   (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  //     const rect = event.currentTarget.getBoundingClientRect();
+  //     const x = event.clientX - rect.left; //x position within the element.
+  //     const y = event.clientY - rect.top; //y position within the element.
+
+  //     const width = event.currentTarget.clientWidth;
+  //     const height = event.currentTarget.clientHeight;
+
+  //     console.log(x / width, y / height);
+  //   },
+  //   []
+  // );
+
+  const updateCursorPosition = useCallback(
+    _.throttle((position: [number, number]) => {
+      console.log("updating with ", { x: position[0], y: position[1] });
+      socket.emit("cursor move", { x: position[0], y: position[1] });
+    }, 1000),
+    []
+  );
+
+  const onMouseMove = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = event.clientX - rect.left; //x position within the element.
+      const y = event.clientY - rect.top; //y position within the element.
+
+      const width = event.currentTarget.clientWidth;
+      const height = event.currentTarget.clientHeight;
+
+      const relativeX = x / width;
+      const relativeY = y / height;
+
+      updateCursorPosition([relativeX, relativeY]);
+    },
+    []
+  );
+
+  const onChangeCollaboration = useCallback((_, isCollaborating: boolean) => {
+    setCollaborating(isCollaborating);
+  }, []);
+
+  useEffect(() => {
+    socket.on("connect", function () {
+      console.log("connected client");
+      socket.emit("connect room", id);
+    });
+    // socket.on("event", function (data: any) {});
+    // socket.on("user connections", (data: IUserConnections) => {
+    //   console.log("user connections", data);
+    //   setUserConnections(data);
+    //   setAmountOnline(Object.keys(data).length);
+    // });
+    socket.on("disconnect", function () {});
+    socket.on("cursor move", (clientId: string, [x, y]: number[]) => {
+      if (!playerBodyRef.current) return;
+
+      console.log("got cursor move emit with id and x,y = ", clientId, x, y);
+
+      const rect = playerBodyRef.current.getBoundingClientRect();
+      // const x = event.clientX - rect.left; //x position within the element.
+      // const y = event.clientY - rect.top; //y position within the element.
+
+      const width = rect.width;
+      const height = rect.height;
+
+      const absoluteX = width * x;
+      const absoluteY = height * y;
+
+      setUserConnections((userConnections) => ({
+        ...userConnections,
+        [clientId]: { location: { x: absoluteX, y: absoluteY } },
+      }));
+    });
+  }, []);
 
   const onSongEnd = useCallback(() => {
     setIsPlaying(false);
@@ -413,7 +509,20 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         </Button>
       </div>
 
-      <div className="player-body">
+      <div
+        ref={playerBodyRef}
+        className="player-body"
+        onMouseMove={onMouseMove}
+      >
+        {Object.entries(userConnections).forEach(([key, value]) => {
+          const { x, y } = value.location;
+          return (
+            <div style={{ position: "absolute", top: x, left: y }}>
+              CURSOR {key}
+            </div>
+          );
+        })}
+
         {isYoutube ? (
           <ReactPlayer
             url={song?.url}
@@ -440,11 +549,24 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         )}
 
         {error === null && (
-          <LiveEmojiSection
-            youtubeRef={isYoutube ? youtubeRef : undefined}
-            ref={liveEmojiRef}
-            onChangePoints={setPoints}
-          />
+          <>
+            <div className="collaboration-container">
+              <div style={{ display: "flex" }}>
+                <div>collaboration</div>
+                <Switch
+                  color="primary"
+                  value={isCollaborating}
+                  onChange={onChangeCollaboration}
+                />
+              </div>
+              <div>online: {amountOnline}</div>
+            </div>
+            <LiveEmojiSection
+              youtubeRef={isYoutube ? youtubeRef : undefined}
+              ref={liveEmojiRef}
+              onChangePoints={setPoints}
+            />
+          </>
         )}
         {error === null && (
           <BulletSection
