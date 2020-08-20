@@ -4,7 +4,7 @@ import { Button, IconButton, Popover, Tooltip } from "@material-ui/core";
 import { Close, InsertEmoticon, Lock, Share } from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
-import ReactPlayer from "react-player";
+// import ReactPlayer from "react-player";
 import React, {
   useCallback,
   useContext,
@@ -14,9 +14,9 @@ import React, {
 } from "react";
 
 import { AdventureLogo } from "../components/AdventureLogo";
-import LiveEmojiSection from "../components/LiveEmojiSection";
 import BulletSection from "../components/BulletSection";
 import { FirebaseContext } from "../contexts/firebaseContext";
+import LiveEmojiSection from "../components/LiveEmojiSection";
 import { MusicController } from "adventure-component-library";
 import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
@@ -51,7 +51,7 @@ export const PlayerPage = () => {
 
   const liveEmojiRef = useRef<LiveEmojiSection>(null);
   const bulletRef = useRef<BulletSection>(null);
-  const youtubeRef = useRef<ReactPlayer>(null);
+  //   const youtubeRef = useRef<ReactPlayer>(null);
 
   const onClickShare = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -293,9 +293,7 @@ export const PlayerPage = () => {
           <div style={{ width: 200, height: 200 }} />
         )}
 
-        {error === null && (
-          <LiveEmojiSection youtubeRef={youtubeRef} ref={liveEmojiRef} />
-        )}
+        {error === null && <LiveEmojiSection ref={liveEmojiRef} />}
         {error === null && <BulletSection ref={bulletRef} />}
 
         {error !== null && (

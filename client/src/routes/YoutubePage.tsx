@@ -4,7 +4,6 @@ import { Button, IconButton, Popover, Tooltip } from "@material-ui/core";
 import { Close, InsertEmoticon, Lock } from "@material-ui/icons";
 import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
-import ReactPlayer from "react-player";
 import React, {
   useCallback,
   useContext,
@@ -14,14 +13,15 @@ import React, {
 } from "react";
 
 import { AdventureLogo } from "../components/AdventureLogo";
-import LiveEmojiSection from "../components/LiveEmojiSection";
 import BulletSection from "../components/BulletSection";
 import { FirebaseContext } from "../contexts/firebaseContext";
+import LiveEmojiSection from "../components/LiveEmojiSection";
+import ReactPlayer from "react-player";
 import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
 import { useHistory } from "react-router-dom";
 
-export const PlayerPage = () => {
+export const YoutubePage = () => {
   const [error] = useState<string | null>(null);
   const [songPlayingIndex, setSongPlayingIndex] = useState(-1);
   const firebaseContext = useContext(FirebaseContext);

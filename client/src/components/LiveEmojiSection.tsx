@@ -1,11 +1,11 @@
+import AnimationCanvas from "./AnimationCanvas";
 import React from "react";
+import ReactPlayer from "react-player";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
-import AnimationCanvas from "./AnimationCanvas";
-import streakBonusBuildsGif from "../assets/builds.gif";
-import letsGoGoombaGif from "../assets/goomba.gif";
 import bananadanceGif from "../assets/bananadance.gif";
-import ReactPlayer from "react-player";
+import letsGoGoombaGif from "../assets/goomba.gif";
+import streakBonusBuildsGif from "../assets/builds.gif";
 
 // a sample data for chosenEmoji
 const testEmojiData = {
@@ -14,7 +14,7 @@ const testEmojiData = {
 };
 
 class LiveEmojiSection extends React.Component<
-  { youtubeRef: React.RefObject<ReactPlayer> },
+  { youtubeRef?: React.RefObject<ReactPlayer> },
   { totalPoints: number; streakPoints: number }
 > {
   chosenEmoji: any = testEmojiData;
@@ -94,6 +94,7 @@ class LiveEmojiSection extends React.Component<
     this.clearBulletInterval();
     this.initializeInstruction();
     if (
+      this.youtubeRef &&
       this.youtubeRef.current &&
       this.youtubeRef.current.getCurrentTime() < 0.1
     )
@@ -140,7 +141,7 @@ class LiveEmojiSection extends React.Component<
 
   // check if we are on a youtube page first
   getTimeStamp() {
-    if (this.youtubeRef.current)
+    if (this.youtubeRef && this.youtubeRef.current)
       return this.round(this.youtubeRef.current.getCurrentTime());
     if (this.audio) return this.round(this.audio.currentTime);
     return -1;
