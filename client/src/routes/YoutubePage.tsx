@@ -20,6 +20,7 @@ import { FirebaseContext } from "../contexts/firebaseContext";
 import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
 import { useHistory } from "react-router-dom";
+import { useParam } from "../util";
 
 export const PlayerPage = () => {
   const [error] = useState<string | null>(null);
@@ -64,11 +65,13 @@ export const PlayerPage = () => {
     [song]
   );
 
+  const id = useParam("id") || "";
+
   // find the data for song id "spacecat" and use that for the page
   useEffect(() => {
     if (userSongs.length) {
       for (var i = 0; i < userSongs.length; i++)
-        if (userSongs[i].id === "spacecat") {
+        if (userSongs[i].id === id) {
           setSongPlayingIndex(i);
           setSong(userSongs[i]);
           if (liveEmojiRef.current) {
@@ -188,7 +191,7 @@ export const PlayerPage = () => {
 
       <div className="player-body">
         <ReactPlayer
-          url="https://www.youtube.com/watch?v=5xG09d3WcGo"
+          url={song?.url}
           controls={true}
           ref={youtubeRef}
           onPlay={onPlayCallback}
