@@ -1,5 +1,4 @@
 const server = require("http").createServer();
-const server = http.createServer();
 const io = require("socket.io")(server);
 
 io.on("connection", (client) => {
