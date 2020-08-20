@@ -117,7 +117,7 @@
   width: 100vw;
   height: 27vh;
   position: absolute;
-  align-self:center;
+  align-self: center;
   /* border: 3px red dashed; */
   vertical-align: middle;
 }
@@ -131,8 +131,7 @@
   /* border: 3px red solid; */
 }
 
-.live-gif
-{
+.live-gif {
   width: 35px;
   height: 35px;
 }
@@ -144,8 +143,7 @@
   left: 80vw;
 }
 
-.streak-bonus-text
-{
+.streak-bonus-text {
   font-size: 25px;
   font-style: italic;
   position: absolute;
@@ -153,8 +151,7 @@
   left: -14.5rem;
 }
 
-.goomba-bonus-text
-{
+.goomba-bonus-text {
   font-size: 25px;
   font-style: italic;
   position: absolute;
@@ -162,8 +159,7 @@
   left: -10rem;
 }
 
-.special-bonus-text
-{
+.special-bonus-text {
   font-size: 25px;
   font-style: italic;
   position: absolute;
@@ -184,17 +180,15 @@
   margin-bottom: 1rem;
 }
 
-.bullet-text
-{
+.bullet-text {
   font-size: 20px;
   position: absolute;
   color: black(255, 115, 0);
   left: -200px;
-  width: fit-content
+  width: fit-content;
 }
 
-.bullet-screen
-{
+.bullet-screen {
   width: 100vw;
   height: 200px;
   position: absolute;
@@ -210,24 +204,28 @@
   max-width: 400px;
   margin: 0 auto;
   border-radius: 2px;
-  padding: .25rem .25rem .25rem;
-  background: transparent;
+  padding: 0.25rem 0.25rem 0.25rem;
+  /* background: transparent; */
 }
 
 .bullet-input input {
   flex-grow: 1;
   color: rgb(97, 93, 93);
   font-size: 1.3rem;
-  line-height: 2.0rem;
+  line-height: 2rem;
   vertical-align: middle;
-  border-style: none; 
-  background: transparent; 
+  border-style: none;
+  /* background: transparent; */
   outline: none;
 }
 
-@keyframes gradient { 
-  0%{background-position:0 0}
-  100%{background-position:100% 0}
+@keyframes gradient {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
 }
 
 .bullet-input ::after {
@@ -241,12 +239,31 @@
   border-bottom-left-radius: 2px;
   border-bottom-right-radius: 2px;
   background-position: 0% 0%;
-  background: linear-gradient(to right, #B294FF, #57E6E6, #FEFFB8, #57E6E6, #B294FF, #57E6E6);
+  background: linear-gradient(
+    to right,
+    #b294ff,
+    #57e6e6,
+    #feffb8,
+    #57e6e6,
+    #b294ff,
+    #57e6e6
+  );
   background-size: 500% auto;
   animation: gradient 3s linear infinite;
 }
 
-.bullet-input button {
+.bullet-input-container {
+  display: flex;
+  justify-content: center;
+}
+
+.bullet-input-container > *:not(:first-child) {
+  display: flex;
+  justify-content: center;
+  margin-left: 10px;
+}
+
+/* .bullet-input button {
   color:  #7881A1;
   font-size: 1.4rem;
   line-height: 2.4rem;
@@ -256,9 +273,7 @@
   background: none; 
   border: none; 
   outline: none; 
-}
+} */
 .bullet-input button :hover {
-  color: #BFD2FF;
+  color: #bfd2ff;
 }
-
-

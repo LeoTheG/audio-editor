@@ -1,6 +1,5 @@
 import "./css/App.css";
 
-import React from "react";
 import {
   Redirect,
   Route,
@@ -10,9 +9,11 @@ import {
 
 import { DndProvider } from "react-dnd-multi-backend";
 import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
-import backgroundImage from "./assets/Polka-Dots.svg";
-import { PlayerPage } from "./routes/PlayerPage";
 import { Homepage } from "./routes/Homepage";
+import { PlayerPage } from "./routes/PlayerPage";
+import React from "react";
+import { YoutubePage } from "./routes/YoutubePage";
+import backgroundImage from "./assets/Polka-Dots.svg";
 import { withFirebaseContext } from "./contexts/firebaseContext";
 
 function App() {
@@ -33,6 +34,9 @@ function App() {
             </Route>
             <Route path={"/player"}>
               <PlayerPage />
+            </Route>
+            <Route path={"/youtube"}>
+              <YoutubePage />
             </Route>
             <Redirect from="*" to={"/"} />
           </Switch>
