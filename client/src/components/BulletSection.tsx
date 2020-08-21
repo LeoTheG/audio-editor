@@ -13,6 +13,7 @@ interface IBulletSectionState {
   inputValue: string;
 }
 
+// potential colors bullet text can use
 const colorPallet = [
   "#86de89",
   "#49a01c",
