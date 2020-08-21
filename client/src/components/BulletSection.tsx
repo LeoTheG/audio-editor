@@ -125,11 +125,6 @@ class BulletSection extends React.Component<
   // find a random lane that suits the bullet (make sure no overlap)
   getLane(text: string) {
     const result: number[] = [];
-    // this.lanes.forEach((value, key) => {
-    //   // the lane is available only if it was being used earlier enough
-    //   if (this.getPreciseTime() - value > (text.length * 25) / 1000)
-    //     result.push(key);
-    // });
     Object.keys(this.lanes).forEach((value: string) => {
       // the lane is available only if it was being used earlier enough
       const key = parseInt(value);
