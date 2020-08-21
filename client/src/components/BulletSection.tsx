@@ -2,6 +2,7 @@ import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
 import ReactPlayer from "react-player";
+import { forEach } from "underscore";
 
 interface IBulletSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
@@ -20,7 +21,7 @@ class BulletSection extends React.Component<
   audio: HTMLAudioElement | null = null;
   interval: any = -1; //Timeout object
   id: number = 0;
-  lanes: Set<number> = new Set();
+  lanes: Map<number, number> = new Map<number, number>();
   bulletDiv: React.RefObject<HTMLDivElement> = React.createRef();
   youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
@@ -64,7 +65,7 @@ class BulletSection extends React.Component<
           screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
         const textHeight = 30;
         const options = Math.floor(screen.clientHeight / textHeight);
-        for (var i = 0; i < options; i++) this.lanes.add(i * textHeight);
+        for (var i = 0; i < options; i++) this.lanes.set(i * textHeight, -10);
       }
     };
     initializeBulletScreen();
@@ -109,17 +110,25 @@ class BulletSection extends React.Component<
     return result.toFixed(1);
   }
 
-  getTimeStamp() {
+  getPreciseTime() {
     if (this.youtubeRef && this.youtubeRef.current)
-      return this.round(this.youtubeRef.current.getCurrentTime());
-    if (this.audio) return this.round(this.audio.currentTime);
+      return this.youtubeRef.current.getCurrentTime();
+    if (this.audio) return this.audio.currentTime;
     return -1;
   }
+  getTimeStamp() {
+    return this.round(this.getPreciseTime());
+  }
 
-  getRandomLane() {
-    const items = Array.from(this.lanes);
-    const lane = items[Math.floor(Math.random() * items.length)];
-    return lane;
+  getLane(text: string) {
+    const result: number[] = [];
+    this.lanes.forEach((value, key) => {
+      if (this.getPreciseTime() - value > (text.length * 25) / 1000)
+        result.push(key);
+    });
+    console.log(result);
+    if (result.length == 0) return -1;
+    return result[Math.floor(Math.random() * result.length)];
   }
 
   addBullet = () => {
@@ -129,7 +138,7 @@ class BulletSection extends React.Component<
     this.textToScreen(text);
 
     const time = this.getTimeStamp();
-    if (time <= 0) return;
+    if (parseInt(time) <= 0) return;
 
     // add the emoji to the list 0.5 sec later to avoid outputing emoji twice
     setTimeout(() => {
@@ -143,17 +152,17 @@ class BulletSection extends React.Component<
     const node = document.createElement("div");
     node.className = "bullet-text";
     node.innerText = text;
-    const lane = this.getRandomLane();
+    const lane = this.getLane(text);
+    console.log(lane);
+    if (lane < 0) return null;
     node.style.top = lane + "px";
-    this.lanes.delete(lane);
-    setTimeout(() => {
-      this.lanes.add(lane);
-    }, text.length * 7);
+    this.lanes.set(lane, this.getPreciseTime());
     return node;
   }
 
   textToScreen = (text: string) => {
     const node = this.createBulletNode(text);
+    if (!node) return;
     if (this.bulletDiv.current) {
       this.bulletDiv.current.appendChild(node);
       let width = this.bulletDiv.current.clientWidth;
