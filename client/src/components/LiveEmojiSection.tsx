@@ -91,6 +91,10 @@ class LiveEmojiSection extends React.Component<
     if (audio) this.audio = audio;
   }
 
+  componentWillUnmount() {
+    this.clearBulletInterval();
+  }
+
   onPlayCallback = () => {
     this.clearBulletInterval();
     this.initializeInstruction();
