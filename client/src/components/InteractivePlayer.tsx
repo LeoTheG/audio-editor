@@ -447,7 +447,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         )}
 
         {isYoutube && (
-          <div style={{ display: "flex" }}>
+          <div className="back-next-container">
             <div
               style={{
                 display: "flex",
