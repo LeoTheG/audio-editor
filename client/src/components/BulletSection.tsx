@@ -2,6 +2,7 @@ import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
 import ReactPlayer from "react-player";
+import { IBullets } from "../types";
 
 interface IBulletSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
@@ -16,12 +17,12 @@ class BulletSection extends React.Component<
   IBulletSectionProps,
   IBulletSectionState
 > {
-  bullets: any = {};
+  bullets: IBullets = {};
   audio: HTMLAudioElement | null = null;
-  interval: any = -1; //Timeout object
+  interval: NodeJS.Timeout | null = null; //Timeout object
   id: number = 0;
   // stores the <lane, timestamp> pair
-  lanes: Map<number, number> = new Map<number, number>();
+  lanes: { [lane: number]: number } = {};
   bulletDiv: React.RefObject<HTMLDivElement> = React.createRef();
   youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
@@ -65,7 +66,7 @@ class BulletSection extends React.Component<
           screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
         const textHeight = 30;
         const options = Math.floor(screen.clientHeight / textHeight);
-        for (var i = 0; i < options; i++) this.lanes.set(i * textHeight, -10);
+        for (var i = 0; i < options; i++) this.lanes[i * textHeight] = -10;
       }
     };
     initializeBulletScreen();
@@ -83,15 +84,15 @@ class BulletSection extends React.Component<
     }
   }
 
-  initializeBullets(bullets: any) {
+  initializeBullets(bullets: IBullets) {
     this.bullets = bullets;
   }
 
   // helper function
   clearBulletInterval = () => {
-    if (this.interval !== -1) {
+    if (this.interval) {
       clearInterval(this.interval);
-      this.interval = -1;
+      this.interval = null;
     }
   };
 
@@ -124,11 +125,18 @@ class BulletSection extends React.Component<
   // find a random lane that suits the bullet (make sure no overlap)
   getLane(text: string) {
     const result: number[] = [];
-    this.lanes.forEach((value, key) => {
+    // this.lanes.forEach((value, key) => {
+    //   // the lane is available only if it was being used earlier enough
+    //   if (this.getPreciseTime() - value > (text.length * 25) / 1000)
+    //     result.push(key);
+    // });
+    Object.keys(this.lanes).forEach((value: string) => {
       // the lane is available only if it was being used earlier enough
-      if (this.getPreciseTime() - value > (text.length * 25) / 1000)
+      const key = parseInt(value);
+      if (this.getPreciseTime() - this.lanes[key] > (text.length * 25) / 1000)
         result.push(key);
     });
+
     if (result.length === 0) return -1;
     return result[Math.floor(Math.random() * result.length)];
   }
@@ -158,7 +166,7 @@ class BulletSection extends React.Component<
     const lane = this.getLane(text);
     if (lane < 0) return null;
     node.style.top = lane + "px";
-    this.lanes.set(lane, this.getPreciseTime());
+    this.lanes[lane] = this.getPreciseTime();
     return node;
   }
 

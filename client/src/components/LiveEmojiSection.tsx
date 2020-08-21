@@ -6,6 +6,7 @@ import anime from "animejs/lib/anime.es";
 import bananadanceGif from "../assets/bananadance.gif";
 import letsGoGoombaGif from "../assets/goomba.gif";
 import streakBonusBuildsGif from "../assets/builds.gif";
+import { ILiveEmojis } from "../types";
 
 // a sample data for chosenEmoji
 const testEmojiData = {
@@ -27,9 +28,9 @@ class LiveEmojiSection extends React.Component<
   ILiveEmojiSectionProps,
   ILiveEmojiSectionState
 > {
-  chosenEmoji: any = testEmojiData;
+  chosenEmoji: ILiveEmojis = testEmojiData;
   audio: HTMLAudioElement | null = null;
-  interval: any = -1; //Timeout object
+  interval: NodeJS.Timeout | null = null; //Timeout object
   id: number = 0;
   streakId: number = 0;
   emojiAnimations: any = {};
@@ -66,7 +67,7 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
-  initializeEmojis(liveEmojis: { number: Array<string> }) {
+  initializeEmojis(liveEmojis: ILiveEmojis) {
     this.chosenEmoji = liveEmojis;
     this.resetPoints();
   }
@@ -109,9 +110,9 @@ class LiveEmojiSection extends React.Component<
   };
 
   clearBulletInterval = () => {
-    if (this.interval !== -1) {
+    if (this.interval) {
       clearInterval(this.interval);
-      this.interval = -1;
+      this.interval = null;
     }
   };
 

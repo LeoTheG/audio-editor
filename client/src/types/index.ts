@@ -17,8 +17,8 @@ export interface userSong {
   gifUrl?: string;
   gifId?: string;
   emojiSelections?: IEmojiSelections;
-  liveEmojis?: any;
-  bullets?: any;
+  liveEmojis?: ILiveEmojis;
+  bullets?: IBullets;
   isLocked?: boolean;
   highscores?: { name: string; score: number }[];
 }
@@ -81,4 +81,12 @@ export interface IUserUpload {
   songName: string;
   authorName: string;
   url: string;
+}
+
+export interface ILiveEmojis {
+  [timestamp: string]: string[];
+}
+
+export interface IBullets {
+  [timestamp: string]: string[];
 }
