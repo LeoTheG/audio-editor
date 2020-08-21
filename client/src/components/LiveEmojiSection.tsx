@@ -36,7 +36,6 @@ class LiveEmojiSection extends React.Component<
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   animeCanvas: React.RefObject<AnimationCanvas> = React.createRef();
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
-  streakDisplay: React.RefObject<HTMLCanvasElement> = React.createRef();
   streakCount: React.RefObject<HTMLSpanElement> = React.createRef();
   youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
@@ -166,14 +165,6 @@ class LiveEmojiSection extends React.Component<
   };
 
   animateStreak() {
-    if (this.streakDisplay.current) {
-      const display = this.streakDisplay.current;
-      const ctx = display.getContext("2d");
-      if (ctx) {
-        ctx.clearRect(0, 0, display.width, display.height);
-      }
-    }
-
     if (this.streakCount.current) {
       const countRef = this.streakCount.current;
       if (this.state.streakPoints >= 5) countRef.hidden = false;
@@ -464,10 +455,6 @@ class LiveEmojiSection extends React.Component<
             ref={this.animeCanvas}
             resetStreak={this.resetStreak}
           />
-          <canvas
-            className="streak-container"
-            ref={this.streakDisplay}
-          ></canvas>
           <span className="streak-count-text" ref={this.streakCount}>
             {this.state.streakPoints}
           </span>

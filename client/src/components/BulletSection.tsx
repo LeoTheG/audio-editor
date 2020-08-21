@@ -2,7 +2,6 @@ import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
 import ReactPlayer from "react-player";
-import { forEach } from "underscore";
 
 interface IBulletSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
@@ -116,6 +115,7 @@ class BulletSection extends React.Component<
     if (this.audio) return this.audio.currentTime;
     return -1;
   }
+
   getTimeStamp() {
     return this.round(this.getPreciseTime());
   }
@@ -126,20 +126,20 @@ class BulletSection extends React.Component<
       if (this.getPreciseTime() - value > (text.length * 25) / 1000)
         result.push(key);
     });
-    console.log(result);
-    if (result.length == 0) return -1;
+    if (result.length === 0) return -1;
     return result[Math.floor(Math.random() * result.length)];
   }
 
   addBullet = () => {
     const text = this.state.inputValue;
-    if (text && text === "") return;
+    if (text.length === 0) return;
 
     this.textToScreen(text);
 
     const time = this.getTimeStamp();
     if (parseInt(time) <= 0) return;
 
+    this.setState({ inputValue: "" });
     // add the emoji to the list 0.5 sec later to avoid outputing emoji twice
     setTimeout(() => {
       if (!(time in this.bullets)) this.bullets[time] = [];
@@ -153,7 +153,6 @@ class BulletSection extends React.Component<
     node.className = "bullet-text";
     node.innerText = text;
     const lane = this.getLane(text);
-    console.log(lane);
     if (lane < 0) return null;
     node.style.top = lane + "px";
     this.lanes.set(lane, this.getPreciseTime());
@@ -182,7 +181,6 @@ class BulletSection extends React.Component<
         },
       });
     }
-    this.setState({ inputValue: "" });
   };
 
   bulletScreen = () => {
@@ -208,30 +206,17 @@ class BulletSection extends React.Component<
             placeholder="What do u think?"
             value={this.state.inputValue}
             onChange={this.onChangeInput}
+            onKeyUp={(event) => {
+              if (event.key === "Enter") {
+                this.addBullet();
+              }
+            }}
           ></input>
           <button type="submit" onClick={this.addBullet}>
             <i className="fas">{"=>"}</i>
           </button>
         </div>
       </div>
-
-      // <div id="bullet-sec">
-      //   <div className="bullet-screen" ref={this.bulletDiv}></div>
-      //   <div className="bullet-input">
-      //     <TextField
-      //       value={this.state.inputValue}
-      //       onChange={this.onChangeInput}
-      //       placeholder="What do you think?"
-      //     />
-      //     <Button
-      //       style={{ color: "white", backgroundColor: "grey"}}
-      //       variant="contained"
-      //       onClick={this.bulletToScreen}
-      //     >
-      //       submit
-      //     </Button>
-      //   </div>
-      // </div>
     );
   }
 }
