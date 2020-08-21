@@ -68,6 +68,10 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     return isYoutube ? "youtube" : "player";
   }, [isYoutube]);
 
+  const [playedSong, setPlayedSong] = useState<{ [songId: string]: boolean }>(
+    {}
+  );
+
   const onSongEnd = useCallback(() => {
     setIsPlaying(false);
     if (points > 0) {
@@ -264,18 +268,37 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     playSong(newSongIndex);
   };
 
-  const onPlayCallback = () => {
-    console.log("on play callback");
+  const onPlayYoutube = () => {
+    updatePlayCount(songPlayingIndex);
+    onPlay();
+  };
+
+  const onPlay = () => {
     liveEmojiRef.current?.onPlayCallback();
     bulletRef.current?.onPlayCallback();
   };
 
-  const onPauseCallback = () => {
+  const onPause = () => {
     liveEmojiRef.current?.onPauseCallback();
     bulletRef.current?.onPauseCallback();
   };
 
+  const updatePlayCount = useCallback(
+    (songIndex: number) => {
+      const song = userSongs[songIndex];
+
+      if (song && !playedSong[song.id]) {
+        setPlayedSong({ ...playedSong, [song.id]: true });
+        const newPlayCount = (song.playCount || 0) + 1;
+        firebaseContext.updatePlayCount(song.id, newPlayCount);
+      }
+    },
+    [playedSong, firebaseContext, userSongs]
+  );
+
   const playSong = (index: number) => {
+    updatePlayCount(index);
+
     if (index === songPlayingIndex && audio) {
       audio.play();
     } else {
@@ -291,8 +314,8 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         setAudio(_audio);
         liveEmojiRef.current?.initializeAudio(_audio);
         bulletRef.current?.initializeAudio(_audio);
-        _audio.onplaying = onPlayCallback;
-        _audio.onpause = onPauseCallback;
+        _audio.onplaying = onPlay;
+        _audio.onpause = onPause;
       }
       setSongPlayingIndex(index);
     }
@@ -387,8 +410,8 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
             controls={true}
             ref={youtubeRef}
             onReady={bulletRef.current?.matchPlayerDim}
-            onPlay={onPlayCallback}
-            onPause={onPauseCallback}
+            onPlay={onPlayYoutube}
+            onPause={onPause}
             onEnded={onSongEnd}
           />
         ) : error === null && song && song.gifUrl ? (
@@ -508,7 +531,10 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         </div>
 
         {song?.highscores && <Leaderboard scores={song.highscores} />}
+        <div style={{ marginTop: 5 }}>plays: {song?.playCount || 0}</div>
       </div>
+
+      <AdventureLogo />
 
       <Popover
         open={Boolean(shareAnchor)}
@@ -551,8 +577,6 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
           </Button>
         </div>
       </Modal>
-
-      <AdventureLogo />
     </div>
   );
 };
