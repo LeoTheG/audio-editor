@@ -33,7 +33,8 @@ class LiveEmojiSection extends React.Component<
   interval: NodeJS.Timeout | null = null; //Timeout object
   id: number = 0;
   streakId: number = 0;
-  emojiAnimations: any = {};
+  // this stores pairs of <id, animation>
+  emojiAnimations: { [nodeid: string]: any } = {};
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   animeCanvas: React.RefObject<AnimationCanvas> = React.createRef();
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
@@ -271,7 +272,7 @@ class LiveEmojiSection extends React.Component<
       const options = Math.floor(this.emojiDiv.current.clientHeight / 30) - 1;
       // randomly picks a row and calculate the respective height
       let random = Math.floor(Math.random() * options) * 30 + 10;
-      node.style.top = [random + "px"] as any;
+      node.style.top = random + "px";
     }
 
     return node;
