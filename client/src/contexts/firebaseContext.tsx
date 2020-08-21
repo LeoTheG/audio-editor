@@ -36,6 +36,7 @@ interface firebaseContext {
     songId: string,
     scores: { name: string; score: number }[]
   ) => void;
+  updatePlayCount: (songId: string, playCount: number) => void;
 }
 
 export const FirebaseContext = React.createContext<firebaseContext>({
@@ -47,6 +48,7 @@ export const FirebaseContext = React.createContext<firebaseContext>({
   updateLiveEmojis: () => {},
   updateBullets: () => {},
   updateLiveEmojiPoints: () => {},
+  updatePlayCount: () => {},
 });
 
 export function withFirebaseContext(Component: JSX.Element) {
@@ -178,6 +180,14 @@ export function withFirebaseContext(Component: JSX.Element) {
       db.collection("userSongs").doc(songId).set(
         {
           highscores,
+        },
+        { merge: true }
+      );
+    },
+    updatePlayCount: (songId, playCount) => {
+      db.collection("userSongs").doc(songId).set(
+        {
+          playCount,
         },
         { merge: true }
       );

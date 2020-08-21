@@ -21,6 +21,7 @@ export interface userSong {
   bullets?: IBullets;
   isLocked?: boolean;
   highscores?: { name: string; score: number }[];
+  playCount?: number;
 }
 
 export interface ILibraryMetadata {

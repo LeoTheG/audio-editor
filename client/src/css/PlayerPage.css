@@ -79,6 +79,22 @@
   flex-wrap: wrap;
   max-height: 300px;
   overflow-y: auto;
+  margin: 20px 0;
+}
+
+.leaderboard-plays-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 400px;
+}
+
+.plays-container {
+  background: white;
+  padding: 5px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .streak-modal-container {
