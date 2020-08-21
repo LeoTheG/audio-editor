@@ -174,7 +174,7 @@ class BulletSection extends React.Component<
           return width + 200;
         },
         duration: function () {
-          return width * 6;
+          return width * 6.5;
         },
         easing: "linear",
         complete: () => {

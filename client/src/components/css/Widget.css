@@ -183,7 +183,7 @@
 .bullet-text {
   font-size: 20px;
   position: absolute;
-  color: black(255, 115, 0);
+  color: orangered;
   left: -200px;
   width: fit-content;
 }
