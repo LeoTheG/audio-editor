@@ -446,13 +446,33 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         )}
 
         {isYoutube && (
-          <div>
-            <IconButton onClick={onClickPrevSong}>
-              <SkipPrevious />
-            </IconButton>
-            <IconButton onClick={onClickNextSong}>
-              <SkipNext />
-            </IconButton>
+          <div style={{ display: "flex" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <IconButton onClick={onClickPrevSong}>
+                <SkipPrevious />
+              </IconButton>
+              <div>back</div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <IconButton onClick={onClickNextSong}>
+                <SkipNext />
+              </IconButton>
+              next
+            </div>
           </div>
         )}
 
@@ -531,7 +551,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         </div>
 
         {song?.highscores && <Leaderboard scores={song.highscores} />}
-        <div style={{ marginTop: 5 }}>plays: {song?.playCount || 0}</div>
+        <div style={{ marginTop: 15 }}>plays: {song?.playCount || 0}</div>
       </div>
 
       <AdventureLogo />

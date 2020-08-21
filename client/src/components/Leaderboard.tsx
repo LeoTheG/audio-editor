@@ -36,7 +36,7 @@ export const Leaderboard = (props: ILeaderboardProps) => {
           <div className="leaderboard-name">{score.name}</div>
           <div className="leaderboard-score">
             {score.score}
-            {medal(index)}
+            <div className="leaderboard-medal">{medal(index)}</div>
           </div>
         </div>
       ))}

@@ -9,4 +9,8 @@
   /* border: 1px dashed black; */
   padding: 5px;
   background: white;
+  display: flex;
+}
+.leaderboard-medal {
+  margin-left: 10px;
 }
