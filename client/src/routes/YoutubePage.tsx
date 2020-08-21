@@ -43,6 +43,7 @@ export const YoutubePage = () => {
     ISongEmojiSelections
   >({});
   const [selectedSongLiveEmojis, setSelectedSongLiveEmojis] = useState<any>({});
+  const [selectedSongBullets, setSelectedSongBullets] = useState<any>({});
   const [shareAnchor, setShareAnchor] = useState<HTMLButtonElement | null>(
     null
   );
@@ -114,6 +115,13 @@ export const YoutubePage = () => {
     [song]
   );
 
+  const updateBullets = useCallback(
+    _.debounce((songId: string, data: any) => {
+      firebaseContext.updateBullets(songId, data);
+    }, 1000),
+    [song]
+  );
+
   const id = useParam("id") || "";
 
   // find the data for song id and use that for the page
@@ -131,25 +139,21 @@ export const YoutubePage = () => {
 
       setSongPlayingIndex(songIndex);
       setSong(userSongs[songIndex]);
-      if (liveEmojiRef.current) {
-        liveEmojiRef.current.initializeEmojis(
-          selectedSongLiveEmojis[userSongs[songIndex].id]
-        );
-      }
-
-      //   for (var i = 0; i < userSongs.length; i++)
-      //     if (userSongs[i].id === id) {
-      //       setSongPlayingIndex(i);
-      //       setSong(userSongs[i]);
-      //       if (liveEmojiRef.current) {
-      //         liveEmojiRef.current.initializeEmojis(
-      //           selectedSongLiveEmojis[userSongs[i].id]
-      //         );
-      //       }
-      //       break;
-      //     }
+      liveEmojiRef.current?.initializeEmojis(
+        selectedSongLiveEmojis[userSongs[songIndex].id]
+      );
+      bulletRef.current?.initializeBullets(
+        selectedSongBullets[userSongs[songIndex].id]
+      );
     }
-  }, [userSongs, songPlayingIndex, selectedSongLiveEmojis, id, history]);
+  }, [
+    userSongs,
+    songPlayingIndex,
+    selectedSongLiveEmojis,
+    selectedSongBullets,
+    id,
+    history,
+  ]);
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
@@ -168,6 +172,12 @@ export const YoutubePage = () => {
         return acc;
       }, {});
       setSelectedSongLiveEmojis(selectedSongLiveEmojis);
+
+      const selectedSongBullets = songs.reduce<any>((acc, song) => {
+        acc[song.id] = song.bullets || {};
+        return acc;
+      }, {});
+      setSelectedSongBullets(selectedSongBullets);
       setUserSongs(songs);
     });
   }, [firebaseContext]);
@@ -235,13 +245,13 @@ export const YoutubePage = () => {
   );
 
   const onPlayCallback = () => {
-    if (liveEmojiRef.current) {
-      liveEmojiRef.current.onPlayCallback();
-    }
+    liveEmojiRef.current?.onPlayCallback();
+    bulletRef.current?.onPlayCallback();
   };
 
   const onPauseCallback = () => {
-    if (liveEmojiRef.current) liveEmojiRef.current.onPauseCallback();
+    liveEmojiRef.current?.onPauseCallback();
+    bulletRef.current?.onPauseCallback();
   };
 
   return (
@@ -266,6 +276,7 @@ export const YoutubePage = () => {
           url={song?.url}
           controls={true}
           ref={youtubeRef}
+          onReady={bulletRef.current?.matchPlayerDim}
           onPlay={onPlayCallback}
           onPause={onPauseCallback}
           onEnded={onSongEnd}
@@ -278,7 +289,15 @@ export const YoutubePage = () => {
             onChangePoints={setPoints}
           />
         )}
-        {error === null && <BulletSection ref={bulletRef} />}
+        {error === null && (
+          <BulletSection
+            updateBullets={() => {
+              if (song) updateBullets(song.id, selectedSongBullets[song.id]);
+            }}
+            youtubeRef={youtubeRef}
+            ref={bulletRef}
+          />
+        )}
 
         {error !== null && (
           <div
