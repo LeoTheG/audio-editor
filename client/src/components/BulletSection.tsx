@@ -20,6 +20,7 @@ class BulletSection extends React.Component<
   audio: HTMLAudioElement | null = null;
   interval: any = -1; //Timeout object
   id: number = 0;
+  // stores the <lane, timestamp> pair
   lanes: Map<number, number> = new Map<number, number>();
   bulletDiv: React.RefObject<HTMLDivElement> = React.createRef();
   youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
@@ -120,9 +121,11 @@ class BulletSection extends React.Component<
     return this.round(this.getPreciseTime());
   }
 
+  // find a random lane that suits the bullet (make sure no overlap)
   getLane(text: string) {
     const result: number[] = [];
     this.lanes.forEach((value, key) => {
+      // the lane is available only if it was being used earlier enough
       if (this.getPreciseTime() - value > (text.length * 25) / 1000)
         result.push(key);
     });

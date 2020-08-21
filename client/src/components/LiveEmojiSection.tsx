@@ -199,7 +199,7 @@ class LiveEmojiSection extends React.Component<
       totalPoints: totalPoints,
       streakPoints: streakPoints,
     });
-    //this.props.onChangePoints(totalPoints);
+    this.props.onChangePoints(totalPoints);
 
     // animate the streak number
     this.animateStreak();
