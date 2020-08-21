@@ -442,6 +442,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
               if (song) updateBullets(song.id, selectedSongBullets[song.id]);
             }}
             ref={bulletRef}
+            youtubeRef={isYoutube ? youtubeRef : undefined}
           />
         )}
 
@@ -550,8 +551,10 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
           )}
         </div>
 
-        {song?.highscores && <Leaderboard scores={song.highscores} />}
-        <div style={{ marginTop: 15 }}>plays: {song?.playCount || 0}</div>
+        <div className="leaderboard-plays-container">
+          {song?.highscores && <Leaderboard scores={song.highscores} />}
+          <div className="plays-container">plays: {song?.playCount || 0}</div>
+        </div>
       </div>
 
       <AdventureLogo />

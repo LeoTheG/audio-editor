@@ -30,7 +30,7 @@ export const Leaderboard = (props: ILeaderboardProps) => {
 
   return (
     <div className="leaderboard-container">
-      <div className="leaderboard-title">Leaderboard</div>
+      <div className="leaderboard-title">leaderboard</div>
       {inOrderScores.map((score, index) => (
         <div key={score.name + score.score} style={{ display: "flex" }}>
           <div className="leaderboard-name">{score.name}</div>

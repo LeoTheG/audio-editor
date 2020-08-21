@@ -1,16 +1,25 @@
 .leaderboard-container {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  background: white;
+  align-items: center;
+  margin: 20px 0 30px 0;
+}
+.leaderboard-title {
+  display: flex;
+  justify-content: center;
 }
 
 .leaderboard-name,
 .leaderboard-score {
   width: 100px;
-  /* border: 1px dashed black; */
   padding: 5px;
-  background: white;
+  padding-right: 0;
   display: flex;
 }
 .leaderboard-medal {
-  margin-left: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
