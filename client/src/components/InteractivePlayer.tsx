@@ -14,7 +14,13 @@ import {
   SkipNext,
   SkipPrevious,
 } from "@material-ui/icons";
-import { IEmojiSelections, ISongEmojiSelections, userSong } from "../types";
+import {
+  IEmojiSelections,
+  ISongEmojiSelections,
+  userSong,
+  ILiveEmojis,
+  IBullets,
+} from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
 import React, {
   useCallback,
@@ -55,8 +61,12 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const [selectedSongEmojis, setSelectedSongEmojis] = useState<
     ISongEmojiSelections
   >({});
-  const [selectedSongLiveEmojis, setSelectedSongLiveEmojis] = useState<any>({});
-  const [selectedSongBullets, setSelectedSongBullets] = useState<any>({});
+  const [selectedSongLiveEmojis, setSelectedSongLiveEmojis] = useState<{
+    [songId: string]: ILiveEmojis;
+  }>({});
+  const [selectedSongBullets, setSelectedSongBullets] = useState<{
+    [songId: string]: IBullets;
+  }>({});
   const [shareAnchor, setShareAnchor] = useState<HTMLButtonElement | null>(
     null
   );

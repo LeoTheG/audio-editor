@@ -13,6 +13,25 @@ interface IBulletSectionState {
   inputValue: string;
 }
 
+const colorPallet = [
+  "#86de89",
+  "#49a01c",
+  "#3f3ee2",
+  "#5bc080",
+  "#b1be0f",
+  "#8fcf15",
+  "#8c4af4",
+  "#fd4a50",
+  "#06ffe4",
+  "#ed5b6f",
+  "#f034db",
+  "#bf4e37",
+  "#9aa46c",
+  "#5a446b",
+  "#ad9041",
+  "#ca141f",
+];
+
 class BulletSection extends React.Component<
   IBulletSectionProps,
   IBulletSectionState
@@ -23,6 +42,7 @@ class BulletSection extends React.Component<
   id: number = 0;
   // stores the <lane, timestamp> pair
   lanes: { [lane: number]: number } = {};
+  availColor: string[] = [];
   bulletDiv: React.RefObject<HTMLDivElement> = React.createRef();
   youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
@@ -38,6 +58,11 @@ class BulletSection extends React.Component<
       inputValue: "",
     };
     this.youtubeRef = props.youtubeRef;
+    this.resetColor();
+  }
+
+  resetColor() {
+    this.availColor = [...colorPallet];
   }
 
   onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,6 +186,14 @@ class BulletSection extends React.Component<
     const lane = this.getLane(text);
     if (lane < 0) return null;
     node.style.top = lane + "px";
+    const choice = Math.floor(Math.random() * this.availColor.length);
+    node.style.color = this.availColor[choice];
+
+    if (this.availColor.length === 1) this.resetColor();
+    this.availColor = this.availColor.filter(
+      (item) => item !== this.availColor[choice]
+    );
+
     this.lanes[lane] = this.getPreciseTime();
     return node;
   }
