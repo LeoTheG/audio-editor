@@ -38,7 +38,6 @@ class LiveEmojiSection extends React.Component<
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   animeCanvas: React.RefObject<AnimationCanvas> = React.createRef();
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
-  streakCount: React.RefObject<HTMLSpanElement> = React.createRef();
   youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
@@ -56,38 +55,14 @@ class LiveEmojiSection extends React.Component<
     this.youtubeRef = props.youtubeRef;
   }
 
-  componentDidMount() {
-    this.initializeStreak();
-  }
-
-  initializeStreak() {
-    if (this.streakCount.current) {
-      const countRef = this.streakCount.current;
-      countRef.style.color = "rgb(255, 0, 0)";
-      countRef.hidden = true;
-    }
-  }
+  componentDidMount() {}
 
   initializeEmojis(liveEmojis: ILiveEmojis) {
     this.chosenEmoji = liveEmojis;
     this.resetPoints();
   }
 
-  initializeInstruction() {
-    if (this.emojiDiv.current) {
-      let width = this.emojiDiv.current.clientWidth;
-      anime({
-        targets: ".instruction",
-        translateX: function () {
-          return width + 100;
-        },
-        duration: function () {
-          return width;
-        },
-        easing: "easeOutQuart",
-      });
-    }
-  }
+  openingScreen() {}
 
   initializeAudio(audio: HTMLAudioElement) {
     if (audio) this.audio = audio;
@@ -95,7 +70,7 @@ class LiveEmojiSection extends React.Component<
 
   onPlayCallback = () => {
     this.clearBulletInterval();
-    this.initializeInstruction();
+    this.openingScreen();
     if (
       this.youtubeRef &&
       this.youtubeRef.current &&
@@ -163,20 +138,12 @@ class LiveEmojiSection extends React.Component<
     this.setState({
       streakPoints: 0,
     });
-    this.animateStreak();
   };
 
-  animateStreak() {
-    if (this.streakCount.current) {
-      const countRef = this.streakCount.current;
-      if (this.state.streakPoints >= 5) countRef.hidden = false;
-      else countRef.hidden = true;
-      countRef.style.color =
-        "rgb(255," + Math.min(200, (this.state.streakPoints - 5) * 10) + ", 0)";
-    }
-
+  animatePoint() {
+    console.log("Animate");
     anime.timeline().add({
-      targets: ".streak-count-text",
+      targets: ".point-count",
       scale: [0.2, 1],
       duration: 800,
     });
@@ -204,7 +171,7 @@ class LiveEmojiSection extends React.Component<
     this.props.onChangePoints(totalPoints);
 
     // animate the streak number
-    this.animateStreak();
+    this.animatePoint();
   }
 
   // check if the click should generate points (at this point anywhere within the canvas)
@@ -443,23 +410,40 @@ class LiveEmojiSection extends React.Component<
     }
   };
 
+  getStreakColor() {
+    const r = 255;
+    const g = Math.min(200, (this.state.streakPoints - 5) * 10);
+    const b = 0;
+    return "rgb(" + r + ", " + g + ", " + b + ")";
+  }
+
   render() {
     return (
       <div id="live-emoji-sec">
-        <div className="instruction"> Click emojis to add to stream </div>
-        <div className="instruction">
-          Click flowing emojis for points: {this.state.totalPoints}
+        <div className="point-container">
+          <span
+            style={{
+              paddingLeft: this.state.streakPoints < 5 ? "6rem" : "1rem",
+            }}
+          >
+            Total points:{" "}
+            <span className="point-count"> {this.state.totalPoints} </span>
+          </span>
+          <span
+            hidden={this.state.streakPoints < 5}
+            style={{ color: this.getStreakColor(), paddingLeft: "5rem" }}
+          >
+            Streak points:{" "}
+            <span className="point-count"> {this.state.streakPoints} </span>
+          </span>
         </div>
+
         <div className="clickzone" ref={this.clickZone} />
         <div id="emojis" ref={this.emojiDiv}>
-          <div className="special-bonus-text">Special Text</div>
           <AnimationCanvas
             ref={this.animeCanvas}
             resetStreak={this.resetStreak}
           />
-          <span className="streak-count-text" ref={this.streakCount}>
-            {this.state.streakPoints}
-          </span>
         </div>
       </div>
     );

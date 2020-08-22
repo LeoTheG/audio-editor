@@ -84,6 +84,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const onSongEnd = useCallback(() => {
     setIsPlaying(false);
+    onPause();
     if (points > 0) {
       setDisplayingScoreModal(true);
     }

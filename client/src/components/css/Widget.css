@@ -91,6 +91,13 @@
   }
 }
 
+#emojis {
+  width: 100vw;
+  height: 27vh;
+  align-self: center;
+  position: relative;
+}
+
 .live-emoji {
   width: 30px;
   height: 30px;
@@ -99,18 +106,20 @@
   overflow: hidden;
 }
 
-#emojis {
-  width: 100vw;
-  height: 27vh;
-  align-self: center;
+.point-container {
   position: relative;
+  align-self: center;
+  width: 300px;
+  height: 30px;
+  margin: auto;
+  /* border: black 2px solid; */
 }
 
-.instruction {
-  position: relative;
-  left: -30rem;
-  position: relative;
-  overflow: hidden;
+.point-count{
+  position: absolute;
+  margin: auto;
+  padding-right: 1rem;
+  padding-left: 0.5rem;
 }
 
 .clickzone {
@@ -122,25 +131,9 @@
   vertical-align: middle;
 }
 
-.streak-container {
-  width: fit-content;
-  height: fit-content;
-  position: absolute;
-  left: 80vw;
-  height: 20vh;
-  /* border: 3px red solid; */
-}
-
 .live-gif {
   width: 35px;
   height: 35px;
-}
-
-.streak-count-text {
-  font: "30px Comic Sans MS";
-  align-self: top;
-  position: absolute;
-  left: 80vw;
 }
 
 .streak-bonus-text {
