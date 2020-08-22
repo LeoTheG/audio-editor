@@ -2,6 +2,7 @@ import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
 import ReactPlayer from "react-player";
+import { IBullets } from "../types";
 
 interface IBulletSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
@@ -12,16 +13,37 @@ interface IBulletSectionState {
   inputValue: string;
 }
 
+// potential colors bullet text can use
+const colorPallet = [
+  "#86de89",
+  "#49a01c",
+  "#3f3ee2",
+  "#5bc080",
+  "#b1be0f",
+  "#8fcf15",
+  "#8c4af4",
+  "#fd4a50",
+  "#06ffe4",
+  "#ed5b6f",
+  "#f034db",
+  "#bf4e37",
+  "#9aa46c",
+  "#5a446b",
+  "#ad9041",
+  "#ca141f",
+];
+
 class BulletSection extends React.Component<
   IBulletSectionProps,
   IBulletSectionState
 > {
-  bullets: any = {};
+  bullets: IBullets = {};
   audio: HTMLAudioElement | null = null;
-  interval: any = -1; //Timeout object
+  interval: NodeJS.Timeout | null = null; //Timeout object
   id: number = 0;
   // stores the <lane, timestamp> pair
-  lanes: Map<number, number> = new Map<number, number>();
+  lanes: { [lane: number]: number } = {};
+  availColor: string[] = [];
   bulletDiv: React.RefObject<HTMLDivElement> = React.createRef();
   youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
@@ -37,11 +59,25 @@ class BulletSection extends React.Component<
       inputValue: "",
     };
     this.youtubeRef = props.youtubeRef;
+    this.resetColor();
+  }
+
+  resetColor() {
+    this.availColor = [...colorPallet];
   }
 
   onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ inputValue: e.target.value });
   };
+
+  initializeLanes() {
+    if (this.bulletDiv.current) {
+      const screen = this.bulletDiv.current;
+      const textHeight = 30;
+      const options = Math.floor(screen.clientHeight / textHeight);
+      for (var i = 0; i < options; i++) this.lanes[i * textHeight] = -10;
+    }
+  }
 
   matchPlayerDim = () => {
     if (this.bulletDiv.current) {
@@ -54,6 +90,7 @@ class BulletSection extends React.Component<
         screen.style.height = this.youtubeRef.current.props.height.toString();
       if (screen.parentElement)
         screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
+      this.initializeLanes();
     }
   };
 
@@ -63,9 +100,7 @@ class BulletSection extends React.Component<
         const screen = this.bulletDiv.current;
         if (screen.parentElement)
           screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
-        const textHeight = 30;
-        const options = Math.floor(screen.clientHeight / textHeight);
-        for (var i = 0; i < options; i++) this.lanes.set(i * textHeight, -10);
+        this.initializeLanes();
       }
     };
     initializeBulletScreen();
@@ -83,15 +118,15 @@ class BulletSection extends React.Component<
     }
   }
 
-  initializeBullets(bullets: any) {
+  initializeBullets(bullets: IBullets) {
     this.bullets = bullets;
   }
 
   // helper function
   clearBulletInterval = () => {
-    if (this.interval !== -1) {
+    if (this.interval) {
       clearInterval(this.interval);
-      this.interval = -1;
+      this.interval = null;
     }
   };
 
@@ -124,11 +159,13 @@ class BulletSection extends React.Component<
   // find a random lane that suits the bullet (make sure no overlap)
   getLane(text: string) {
     const result: number[] = [];
-    this.lanes.forEach((value, key) => {
+    Object.keys(this.lanes).forEach((value: string) => {
       // the lane is available only if it was being used earlier enough
-      if (this.getPreciseTime() - value > (text.length * 25) / 1000)
+      const key = parseInt(value);
+      if (this.getPreciseTime() - this.lanes[key] > (text.length * 25) / 1000)
         result.push(key);
     });
+
     if (result.length === 0) return -1;
     return result[Math.floor(Math.random() * result.length)];
   }
@@ -158,7 +195,15 @@ class BulletSection extends React.Component<
     const lane = this.getLane(text);
     if (lane < 0) return null;
     node.style.top = lane + "px";
-    this.lanes.set(lane, this.getPreciseTime());
+    const choice = Math.floor(Math.random() * this.availColor.length);
+    node.style.color = this.availColor[choice];
+
+    if (this.availColor.length === 1) this.resetColor();
+    this.availColor = this.availColor.filter(
+      (item) => item !== this.availColor[choice]
+    );
+
+    this.lanes[lane] = this.getPreciseTime();
     return node;
   }
 
