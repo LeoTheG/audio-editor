@@ -426,14 +426,14 @@ class LiveEmojiSection extends React.Component<
               paddingLeft: this.state.streakPoints < 5 ? "6rem" : "1rem",
             }}
           >
-            Total points:{" "}
+            Total points:
             <span className="point-count"> {this.state.totalPoints} </span>
           </span>
           <span
             hidden={this.state.streakPoints < 5}
             style={{ color: this.getStreakColor(), paddingLeft: "5rem" }}
           >
-            Streak points:{" "}
+            Streak points:
             <span className="point-count"> {this.state.streakPoints} </span>
           </span>
         </div>
