@@ -70,6 +70,15 @@ class BulletSection extends React.Component<
     this.setState({ inputValue: e.target.value });
   };
 
+  initializeLanes() {
+    if (this.bulletDiv.current) {
+      const screen = this.bulletDiv.current;
+      const textHeight = 30;
+      const options = Math.floor(screen.clientHeight / textHeight);
+      for (var i = 0; i < options; i++) this.lanes[i * textHeight] = -10;
+    }
+  }
+
   matchPlayerDim = () => {
     if (this.bulletDiv.current) {
       const screen = this.bulletDiv.current;
@@ -81,6 +90,7 @@ class BulletSection extends React.Component<
         screen.style.height = this.youtubeRef.current.props.height.toString();
       if (screen.parentElement)
         screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
+      this.initializeLanes();
     }
   };
 
@@ -90,9 +100,7 @@ class BulletSection extends React.Component<
         const screen = this.bulletDiv.current;
         if (screen.parentElement)
           screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
-        const textHeight = 30;
-        const options = Math.floor(screen.clientHeight / textHeight);
-        for (var i = 0; i < options; i++) this.lanes[i * textHeight] = -10;
+        this.initializeLanes();
       }
     };
     initializeBulletScreen();
