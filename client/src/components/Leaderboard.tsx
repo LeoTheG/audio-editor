@@ -21,7 +21,6 @@ export const Leaderboard = (props: ILeaderboardProps) => {
       return (
         <img
           alt="medal"
-          style={{ width: 30 }}
           src={`https://cdn.jsdelivr.net/gh/iamcal/emoji-data@master/img-apple-64/${emoji}.png`}
         />
       );
