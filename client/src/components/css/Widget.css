@@ -101,8 +101,11 @@
 }
 
 .instruction {
-  left: 0px;
   position: absolute;
+}
+
+.high-score {
+  position: absolute
 }
 
 #emojis {

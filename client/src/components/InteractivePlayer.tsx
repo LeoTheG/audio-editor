@@ -445,6 +445,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
             youtubeRef={isYoutube ? youtubeRef : undefined}
             ref={liveEmojiRef}
             onChangePoints={setPoints}
+            scores={song?.highscores}
           />
         )}
         {error === null && (

@@ -12,6 +12,7 @@ import powerup from "../assets/powerup.gif";
 import readMyMind from "../assets/read-my-mind.gif";
 import blobOctopus from "../assets/blob-octopus.gif";
 import alloHappy from "../assets/allo-happy.gif";
+import koopaTroopaMarioKart from "../assets/koopa_troopa_mario_kart.gif";
 
 import { ILiveEmojis } from "../types";
 
@@ -24,6 +25,7 @@ const testEmojiData = {
 interface ILiveEmojiSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
   onChangePoints: (points: number) => void;
+  scores: { name: string; score: number }[] | undefined;
 }
 
 interface ILiveEmojiSectionState {
@@ -78,15 +80,15 @@ class LiveEmojiSection extends React.Component<
       "You are great ",
     ];
     const gifSrcs = [coolDoge, powerup, readMyMind, alloHappy, blobOctopus];
+    const base = 20;
+    const space = 45;
     for (var i = 0; i < instrs.length; i++) {
       const node = this.createInstructionNode(
         instrs[i],
         gifSrcs[i],
-        20 + 45 * i + "px"
+        base + space * i + "px"
       );
-      if (this.emojiDiv.current) {
-        this.emojiDiv.current.appendChild(node);
-      }
+      this.animateInstrNode(node, i * 750);
     }
   }
 
@@ -103,13 +105,95 @@ class LiveEmojiSection extends React.Component<
     return node;
   }
 
+  highScores() {
+    if (!this.props.scores || this.getPreciseTime() >= 0.5) return;
+
+    const titleNode = this.createInstructionNode(
+      "High scores ",
+      koopaTroopaMarioKart,
+      "20px"
+    );
+    this.animateInstrNode(titleNode, 5 * 750);
+
+    const inOrderScores = this.props.scores.sort((a, b) => b.score - a.score);
+    const texts = inOrderScores.map(
+      (score, index) => score.name + ": " + score.score
+    );
+
+    const emojis = ["1f947", "1f948", "1f949"];
+    const base = 70;
+    const space = 50;
+
+    for (var i = 0; i < Math.min(3, texts.length); i++) {
+      const node = this.createHighScoreNode(
+        texts[i],
+        emojis[i],
+        base + space * i + "px"
+      );
+      this.animateInstrNode(node, (6 + i) * 750);
+    }
+  }
+
+  animateInstrNode(node: HTMLDivElement, offset: number) {
+    if (this.emojiDiv.current) {
+      this.emojiDiv.current.appendChild(node);
+      const width = this.emojiDiv.current.clientWidth;
+      anime.timeline().add(
+        {
+          targets: node,
+          translateX: function () {
+            return width + 250;
+          },
+          duration: function () {
+            return width * 6;
+          },
+          easing: "linear",
+          complete: () => {
+            try {
+              node.parentElement?.removeChild(node);
+            } catch (e) {}
+          },
+        },
+        offset
+      );
+    }
+  }
+
+  createHighScoreNode(text: string, emoji: string, top: string) {
+    const node = document.createElement("div");
+    node.className = "high-score";
+    node.innerHTML = text;
+    const emojiNode = document.createElement("img");
+    emojiNode.className = "live-gif";
+    emojiNode.src = getEmojiImageURL(emoji);
+    node.insertAdjacentElement("beforeend", emojiNode);
+    node.style.top = top;
+    node.style.left = -text.length * 7.5 - 35 + "px";
+    return node;
+  }
+
   initializeAudio(audio: HTMLAudioElement) {
     if (audio) this.audio = audio;
   }
 
   onPlayCallback = () => {
-    if (this.state.firstTime) this.openingScreen();
-    this.setState({ firstTime: false });
+    if (this.state.firstTime) {
+      this.openingScreen();
+      anime.timeline().add({
+        targets: ".welcome-container",
+        opacity: 0,
+        scale: 3,
+        duration: 600,
+        easing: "easeInExpo",
+      });
+
+      setTimeout(() => {
+        this.setState({ firstTime: false });
+      }, 600);
+    }
+
+    this.highScores();
+
     this.clearBulletInterval();
     if (
       this.props.youtubeRef &&
@@ -135,7 +219,7 @@ class LiveEmojiSection extends React.Component<
   // manually add the emoji to screen
   async addEmoji(emoji: string) {
     const time = this.getTimeStamp();
-    if (time <= 0) return;
+    if (parseInt(time) <= 0) return;
     const node = this.createEmojiNode(emoji);
     if (node !== undefined) {
       this.emojiToScreen(node);
@@ -157,12 +241,15 @@ class LiveEmojiSection extends React.Component<
     return result.toFixed(2);
   }
 
-  // check if we are on a youtube page first
-  getTimeStamp() {
+  getPreciseTime() {
     if (this.props.youtubeRef && this.props.youtubeRef.current)
-      return this.round(this.props.youtubeRef.current.getCurrentTime());
-    if (this.audio) return this.round(this.audio.currentTime);
+      return this.props.youtubeRef.current.getCurrentTime();
+    if (this.audio) return this.audio.currentTime;
     return -1;
+  }
+
+  getTimeStamp() {
+    return this.round(this.getPreciseTime());
   }
 
   resetPoints() {
