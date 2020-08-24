@@ -7,6 +7,12 @@ import bananadanceGif from "../assets/bananadance.gif";
 import letsGoGoombaGif from "../assets/goomba.gif";
 import streakBonusBuildsGif from "../assets/builds.gif";
 import handWave from "../assets/hand_wave.gif";
+import coolDoge from "../assets/cool-doge.gif";
+import powerup from "../assets/powerup.gif";
+import readMyMind from "../assets/read-my-mind.gif";
+import blobOctopus from "../assets/blob-octopus.gif";
+import alloHappy from "../assets/allo-happy.gif";
+
 import { ILiveEmojis } from "../types";
 
 // a sample data for chosenEmoji
@@ -63,16 +69,48 @@ class LiveEmojiSection extends React.Component<
     this.resetPoints();
   }
 
-  openingScreen() {}
+  openingScreen() {
+    const instrs = [
+      "Press emojis to tally points ",
+      "Go for consecutive streaks ",
+      "Enter comments to display above ",
+      "Add emojis to flow here ",
+      "You are great ",
+    ];
+    const gifSrcs = [coolDoge, powerup, readMyMind, alloHappy, blobOctopus];
+    for (var i = 0; i < instrs.length; i++) {
+      const node = this.createInstructionNode(
+        instrs[i],
+        gifSrcs[i],
+        20 + 45 * i + "px"
+      );
+      if (this.emojiDiv.current) {
+        this.emojiDiv.current.appendChild(node);
+      }
+    }
+  }
+
+  createInstructionNode(text: string, gifSrc: string, top: string) {
+    const node = document.createElement("div");
+    node.className = "instruction";
+    node.innerHTML = text;
+    const gifNode = document.createElement("img");
+    gifNode.className = "live-gif";
+    gifNode.src = gifSrc;
+    node.insertAdjacentElement("beforeend", gifNode);
+    node.style.top = top;
+    node.style.left = -text.length * 7.5 - 35 + "px";
+    return node;
+  }
 
   initializeAudio(audio: HTMLAudioElement) {
     if (audio) this.audio = audio;
   }
 
   onPlayCallback = () => {
+    if (this.state.firstTime) this.openingScreen();
     this.setState({ firstTime: false });
     this.clearBulletInterval();
-    this.openingScreen();
     if (
       this.props.youtubeRef &&
       this.props.youtubeRef.current &&

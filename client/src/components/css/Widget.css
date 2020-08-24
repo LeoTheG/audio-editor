@@ -91,13 +91,18 @@
   }
 }
 
-.welcome-container{
+.welcome-container {
   width: fit-content;
   height: fit-content;
   position: relative;
   top: 30px;
   align-self: center;
   margin: auto;
+}
+
+.instruction {
+  left: 0px;
+  position: absolute;
 }
 
 #emojis {
