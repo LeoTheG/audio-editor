@@ -13,6 +13,7 @@ import readMyMind from "../assets/read-my-mind.gif";
 import blobOctopus from "../assets/blob-octopus.gif";
 import alloHappy from "../assets/allo-happy.gif";
 import koopaTroopaMarioKart from "../assets/koopa_troopa_mario_kart.gif";
+import star from "../assets/star.gif";
 
 import { ILiveEmojis } from "../types";
 
@@ -82,14 +83,18 @@ class LiveEmojiSection extends React.Component<
     const gifSrcs = [coolDoge, powerup, readMyMind, alloHappy, blobOctopus];
     const base = 20;
     const space = 45;
+    const delay = 2000;
+    const nodes = [];
     for (var i = 0; i < instrs.length; i++) {
       const node = this.createInstructionNode(
         instrs[i],
         gifSrcs[i],
         base + space * i + "px"
       );
-      this.animateInstrNode(node, i * 750);
+      nodes.push(node);
+      this.animateInstrNode(node, i * delay, (instrs.length + 1 + i) * delay);
     }
+    nodes.forEach((node: HTMLDivElement) => {});
   }
 
   createInstructionNode(text: string, gifSrc: string, top: string) {
@@ -105,6 +110,48 @@ class LiveEmojiSection extends React.Component<
     return node;
   }
 
+  animateInstrNode(node: HTMLDivElement, delayIn: number, delayOut: number) {
+    if (this.emojiDiv.current) {
+      this.emojiDiv.current.appendChild(node);
+      const width = this.emojiDiv.current.clientWidth;
+      anime
+        .timeline()
+        .add(
+          {
+            targets: node,
+            translateX: function () {
+              return (width + node.clientWidth) / 2 + 20;
+            },
+            duration: function () {
+              return width * 2.5;
+            },
+            easing: "easeOutQuad",
+          },
+          delayIn
+        )
+        .add(
+          {
+            targets: node,
+            translateX: function () {
+              return width + node.clientWidth + 20;
+            },
+            duration: function () {
+              return width * 2.5;
+            },
+            easing: "easeInQuad",
+            complete: () => {
+              try {
+                node.parentElement?.removeChild(node);
+              } catch (e) {
+                //console.log(e);
+              }
+            },
+          },
+          delayOut
+        );
+    }
+  }
+
   highScores() {
     if (!this.props.scores || this.getPreciseTime() >= 0.5) return;
 
@@ -113,7 +160,7 @@ class LiveEmojiSection extends React.Component<
       koopaTroopaMarioKart,
       "20px"
     );
-    this.animateInstrNode(titleNode, 5 * 750);
+    this.animateHighScoreNode(titleNode, 0);
 
     const inOrderScores = this.props.scores.sort((a, b) => b.score - a.score);
     const texts = inOrderScores.map(
@@ -123,18 +170,18 @@ class LiveEmojiSection extends React.Component<
     const emojis = ["1f947", "1f948", "1f949"];
     const base = 70;
     const space = 50;
-
+    // getting the top 3 of the leaderboard (if there are more than 3 players)
     for (var i = 0; i < Math.min(3, texts.length); i++) {
       const node = this.createHighScoreNode(
         texts[i],
         emojis[i],
         base + space * i + "px"
       );
-      this.animateInstrNode(node, (6 + i) * 750);
+      this.animateHighScoreNode(node, (i + 1) * 750);
     }
   }
 
-  animateInstrNode(node: HTMLDivElement, offset: number) {
+  animateHighScoreNode(node: HTMLDivElement, delay: number) {
     if (this.emojiDiv.current) {
       this.emojiDiv.current.appendChild(node);
       const width = this.emojiDiv.current.clientWidth;
@@ -142,19 +189,14 @@ class LiveEmojiSection extends React.Component<
         {
           targets: node,
           translateX: function () {
-            return width + 250;
+            return width + node.clientWidth;
           },
           duration: function () {
             return width * 6;
           },
           easing: "linear",
-          complete: () => {
-            try {
-              node.parentElement?.removeChild(node);
-            } catch (e) {}
-          },
         },
-        offset
+        delay
       );
     }
   }
@@ -176,22 +218,23 @@ class LiveEmojiSection extends React.Component<
     if (audio) this.audio = audio;
   }
 
-  onPlayCallback = () => {
-    if (this.state.firstTime) {
-      this.openingScreen();
+  animateWelcome(fast: boolean) {
+    if (this.emojiDiv.current) {
+      const duration = this.emojiDiv.current.clientWidth * (fast ? 1 : 3);
       anime.timeline().add({
         targets: ".welcome-container",
-        opacity: 0,
-        scale: 3,
-        duration: 600,
-        easing: "easeInExpo",
+        translateX: this.emojiDiv.current.clientWidth + 200,
+        duration: duration,
+        easing: fast ? "easeInExpo" : "linear",
+        complete: () => {
+          this.setState({ firstTime: false });
+        },
       });
-
-      setTimeout(() => {
-        this.setState({ firstTime: false });
-      }, 600);
     }
+  }
 
+  onPlayCallback = () => {
+    this.animateWelcome(true);
     this.highScores();
 
     this.clearBulletInterval();
@@ -256,6 +299,7 @@ class LiveEmojiSection extends React.Component<
     this.setState({
       totalPoints: 0,
       streakPoints: 0,
+      firstTime: true,
     });
     this.id = 0;
     this.streakId = 0;
@@ -335,6 +379,7 @@ class LiveEmojiSection extends React.Component<
     this.emojiAnimations[node.id].pause();
 
     // shrinks the emoji and make it disappear
+    this.starToScreen();
     anime({
       targets: node,
       scale: function () {
@@ -521,6 +566,32 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
+  starToScreen() {
+    const node = document.createElement("img");
+    node.src = star;
+    node.className = "star-gif";
+    if (this.emojiDiv.current) {
+      this.emojiDiv.current.appendChild(node);
+      let width = this.emojiDiv.current.clientWidth;
+      const animation = anime({
+        targets: node,
+        translateX: function () {
+          return width + node.clientWidth + 150;
+        },
+        duration: function () {
+          return width * 2;
+        },
+        easing: "linear",
+        complete: () => {
+          try {
+            node.parentElement?.removeChild(node);
+          } catch (e) {}
+        },
+      });
+      return animation;
+    }
+  }
+
   // add all emojis at the current timestamp to the screen
   liveEmojiScreen = () => {
     const time = this.getTimeStamp();
@@ -570,8 +641,15 @@ class LiveEmojiSection extends React.Component<
         <div id="emojis" ref={this.emojiDiv}>
           {this.state.firstTime && (
             <div className="welcome-container">
-              <img src={handWave} alt="welcome" />
-              <div>Press play to start</div>
+              <img
+                src={handWave}
+                alt="welcome"
+                onClick={() => {
+                  this.animateWelcome(false);
+                  this.openingScreen();
+                }}
+              />
+              <div>Click for instructions</div>
             </div>
           )}
 

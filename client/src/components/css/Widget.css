@@ -178,6 +178,13 @@
   left: -10rem;
 }
 
+.star-gif {
+  position: relative;
+  width: 35px;
+  height: 35px;
+  left: -10rem;
+}
+
 #live-emoji-sec {
   position: relative;
   margin-bottom: 1rem;
