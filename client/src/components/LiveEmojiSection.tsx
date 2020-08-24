@@ -6,6 +6,7 @@ import anime from "animejs/lib/anime.es";
 import bananadanceGif from "../assets/bananadance.gif";
 import letsGoGoombaGif from "../assets/goomba.gif";
 import streakBonusBuildsGif from "../assets/builds.gif";
+import handWave from "../assets/hand_wave.gif";
 import { ILiveEmojis } from "../types";
 
 // a sample data for chosenEmoji
@@ -22,6 +23,7 @@ interface ILiveEmojiSectionProps {
 interface ILiveEmojiSectionState {
   totalPoints: number;
   streakPoints: number;
+  firstTime: boolean;
 }
 
 class LiveEmojiSection extends React.Component<
@@ -38,7 +40,6 @@ class LiveEmojiSection extends React.Component<
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   animeCanvas: React.RefObject<AnimationCanvas> = React.createRef();
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
-  youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -51,8 +52,8 @@ class LiveEmojiSection extends React.Component<
     this.state = {
       totalPoints: 0,
       streakPoints: 0,
+      firstTime: true,
     };
-    this.youtubeRef = props.youtubeRef;
   }
 
   componentDidMount() {}
@@ -69,12 +70,13 @@ class LiveEmojiSection extends React.Component<
   }
 
   onPlayCallback = () => {
+    this.setState({ firstTime: false });
     this.clearBulletInterval();
     this.openingScreen();
     if (
-      this.youtubeRef &&
-      this.youtubeRef.current &&
-      this.youtubeRef.current.getCurrentTime() < 0.1
+      this.props.youtubeRef &&
+      this.props.youtubeRef.current &&
+      this.props.youtubeRef.current.getCurrentTime() < 0.1
     )
       this.resetPoints();
     else if (this.audio && this.audio.currentTime < 0.1) this.resetPoints();
@@ -119,8 +121,8 @@ class LiveEmojiSection extends React.Component<
 
   // check if we are on a youtube page first
   getTimeStamp() {
-    if (this.youtubeRef && this.youtubeRef.current)
-      return this.round(this.youtubeRef.current.getCurrentTime());
+    if (this.props.youtubeRef && this.props.youtubeRef.current)
+      return this.round(this.props.youtubeRef.current.getCurrentTime());
     if (this.audio) return this.round(this.audio.currentTime);
     return -1;
   }
@@ -439,7 +441,15 @@ class LiveEmojiSection extends React.Component<
         </div>
 
         <div className="clickzone" ref={this.clickZone} />
+
         <div id="emojis" ref={this.emojiDiv}>
+          {this.state.firstTime && (
+            <div className="welcome-container">
+              <img src={handWave} alt="welcome" />
+              <div>Press play to start</div>
+            </div>
+          )}
+
           <AnimationCanvas
             ref={this.animeCanvas}
             resetStreak={this.resetStreak}
