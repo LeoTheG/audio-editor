@@ -43,6 +43,7 @@ import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
+import { YoutubePage } from "../routes/YoutubePage";
 
 interface IInteractivePlayerProps {
   isYoutube?: boolean;
@@ -273,6 +274,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   }, [id, userSongs]);
 
   const onClickPrevSong = () => {
+    setIsPlaying(false);
     let newSongIndex = songPlayingIndex - 1;
     if (newSongIndex < 0) {
       newSongIndex = userSongs.length - 1;
@@ -281,6 +283,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   };
 
   const onClickNextSong = () => {
+    setIsPlaying(false);
     let newSongIndex = songPlayingIndex + 1;
     if (newSongIndex >= userSongs.length) {
       newSongIndex = 0;
@@ -290,7 +293,13 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const onPlayYoutube = () => {
     updatePlayCount(songPlayingIndex);
+    setIsPlaying(true);
     onPlay();
+  };
+
+  const onPauseYoutube = () => {
+    setIsPlaying(false);
+    onPause();
   };
 
   const onPlay = () => {
@@ -434,7 +443,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
             width={Math.min(640, window.innerWidth)}
             onReady={bulletRef.current?.matchPlayerDim}
             onPlay={onPlayYoutube}
-            onPause={onPause}
+            onPause={onPauseYoutube}
             onEnded={onSongEnd}
           />
         ) : error === null && song && song.gifUrl ? (
