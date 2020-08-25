@@ -452,7 +452,7 @@ class LiveEmojiSection extends React.Component<
       transInfo.substring(transInfo.indexOf("(") + 1, transInfo.indexOf("px"))
     );
 
-    this.animeCanvas.current?.animateParticules(x, y);
+    this.animeCanvas.current?.animateParticules(x, y, this.state.streakPoints);
 
     this.withinClickZone(x, y, node);
     this.emojiAnimations[node.id].pause();

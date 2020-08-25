@@ -100,9 +100,10 @@ class AnimationCanvas extends React.Component<
   };
 
   // The animation for the firework
-  animateParticules = (x: number, y: number) => {
+  animateParticules = (x: number, y: number, points: number) => {
     const particules = [];
-    for (var i = 0; i < 30; i++) {
+    const particuleCount = points >= 10 ? 50 : 30;
+    for (var i = 0; i < particuleCount; i++) {
       particules.push(this.createParticule(x, y));
     }
     anime.timeline().add({
