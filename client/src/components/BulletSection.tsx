@@ -13,6 +13,8 @@ interface IBulletSectionState {
   inputValue: string;
 }
 
+const INTERVAL_DELAY = 500;
+
 // potential colors bullet text can use
 const COLOR_PALLET = [
   "#86de89",
@@ -144,7 +146,7 @@ class BulletSection extends React.Component<
 
   onPlayCallback = () => {
     this.clearBulletInterval();
-    this.interval = setInterval(this.bulletScreen, 500);
+    this.interval = setInterval(this.bulletScreen, INTERVAL_DELAY);
   };
 
   onPauseCallback = () => {
@@ -196,7 +198,7 @@ class BulletSection extends React.Component<
       if (!(time in this.bullets)) this.bullets[time] = [];
       this.bullets[time].push(text);
       this.props.updateBullets();
-    }, 500);
+    }, INTERVAL_DELAY);
   };
 
   createBulletNode(text: string) {
@@ -254,7 +256,7 @@ class BulletSection extends React.Component<
           // have a random time offset for each emoji (dont clutter together)
           setTimeout(() => {
             this.textToScreen(text);
-          }, Math.random() * 500);
+          }, Math.random() * INTERVAL_DELAY);
         }
       });
     }

@@ -22,6 +22,9 @@ const TEST_EMOJI_DATA = {
   1.5: ["1f605", "1f605"],
   2.0: ["1f3e0"],
 };
+
+const INTERVAL_DELAY = 50;
+
 const RESET_STATE_TIMESTAMP = 0.1;
 
 const WELCOME_CONTAINER_WIDTH = 200;
@@ -323,7 +326,7 @@ class LiveEmojiSection extends React.Component<
       this.resetPoints();
     else if (this.audio && this.audio.currentTime < RESET_STATE_TIMESTAMP)
       this.resetPoints();
-    this.interval = setInterval(this.liveEmojiScreen, 50);
+    this.interval = setInterval(this.liveEmojiScreen, INTERVAL_DELAY);
   };
 
   onPauseCallback = () => {
@@ -350,7 +353,7 @@ class LiveEmojiSection extends React.Component<
     setTimeout(() => {
       if (!(time in this.chosenEmoji)) this.chosenEmoji[time] = [];
       this.chosenEmoji[time].push(emoji);
-    }, 50);
+    }, INTERVAL_DELAY);
   }
 
   // round the current time stamp to nearest 0.2 value
@@ -635,7 +638,7 @@ class LiveEmojiSection extends React.Component<
           // have a random time offset for each emoji (dont clutter together)
           setTimeout(() => {
             this.emojiToScreen(node);
-          }, Math.random() * 50);
+          }, Math.random() * INTERVAL_DELAY);
         }
       });
     }
