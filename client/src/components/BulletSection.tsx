@@ -200,10 +200,13 @@ class BulletSection extends React.Component<
     node.style.top = lane + "px";
     node.style.left = -text.length * 7.5 + "px";
 
+    // choose a random color for the text
     const choice = Math.floor(Math.random() * this.availColor.length);
     node.style.color = this.availColor[choice];
 
     if (this.availColor.length === 1) this.resetColor();
+
+    // remove the previously used color
     this.availColor = this.availColor.filter(
       (item) => item !== this.availColor[choice]
     );

@@ -100,14 +100,12 @@ class LiveEmojiSection extends React.Component<
     const base = 20;
     const space = 45;
     const delay = 2000;
-    const nodes = [];
     for (var i = 0; i < instrs.length; i++) {
       const node = this.createInstructionNode(
         instrs[i],
         gifSrcs[i],
         base + space * i + "px"
       );
-      nodes.push(node);
       this.animateInstrNode(node, i * delay, (instrs.length + 3 + i) * delay);
     }
     this.finalInstruction((instrs.length * 2 + 3) * delay);
