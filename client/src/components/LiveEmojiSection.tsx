@@ -184,9 +184,11 @@ class LiveEmojiSection extends React.Component<
     const inOrderScores = this.props.scores.sort((a, b) => b.score - a.score);
     const texts = inOrderScores.map((score) => score.name + ": " + score.score);
 
+    // medal emojis
     const emojis = ["1f947", "1f948", "1f949"];
     const base = 70;
     const space = 50;
+    const delay = 750;
     // getting the top 3 of the leaderboard (if there are more than 3 players)
     for (var i = 0; i < Math.min(3, texts.length); i++) {
       const node = this.createHighScoreNode(
@@ -194,7 +196,7 @@ class LiveEmojiSection extends React.Component<
         emojis[i],
         base + space * i + "px"
       );
-      this.animateHighScoreNode(node, (i + 1) * 750);
+      this.animateHighScoreNode(node, (i + 1) * delay);
     }
     this.setState({ showHighscore: false });
   }

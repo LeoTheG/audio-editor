@@ -89,7 +89,7 @@ class BulletSection extends React.Component<
       )
         screen.style.height = this.youtubeRef.current.props.height.toString();
       if (screen.parentElement)
-        screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
+        screen.style.top = -screen.parentElement.offsetTop + "px";
       this.initializeLanes();
     }
   };
@@ -99,7 +99,10 @@ class BulletSection extends React.Component<
       if (this.bulletDiv.current) {
         const screen = this.bulletDiv.current;
         if (screen.parentElement)
-          screen.style.top = -screen.parentElement.offsetTop + 45 + "px";
+          screen.style.top =
+            -screen.parentElement.offsetTop +
+            (this.props.youtubeRef ? 0 : 45) +
+            "px";
         this.initializeLanes();
       }
     };
@@ -162,8 +165,7 @@ class BulletSection extends React.Component<
     Object.keys(this.lanes).forEach((value: string) => {
       // the lane is available only if it was being used earlier enough
       const key = parseInt(value);
-      if (this.getPreciseTime() - this.lanes[key] > (text.length * 25) / 1000)
-        result.push(key);
+      if (this.getPreciseTime() > this.lanes[key]) result.push(key);
     });
 
     if (result.length === 0) return -1;
@@ -189,12 +191,15 @@ class BulletSection extends React.Component<
   };
 
   createBulletNode(text: string) {
+    const lane = this.getLane(text);
+    if (lane < 0) return null;
+
     const node = document.createElement("div");
     node.className = "bullet-text";
     node.innerText = text;
-    const lane = this.getLane(text);
-    if (lane < 0) return null;
     node.style.top = lane + "px";
+    node.style.left = -text.length * 7.5 + "px";
+
     const choice = Math.floor(Math.random() * this.availColor.length);
     node.style.color = this.availColor[choice];
 
@@ -203,7 +208,7 @@ class BulletSection extends React.Component<
       (item) => item !== this.availColor[choice]
     );
 
-    this.lanes[lane] = this.getPreciseTime();
+    this.lanes[lane] = this.getPreciseTime() + text.length * 0.025;
     return node;
   }
 
@@ -216,10 +221,10 @@ class BulletSection extends React.Component<
       anime({
         targets: node,
         translateX: function () {
-          return width + 200;
+          return width + text.length * 7.5;
         },
         duration: function () {
-          return width * 6.5;
+          return (width + text.length * 5) * 5.5;
         },
         easing: "linear",
         complete: () => {

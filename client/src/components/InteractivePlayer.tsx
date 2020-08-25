@@ -422,6 +422,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
             url={song?.url}
             controls={true}
             ref={youtubeRef}
+            width={Math.min(640, window.innerWidth)}
             onReady={bulletRef.current?.matchPlayerDim}
             onPlay={onPlayYoutube}
             onPause={onPause}

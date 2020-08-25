@@ -110,7 +110,7 @@
 
 #emojis {
   width: 100vw;
-  height: 27vh;
+  height: 220px;
   align-self: center;
   position: relative;
 }
@@ -141,7 +141,7 @@
 
 .clickzone {
   width: 100vw;
-  height: 27vh;
+  height: 220px;
   position: absolute;
   align-self: center;
   /* border: 3px red dashed; */
@@ -174,7 +174,7 @@
   font-style: italic;
   position: absolute;
   color: rgb(255, 115, 0);
-  top: -27vh;
+  top: -220px;
   left: -10rem;
 }
 
@@ -201,7 +201,6 @@
   font-size: 20px;
   position: absolute;
   color: orangered;
-  left: -200px;
   width: fit-content;
 }
 
