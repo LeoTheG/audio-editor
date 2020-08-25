@@ -14,7 +14,7 @@ interface IBulletSectionState {
 }
 
 // potential colors bullet text can use
-const colorPallet = [
+const COLOR_PALLET = [
   "#86de89",
   "#49a01c",
   "#3f3ee2",
@@ -32,6 +32,13 @@ const colorPallet = [
   "#ad9041",
   "#ca141f",
 ];
+
+const TEXT_HEIGHT = 30;
+const LETTER_WIDTH = 7.5;
+const BULLET_SCREEN_OFFSET_TOP = 45;
+const SEC_PER_LETTER = 0.025;
+const LETTER_DURATION_FACTOR = 5;
+const TOTAL_DURATION_FACTOR = 5.5;
 
 class BulletSection extends React.Component<
   IBulletSectionProps,
@@ -63,7 +70,7 @@ class BulletSection extends React.Component<
   }
 
   resetColor() {
-    this.availColor = [...colorPallet];
+    this.availColor = [...COLOR_PALLET];
   }
 
   onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,9 +80,8 @@ class BulletSection extends React.Component<
   initializeLanes() {
     if (this.bulletDiv.current) {
       const screen = this.bulletDiv.current;
-      const textHeight = 30;
-      const options = Math.floor(screen.clientHeight / textHeight);
-      for (var i = 0; i < options; i++) this.lanes[i * textHeight] = -10;
+      const options = Math.floor(screen.clientHeight / TEXT_HEIGHT);
+      for (var i = 0; i < options; i++) this.lanes[i * TEXT_HEIGHT] = 0;
     }
   }
 
@@ -98,10 +104,11 @@ class BulletSection extends React.Component<
     const initializeBulletScreen = () => {
       if (this.bulletDiv.current) {
         const screen = this.bulletDiv.current;
+        // move the bullet section to the top of the screen
         if (screen.parentElement)
           screen.style.top =
             -screen.parentElement.offsetTop +
-            (this.props.youtubeRef ? 0 : 45) +
+            (this.props.youtubeRef ? 0 : BULLET_SCREEN_OFFSET_TOP) +
             "px";
         this.initializeLanes();
       }
@@ -198,7 +205,7 @@ class BulletSection extends React.Component<
     node.className = "bullet-text";
     node.innerText = text;
     node.style.top = lane + "px";
-    node.style.left = -text.length * 7.5 + "px";
+    node.style.left = -text.length * LETTER_WIDTH + "px";
 
     // choose a random color for the text
     const choice = Math.floor(Math.random() * this.availColor.length);
@@ -211,7 +218,7 @@ class BulletSection extends React.Component<
       (item) => item !== this.availColor[choice]
     );
 
-    this.lanes[lane] = this.getPreciseTime() + text.length * 0.025;
+    this.lanes[lane] = this.getPreciseTime() + text.length * SEC_PER_LETTER;
     return node;
   }
 
@@ -223,12 +230,10 @@ class BulletSection extends React.Component<
       let width = this.bulletDiv.current.clientWidth;
       anime({
         targets: node,
-        translateX: function () {
-          return width + text.length * 7.5;
-        },
-        duration: function () {
-          return (width + text.length * 5) * 5.5;
-        },
+        translateX: width + text.length * LETTER_WIDTH,
+        duration:
+          (width + text.length * LETTER_DURATION_FACTOR) *
+          TOTAL_DURATION_FACTOR,
         easing: "linear",
         complete: () => {
           try {

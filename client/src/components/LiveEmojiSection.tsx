@@ -79,6 +79,7 @@ class LiveEmojiSection extends React.Component<
 
   animateWelcome(fast: boolean) {
     if (this.emojiDiv.current) {
+      // if we want fast animation, the duration is low, vice versa
       const duration = this.emojiDiv.current.clientWidth * (fast ? 1 : 3);
       anime.timeline().add({
         targets: ".welcome-container",
@@ -143,12 +144,8 @@ class LiveEmojiSection extends React.Component<
         .add(
           {
             targets: node,
-            translateX: function () {
-              return (width + node.clientWidth) / 2 + 20;
-            },
-            duration: function () {
-              return width * 2.5;
-            },
+            translateX: (width + node.clientWidth) / 2 + 20,
+            duration: width * 2.5,
             easing: "easeOutQuad",
           },
           delayIn
@@ -156,12 +153,8 @@ class LiveEmojiSection extends React.Component<
         .add(
           {
             targets: node,
-            translateX: function () {
-              return width + node.clientWidth + 20;
-            },
-            duration: function () {
-              return width * 2.5;
-            },
+            translateX: width + node.clientWidth + 20,
+            duration: width * 2.5,
             easing: "easeInQuad",
             complete: () => {
               try {
@@ -214,12 +207,8 @@ class LiveEmojiSection extends React.Component<
       anime.timeline().add(
         {
           targets: node,
-          translateX: function () {
-            return width + node.clientWidth;
-          },
-          duration: function () {
-            return width * 6;
-          },
+          translateX: width + node.clientWidth,
+          duration: width * 6,
           easing: "linear",
           complete: () => {
             try {
@@ -261,12 +250,8 @@ class LiveEmojiSection extends React.Component<
       anime.timeline().add(
         {
           targets: node,
-          translateX: function () {
-            return (width + node.clientWidth) / 2 + 20;
-          },
-          duration: function () {
-            return width * 2;
-          },
+          translateX: (width + node.clientWidth) / 2 + 20,
+          duration: width * 2,
           easing: "easeOutQuad",
         },
         delay
@@ -492,15 +477,9 @@ class LiveEmojiSection extends React.Component<
       let width = this.emojiDiv.current.clientWidth;
       const animation = anime({
         targets: node,
-        translateX: function () {
-          return width + 30;
-        },
-        scale: function () {
-          return anime.random(13, 17) / 10;
-        },
-        duration: function () {
-          return width * 4.8;
-        },
+        translateX: width + 30,
+        scale: anime.random(13, 17) / 10,
+        duration: width * 4.8,
         easing: "linear",
         complete: () => {
           try {
@@ -540,12 +519,8 @@ class LiveEmojiSection extends React.Component<
       let width = this.emojiDiv.current.clientWidth;
       const animation = anime({
         targets: node,
-        translateX: function () {
-          return width + node.clientWidth * 1.5;
-        },
-        duration: function () {
-          return width * 3.6;
-        },
+        translateX: width + node.clientWidth * 1.5,
+        duration: width * 3.6,
         easing: "linear",
         complete: () => {
           try {
@@ -578,12 +553,8 @@ class LiveEmojiSection extends React.Component<
       let width = this.emojiDiv.current.clientWidth;
       const animation = anime({
         targets: node,
-        translateX: function () {
-          return width + node.clientWidth * 1.5;
-        },
-        duration: function () {
-          return width * 3.6;
-        },
+        translateX: width + node.clientWidth * 1.5,
+        duration: width * 3.6,
         easing: "linear",
         complete: () => {
           try {
@@ -616,12 +587,8 @@ class LiveEmojiSection extends React.Component<
       let width = this.emojiDiv.current.clientWidth;
       const animation = anime({
         targets: node,
-        translateX: function () {
-          return width + node.clientWidth * 1.5;
-        },
-        duration: function () {
-          return width * 4;
-        },
+        translateX: width + node.clientWidth * 1.5,
+        duration: width * 4,
         easing: "linear",
         complete: () => {
           try {
