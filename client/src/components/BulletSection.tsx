@@ -77,6 +77,7 @@ class BulletSection extends React.Component<
     this.setState({ inputValue: e.target.value });
   };
 
+  // get all possible lanes in the screen
   initializeLanes() {
     if (this.bulletDiv.current) {
       const screen = this.bulletDiv.current;
@@ -85,6 +86,7 @@ class BulletSection extends React.Component<
     }
   }
 
+  // called when the youtube player is ready, to match the dimension of the player
   matchPlayerDim = () => {
     if (this.bulletDiv.current) {
       const screen = this.bulletDiv.current;
