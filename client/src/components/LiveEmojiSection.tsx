@@ -71,6 +71,10 @@ class LiveEmojiSection extends React.Component<
   initializeEmojis(liveEmojis: ILiveEmojis) {
     this.chosenEmoji = liveEmojis;
     this.resetPoints();
+    this.setState({
+      showInstruction: true,
+      showHighscore: true,
+    });
   }
 
   animateWelcome(fast: boolean) {
@@ -360,8 +364,6 @@ class LiveEmojiSection extends React.Component<
     this.setState({
       totalPoints: 0,
       streakPoints: 0,
-      showInstruction: true,
-      showHighscore: true,
     });
     this.id = 0;
     this.streakId = 0;
