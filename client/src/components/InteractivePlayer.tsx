@@ -105,6 +105,15 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   };
 
   useEffect(() => {
+    window.onblur = () => {
+      if (isPlaying) onPause();
+    };
+    window.onfocus = () => {
+      if (isPlaying) onPlay();
+    };
+  }, [isPlaying]);
+
+  useEffect(() => {
     if (!isDisplayingScoreModal && liveEmojiRef.current) {
       liveEmojiRef.current.resetPoints();
     }
