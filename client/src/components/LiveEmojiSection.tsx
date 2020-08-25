@@ -6,6 +6,15 @@ import anime from "animejs/lib/anime.es";
 import bananadanceGif from "../assets/bananadance.gif";
 import letsGoGoombaGif from "../assets/goomba.gif";
 import streakBonusBuildsGif from "../assets/builds.gif";
+import handWave from "../assets/hand_wave.gif";
+import coolDoge from "../assets/cool-doge.gif";
+import powerup from "../assets/powerup.gif";
+import readMyMind from "../assets/read-my-mind.gif";
+import blobOctopus from "../assets/blob-octopus.gif";
+import koopaTroopaMarioKart from "../assets/koopa_troopa_mario_kart.gif";
+import star from "../assets/star.gif";
+import upRedArrow from "../assets/up-red-arrow.gif";
+
 import { ILiveEmojis } from "../types";
 
 // a sample data for chosenEmoji
@@ -17,11 +26,14 @@ const testEmojiData = {
 interface ILiveEmojiSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
   onChangePoints: (points: number) => void;
+  scores: { name: string; score: number }[] | undefined;
 }
 
 interface ILiveEmojiSectionState {
   totalPoints: number;
   streakPoints: number;
+  showInstruction: boolean;
+  showHighscore: boolean;
 }
 
 class LiveEmojiSection extends React.Component<
@@ -35,11 +47,10 @@ class LiveEmojiSection extends React.Component<
   streakId: number = 0;
   // this stores pairs of <id, animation>
   emojiAnimations: { [nodeid: string]: any } = {};
+  movingNodes: HTMLDivElement[] = [];
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   animeCanvas: React.RefObject<AnimationCanvas> = React.createRef();
   clickZone: React.RefObject<HTMLDivElement> = React.createRef();
-  streakCount: React.RefObject<HTMLSpanElement> = React.createRef();
-  youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
   // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
   tap: "touchstart" | "mousedown" =
@@ -52,39 +63,232 @@ class LiveEmojiSection extends React.Component<
     this.state = {
       totalPoints: 0,
       streakPoints: 0,
+      showInstruction: true,
+      showHighscore: true,
     };
-    this.youtubeRef = props.youtubeRef;
-  }
-
-  componentDidMount() {
-    this.initializeStreak();
-  }
-
-  initializeStreak() {
-    if (this.streakCount.current) {
-      const countRef = this.streakCount.current;
-      countRef.style.color = "rgb(255, 0, 0)";
-      countRef.hidden = true;
-    }
   }
 
   initializeEmojis(liveEmojis: ILiveEmojis) {
     this.chosenEmoji = liveEmojis;
     this.resetPoints();
+    this.setState({
+      showInstruction: true,
+      showHighscore: true,
+    });
   }
 
-  initializeInstruction() {
+  animateWelcome(fast: boolean) {
     if (this.emojiDiv.current) {
-      let width = this.emojiDiv.current.clientWidth;
+      const duration = this.emojiDiv.current.clientWidth * (fast ? 1 : 3);
+      anime.timeline().add({
+        targets: ".welcome-container",
+        translateX: this.emojiDiv.current.clientWidth + 200,
+        duration: duration,
+        easing: fast ? "easeInExpo" : "linear",
+        complete: () => {
+          this.setState({ showInstruction: false });
+        },
+      });
+    }
+  }
+
+  openingScreen() {
+    const instrs = [
+      "Press emojis to tally points ",
+      "Go for consecutive streaks ",
+      "Enter comments to display above ",
+      "Add emojis below to flow ",
+      "You are great ",
+    ];
+    const gifSrcs = [coolDoge, powerup, readMyMind, star, blobOctopus];
+    const base = 20;
+    const space = 45;
+    const delay = 2000;
+    for (var i = 0; i < instrs.length; i++) {
+      const node = this.createInstructionNode(
+        instrs[i],
+        gifSrcs[i],
+        base + space * i + "px"
+      );
+      this.animateInstrNode(node, i * delay, (instrs.length + 3 + i) * delay);
+    }
+    this.finalInstruction((instrs.length * 2 + 3) * delay);
+  }
+
+  createInstructionNode(text: string, gifSrc: string, top: string) {
+    const node = document.createElement("div");
+    node.className = "instruction";
+    node.innerHTML = text;
+    const gifNode = document.createElement("img");
+    gifNode.className = "live-gif";
+    gifNode.src = gifSrc;
+    node.insertAdjacentElement("beforeend", gifNode);
+    node.style.top = top;
+    node.style.left = -text.length * 7.5 - 35 + "px";
+    return node;
+  }
+
+  // goes to the middle of the screen and wait and flow to the end of the screen
+  animateInstrNode(node: HTMLDivElement, delayIn: number, delayOut: number) {
+    if (this.emojiDiv.current) {
+      this.emojiDiv.current.appendChild(node);
+      const width = this.emojiDiv.current.clientWidth;
+      this.movingNodes.push(node);
+      anime
+        .timeline()
+        .add(
+          {
+            targets: node,
+            translateX: function () {
+              return (width + node.clientWidth) / 2 + 20;
+            },
+            duration: function () {
+              return width * 2.5;
+            },
+            easing: "easeOutQuad",
+          },
+          delayIn
+        )
+        .add(
+          {
+            targets: node,
+            translateX: function () {
+              return width + node.clientWidth + 20;
+            },
+            duration: function () {
+              return width * 2.5;
+            },
+            easing: "easeInQuad",
+            complete: () => {
+              try {
+                node.parentElement?.removeChild(node);
+              } catch (e) {
+                //console.log(e);
+              }
+            },
+          },
+          delayOut
+        );
+    }
+  }
+
+  // show high scores
+  highScores() {
+    if (!this.props.scores || this.getPreciseTime() >= 0.5) return;
+
+    const titleNode = this.createInstructionNode(
+      "High scores ",
+      koopaTroopaMarioKart,
+      "20px"
+    );
+    this.animateHighScoreNode(titleNode, 0);
+
+    const inOrderScores = this.props.scores.sort((a, b) => b.score - a.score);
+    const texts = inOrderScores.map((score) => score.name + ": " + score.score);
+
+    // medal emojis
+    const emojis = ["1f947", "1f948", "1f949"];
+    const base = 70;
+    const space = 50;
+    const delay = 750;
+    // getting the top 3 of the leaderboard (if there are more than 3 players)
+    for (var i = 0; i < Math.min(3, texts.length); i++) {
+      const node = this.createHighScoreNode(
+        texts[i],
+        emojis[i],
+        base + space * i + "px"
+      );
+      this.animateHighScoreNode(node, (i + 1) * delay);
+    }
+    this.setState({ showHighscore: false });
+  }
+
+  animateHighScoreNode(node: HTMLDivElement, delay: number) {
+    if (this.emojiDiv.current) {
+      this.emojiDiv.current.appendChild(node);
+      const width = this.emojiDiv.current.clientWidth;
+      anime.timeline().add(
+        {
+          targets: node,
+          translateX: function () {
+            return width + node.clientWidth;
+          },
+          duration: function () {
+            return width * 6;
+          },
+          easing: "linear",
+          complete: () => {
+            try {
+              node.parentElement?.removeChild(node);
+            } catch (e) {
+              //console.log(e);
+            }
+          },
+        },
+        delay
+      );
+    }
+  }
+
+  createHighScoreNode(text: string, emoji: string, top: string) {
+    const node = document.createElement("div");
+    node.className = "high-score";
+    node.innerHTML = text;
+    const emojiNode = document.createElement("img");
+    emojiNode.className = "live-gif";
+    emojiNode.src = getEmojiImageURL(emoji);
+    node.insertAdjacentElement("beforeend", emojiNode);
+    node.style.top = top;
+    node.style.left = -text.length * 7.5 - 35 + "px";
+    return node;
+  }
+
+  // last instruction that stays in the middle until user clicks on play
+  finalInstruction(delay: number) {
+    const node = this.createInstructionNode(
+      "Click video above to begin ",
+      upRedArrow,
+      "100px"
+    );
+    if (this.emojiDiv.current) {
+      this.emojiDiv.current.appendChild(node);
+      this.movingNodes.push(node);
+      const width = this.emojiDiv.current.clientWidth;
+      anime.timeline().add(
+        {
+          targets: node,
+          translateX: function () {
+            return (width + node.clientWidth) / 2 + 20;
+          },
+          duration: function () {
+            return width * 2;
+          },
+          easing: "easeOutQuad",
+        },
+        delay
+      );
+    }
+  }
+
+  // quickly move the instructions out of the way when the video is being played.
+  instructionOut() {
+    if (this.emojiDiv.current) {
+      const width = this.emojiDiv.current.clientWidth;
       anime({
-        targets: ".instruction",
-        translateX: function () {
-          return width + 100;
+        targets: this.movingNodes,
+        translateX: width + 20,
+        duration: width / 2,
+        easing: "easeInExpo",
+        complete: () => {
+          this.movingNodes.forEach((node) => {
+            try {
+              node.parentElement?.removeChild(node);
+            } catch (e) {
+              //console.log(e);
+            }
+          });
+          this.movingNodes = [];
         },
-        duration: function () {
-          return width;
-        },
-        easing: "easeOutQuart",
       });
     }
   }
@@ -94,12 +298,15 @@ class LiveEmojiSection extends React.Component<
   }
 
   onPlayCallback = () => {
+    this.instructionOut();
+    this.animateWelcome(true);
+    if (this.state.showHighscore) this.highScores();
+
     this.clearBulletInterval();
-    this.initializeInstruction();
     if (
-      this.youtubeRef &&
-      this.youtubeRef.current &&
-      this.youtubeRef.current.getCurrentTime() < 0.1
+      this.props.youtubeRef &&
+      this.props.youtubeRef.current &&
+      this.props.youtubeRef.current.getCurrentTime() < 0.1
     )
       this.resetPoints();
     else if (this.audio && this.audio.currentTime < 0.1) this.resetPoints();
@@ -120,7 +327,7 @@ class LiveEmojiSection extends React.Component<
   // manually add the emoji to screen
   async addEmoji(emoji: string) {
     const time = this.getTimeStamp();
-    if (time <= 0) return;
+    if (parseInt(time) <= 0) return;
     const node = this.createEmojiNode(emoji);
     if (node !== undefined) {
       this.emojiToScreen(node);
@@ -142,12 +349,15 @@ class LiveEmojiSection extends React.Component<
     return result.toFixed(2);
   }
 
-  // check if we are on a youtube page first
-  getTimeStamp() {
-    if (this.youtubeRef && this.youtubeRef.current)
-      return this.round(this.youtubeRef.current.getCurrentTime());
-    if (this.audio) return this.round(this.audio.currentTime);
+  getPreciseTime() {
+    if (this.props.youtubeRef && this.props.youtubeRef.current)
+      return this.props.youtubeRef.current.getCurrentTime();
+    if (this.audio) return this.audio.currentTime;
     return -1;
+  }
+
+  getTimeStamp() {
+    return this.round(this.getPreciseTime());
   }
 
   resetPoints() {
@@ -163,20 +373,12 @@ class LiveEmojiSection extends React.Component<
     this.setState({
       streakPoints: 0,
     });
-    this.animateStreak();
   };
 
-  animateStreak() {
-    if (this.streakCount.current) {
-      const countRef = this.streakCount.current;
-      if (this.state.streakPoints >= 5) countRef.hidden = false;
-      else countRef.hidden = true;
-      countRef.style.color =
-        "rgb(255," + Math.min(200, (this.state.streakPoints - 5) * 10) + ", 0)";
-    }
-
+  animatePoint() {
+    console.log("Animate");
     anime.timeline().add({
-      targets: ".streak-count-text",
+      targets: ".point-count",
       scale: [0.2, 1],
       duration: 800,
     });
@@ -204,7 +406,7 @@ class LiveEmojiSection extends React.Component<
     this.props.onChangePoints(totalPoints);
 
     // animate the streak number
-    this.animateStreak();
+    this.animatePoint();
   }
 
   // check if the click should generate points (at this point anywhere within the canvas)
@@ -443,23 +645,55 @@ class LiveEmojiSection extends React.Component<
     }
   };
 
+  getStreakColor() {
+    const r = 255;
+    const g = Math.min(200, (this.state.streakPoints - 5) * 10);
+    const b = 0;
+    return "rgb(" + r + ", " + g + ", " + b + ")";
+  }
+
   render() {
     return (
       <div id="live-emoji-sec">
-        <div className="instruction"> Click emojis to add to stream </div>
-        <div className="instruction">
-          Click flowing emojis for points: {this.state.totalPoints}
+        <div className="point-container">
+          <span
+            style={{
+              paddingLeft: this.state.streakPoints < 5 ? "6rem" : "1rem",
+            }}
+          >
+            Total points:
+            <span className="point-count"> {this.state.totalPoints} </span>
+          </span>
+          <span
+            hidden={this.state.streakPoints < 5}
+            style={{ color: this.getStreakColor(), paddingLeft: "5rem" }}
+          >
+            Streak points:
+            <span className="point-count"> {this.state.streakPoints} </span>
+          </span>
         </div>
+
         <div className="clickzone" ref={this.clickZone} />
+
         <div id="emojis" ref={this.emojiDiv}>
-          <div className="special-bonus-text">Special Text</div>
+          {this.state.showInstruction && (
+            <div className="welcome-container">
+              <img
+                src={handWave}
+                alt="welcome"
+                onClick={() => {
+                  this.animateWelcome(false);
+                  this.openingScreen();
+                }}
+              />
+              <div>Click for instructions</div>
+            </div>
+          )}
+
           <AnimationCanvas
             ref={this.animeCanvas}
             resetStreak={this.resetStreak}
           />
-          <span className="streak-count-text" ref={this.streakCount}>
-            {this.state.streakPoints}
-          </span>
         </div>
       </div>
     );
