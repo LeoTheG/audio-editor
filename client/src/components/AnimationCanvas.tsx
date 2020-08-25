@@ -33,10 +33,9 @@ class AnimationCanvas extends React.Component<
         const canvasEl = this.emojiCanvas.current;
         if (canvasEl.parentElement) {
           canvasEl.width = canvasEl.parentElement.clientWidth;
-          canvasEl.height = canvasEl.parentElement.clientHeight;
-          canvasEl.width = canvasEl.offsetWidth;
-          canvasEl.height = canvasEl.offsetHeight;
-          // canvasEl.style.border = "3px solid red"
+          // canvasEl.width = canvasEl.offsetWidth;
+          // canvasEl.height = canvasEl.offsetHeight;
+          canvasEl.style.border = "3px solid red";
         }
       }
     };
@@ -122,7 +121,13 @@ class AnimationCanvas extends React.Component<
   };
 
   render() {
-    return <canvas ref={this.emojiCanvas}></canvas>;
+    return (
+      <canvas
+        height="270px"
+        style={{ position: "absolute" }}
+        ref={this.emojiCanvas}
+      ></canvas>
+    );
   }
 }
 

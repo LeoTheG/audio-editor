@@ -43,7 +43,6 @@ import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
-import { YoutubePage } from "../routes/YoutubePage";
 
 interface IInteractivePlayerProps {
   isYoutube?: boolean;

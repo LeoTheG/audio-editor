@@ -113,6 +113,7 @@
   height: 220px;
   align-self: center;
   position: relative;
+  border: 3px black solid;
 }
 
 .live-emoji {
@@ -159,6 +160,7 @@
   position: absolute;
   color: red;
   left: -14.5rem;
+  top: 220px;
 }
 
 .goomba-bonus-text {
@@ -166,6 +168,7 @@
   font-style: italic;
   position: absolute;
   color: rgb(255, 115, 0);
+  top: 220px;
   left: -10rem;
 }
 
@@ -198,7 +201,7 @@
 }
 
 .bullet-text {
-  font-size: 20px;
+  font-size: 22px;
   position: absolute;
   color: orangered;
   width: fit-content;
@@ -208,7 +211,7 @@
   width: 100vw;
   height: 200px;
   position: absolute;
-  /* border: 2px solid black; */
+  border: 3px solid orange;
   pointer-events: none;
 }
 

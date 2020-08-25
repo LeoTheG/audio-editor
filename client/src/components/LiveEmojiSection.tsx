@@ -460,12 +460,8 @@ class LiveEmojiSection extends React.Component<
     // shrinks the emoji and make it disappear
     anime({
       targets: node,
-      scale: function () {
-        return 0.01;
-      },
-      duration: function () {
-        return 100;
-      },
+      scale: 0.01,
+      duration: 100,
       easing: "linear",
       complete: () => {
         try {
