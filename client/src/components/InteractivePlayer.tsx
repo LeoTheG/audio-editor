@@ -399,20 +399,22 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   return (
     <div className="player-page-container">
-      <div style={{ width: "100%" }}>
-        <Button
-          style={{
-            minWidth: 20,
-            color: "white",
-            background: "grey",
-            padding: 10,
-          }}
-          variant="contained"
-          onClick={onClickHome}
-        >
-          HOME
-        </Button>
-      </div>
+      {!isYoutube && (
+        <div style={{ width: "100%" }}>
+          <Button
+            style={{
+              minWidth: 20,
+              color: "white",
+              background: "grey",
+              padding: 10,
+            }}
+            variant="contained"
+            onClick={onClickHome}
+          >
+            HOME
+          </Button>
+        </div>
+      )}
 
       <div className="player-body">
         {isYoutube ? (
