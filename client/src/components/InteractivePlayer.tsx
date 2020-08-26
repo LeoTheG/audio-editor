@@ -3,10 +3,9 @@ import {
   IconButton,
   Modal,
   Popover,
+  Switch,
   TextField,
   Tooltip,
-  Radio,
-  Switch,
 } from "@material-ui/core";
 import {
   Close,
@@ -17,11 +16,11 @@ import {
   SkipPrevious,
 } from "@material-ui/icons";
 import {
+  IBullets,
   IEmojiSelections,
+  ILiveEmojis,
   ISongEmojiSelections,
   userSong,
-  ILiveEmojis,
-  IBullets,
 } from "../types";
 import Picker, { IEmojiData } from "emoji-picker-react";
 import React, {
@@ -43,14 +42,12 @@ import { MusicController } from "adventure-component-library";
 import ReactPlayer from "react-player";
 import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
+import io from "socket.io-client";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
-import { AppStateContext } from "../contexts/appContext";
 
-import io from "socket.io-client";
-
-// const socket = io("ws://yeeplayer.herokuapp.com");
-const socket = io("ws://localhost:8000");
+const socket = io("wss://yeeplayer.herokuapp.com");
+// const socket = io("ws://localhost:8000");
 
 interface IUserConnections {
   [userId: string]: { location: { x: number; y: number } };
@@ -68,10 +65,11 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const playerBodyRef = useRef<HTMLDivElement>(null);
 
+  const id = useParam("id") || "";
+
   const [error, setError] = useState<string | null>(null);
   const [songPlayingIndex, setSongPlayingIndex] = useState(-1);
   const firebaseContext = useContext(FirebaseContext);
-  const appStateContext = useContext(AppStateContext);
   const [userSongs, setUserSongs] = useState<userSong[]>([]);
   const [selectedSongEmojis, setSelectedSongEmojis] = useState<
     ISongEmojiSelections
@@ -99,33 +97,20 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const [isCollaborating, setCollaborating] = useState(false);
   const [amountOnline, setAmountOnline] = useState(0);
-  // const [userConnections, setUserConnections] = useState<{[userId: string ]: {location: {x: number, y: number}}}>({})
   const [userConnections, setUserConnections] = useState<IUserConnections>({});
-
-  // const onMouseMove = useCallback(
-  //   (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-  //     const rect = event.currentTarget.getBoundingClientRect();
-  //     const x = event.clientX - rect.left; //x position within the element.
-  //     const y = event.clientY - rect.top; //y position within the element.
-
-  //     const width = event.currentTarget.clientWidth;
-  //     const height = event.currentTarget.clientHeight;
-
-  //     console.log(x / width, y / height);
-  //   },
-  //   []
-  // );
 
   const updateCursorPosition = useCallback(
     _.throttle((position: [number, number]) => {
-      console.log("updating with ", { x: position[0], y: position[1] });
       socket.emit("cursor move", { x: position[0], y: position[1] });
-    }, 1000),
+    }, 100),
     []
   );
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (!isCollaborating) {
+        return;
+      }
       const rect = event.currentTarget.getBoundingClientRect();
       const x = event.clientX - rect.left; //x position within the element.
       const y = event.clientY - rect.top; //y position within the element.
@@ -138,25 +123,44 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
       updateCursorPosition([relativeX, relativeY]);
     },
-    []
+    [isCollaborating, updateCursorPosition]
   );
+
+  useEffect(() => {
+    if (isCollaborating) {
+      socket.emit("connect room", id);
+    } else {
+      socket.emit("disconnect room");
+    }
+  }, [isCollaborating, id]);
 
   const onChangeCollaboration = useCallback((_, isCollaborating: boolean) => {
     setCollaborating(isCollaborating);
   }, []);
 
   useEffect(() => {
+    setAmountOnline(Object.keys(userConnections).length);
+  }, [userConnections]);
+
+  useEffect(() => {
+    setUserConnections({});
+    socket.emit("connect room", id);
     socket.on("connect", function () {
-      console.log("connected client");
+      console.log("connected to ws");
       socket.emit("connect room", id);
     });
-    // socket.on("event", function (data: any) {});
-    // socket.on("user connections", (data: IUserConnections) => {
-    //   console.log("user connections", data);
-    //   setUserConnections(data);
-    //   setAmountOnline(Object.keys(data).length);
-    // });
-    socket.on("disconnect", function () {});
+    socket.on("roommate disconnect", (clientId: string) => {
+      setUserConnections((userConnections) => {
+        const newUserConnections = {
+          ...userConnections,
+        };
+
+        delete newUserConnections[clientId];
+
+        return newUserConnections;
+      });
+    });
+    // socket.on("disconnect", function () {});
     socket.on("cursor move", (clientId: string, [x, y]: number[]) => {
       if (!playerBodyRef.current) return;
 
@@ -168,12 +172,18 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       const absoluteX = width * x;
       const absoluteY = height * y;
 
-      setUserConnections((userConnections) => ({
-        ...userConnections,
-        [clientId]: { location: { x: absoluteX, y: absoluteY } },
-      }));
+      setUserConnections((userConnections) => {
+        const newUserConnections = {
+          ...userConnections,
+          [clientId]: { location: { x: absoluteX, y: absoluteY } },
+        };
+
+        setAmountOnline(Object.keys(newUserConnections).length);
+
+        return newUserConnections;
+      });
     });
-  }, []);
+  }, [id]);
 
   const onSongEnd = useCallback(() => {
     setIsPlaying(false);
@@ -303,8 +313,6 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       setUserSongs(songs);
     });
   }, [firebaseContext, isYoutube]);
-
-  const id = useParam("id") || "";
 
   const onEmojiClick = useCallback(
     (song?: userSong) => (_: MouseEvent, emoji: IEmojiData) => {
@@ -450,7 +458,6 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const onClickEmojiPanel = useCallback(
     (key: string) => () => {
-      console.log("clicked emoji", key);
       const song = userSongs[songPlayingIndex];
 
       setSelectedSongEmojis((selectedSongEmojis) => {
@@ -467,8 +474,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
       if (liveEmojiRef.current) {
         liveEmojiRef.current.addEmoji(key);
-        console.log("adding emoji!");
-      } else console.log("no liveEmojiRef.current");
+      }
       updateLiveEmojis(song.id, selectedSongLiveEmojis[song.id]);
     },
     [
@@ -511,26 +517,26 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         className="player-body"
         onMouseMove={onMouseMove}
       >
-        {Object.entries(userConnections).map(([key, value]) => {
-          const { x, y } = value.location;
-          console.log("returning cursor", key, value);
-          return (
-            <div
-              style={{
-                position: "absolute",
-                top: y,
-                left: x,
-                background: "red",
-                width: 100,
-                height: 100,
-              }}
-              className="user-connection-cursor"
-              key={key}
-            >
-              CURSOR {key}
-            </div>
-          );
-        })}
+        {isCollaborating &&
+          Object.entries(userConnections).map(([key, value]) => {
+            const { x, y } = value.location;
+            return (
+              <div
+                style={{
+                  position: "absolute",
+                  top: y,
+                  left: x,
+                  background: "red",
+                  width: 100,
+                  height: 100,
+                }}
+                className="user-connection-cursor"
+                key={key}
+              >
+                CURSOR {key}
+              </div>
+            );
+          })}
 
         {isYoutube ? (
           <ReactPlayer
@@ -568,7 +574,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
                   onChange={onChangeCollaboration}
                 />
               </div>
-              <div>online: {amountOnline}</div>
+              {isCollaborating && <div>online: {amountOnline}</div>}
             </div>
             <LiveEmojiSection
               youtubeRef={isYoutube ? youtubeRef : undefined}

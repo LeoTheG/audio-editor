@@ -11,7 +11,7 @@ import { DndProvider } from "react-dnd-multi-backend";
 import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
 import { Homepage } from "./routes/Homepage";
 import { PlayerPage } from "./routes/PlayerPage";
-import React, { useEffect } from "react";
+import React from "react";
 import { YoutubePage } from "./routes/YoutubePage";
 import backgroundImage from "./assets/Polka-Dots.svg";
 import { withFirebaseContext } from "./contexts/firebaseContext";
