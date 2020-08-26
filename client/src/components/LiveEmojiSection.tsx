@@ -14,6 +14,10 @@ import blobOctopus from "../assets/blob-octopus.gif";
 import koopaTroopaMarioKart from "../assets/koopa_troopa_mario_kart.gif";
 import star from "../assets/star.gif";
 import upRedArrow from "../assets/up-red-arrow.gif";
+import mega from "../assets/mega.gif";
+import metroid from "../assets/metroid.gif";
+import penguin from "../assets/penguin.gif";
+import yahooGamesWoman from "../assets/yahoo_games_woman.png";
 
 import { ILiveEmojis } from "../types";
 
@@ -392,7 +396,6 @@ class LiveEmojiSection extends React.Component<
   };
 
   animatePoint() {
-    console.log("Animate");
     anime.timeline().add({
       targets: ".point-count",
       scale: [0.2, 1],
@@ -406,12 +409,14 @@ class LiveEmojiSection extends React.Component<
       this.state.totalPoints + 1 + Math.floor(streakPoints / 5);
 
     // checking whether to send out a special message animation
-    if (streakPoints === 5) this.streakBonusToScreen();
-    else if (Math.random() < 0.1) this.bananadanceToScreen();
+    if (streakPoints === 5) this.messageToScreen(this.createStreakBonusNode());
+    else if (Math.random() < 0.1)
+      this.messageToScreen(this.createBananadanceNode());
     else if (
       Math.floor(totalPoints / 10) > Math.floor(this.state.totalPoints / 10)
     )
-      this.goombaToScreen();
+      this.messageToScreen(this.createGoombaNode());
+    else this.messageToScreen(this.createMarchonNode());
 
     // update the state
     this.setState({
@@ -517,6 +522,25 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
+  messageToScreen(node: HTMLDivElement) {
+    if (this.emojiDiv.current) {
+      this.emojiDiv.current.appendChild(node);
+      let width = this.emojiDiv.current.clientWidth;
+      const animation = anime({
+        targets: node,
+        translateX: width + BONUS_WIDTH,
+        duration: width * BONUS_DURATION_FACTOR,
+        easing: "linear",
+        complete: () => {
+          try {
+            node.parentElement?.removeChild(node);
+          } catch (e) {}
+        },
+      });
+      return animation;
+    }
+  }
+
   // all functions below here are for bonus message calls
   createStreakBonusNode() {
     const node = document.createElement("div");
@@ -536,26 +560,6 @@ class LiveEmojiSection extends React.Component<
     return node;
   }
 
-  streakBonusToScreen() {
-    const node = this.createStreakBonusNode();
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: width + BONUS_WIDTH,
-        duration: width * BONUS_DURATION_FACTOR,
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-          } catch (e) {}
-        },
-      });
-      return animation;
-    }
-  }
-
   createGoombaNode() {
     const node = document.createElement("div");
     node.className = "goomba-bonus-text";
@@ -568,26 +572,6 @@ class LiveEmojiSection extends React.Component<
 
     node.innerHTML += " lets go";
     return node;
-  }
-
-  goombaToScreen() {
-    const node = this.createGoombaNode();
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: width + BONUS_WIDTH,
-        duration: width * BONUS_DURATION_FACTOR,
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-          } catch (e) {}
-        },
-      });
-      return animation;
-    }
   }
 
   createBananadanceNode() {
@@ -604,24 +588,72 @@ class LiveEmojiSection extends React.Component<
     return node;
   }
 
-  bananadanceToScreen() {
-    const node = this.createBananadanceNode();
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: width + BONUS_WIDTH,
-        duration: width * BONUS_DURATION_FACTOR,
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-          } catch (e) {}
-        },
-      });
-      return animation;
-    }
+  createMegamegaNode() {
+    const node = document.createElement("div");
+    node.className = "special-bonus-text";
+    node.innerText = " mega mega ";
+
+    const gifNodeBegin = document.createElement("img");
+    gifNodeBegin.className = "live-gif";
+    gifNodeBegin.src = mega;
+    node.insertAdjacentElement("afterbegin", gifNodeBegin);
+
+    const gifNodeEnd = document.createElement("img");
+    gifNodeEnd.className = "live-gif";
+    gifNodeEnd.src = mega;
+    node.insertAdjacentElement("beforeend", gifNodeEnd);
+
+    return node;
+  }
+
+  createMarchonNode() {
+    const node = document.createElement("div");
+    node.className = "special-bonus-text";
+    node.innerText = " march on ";
+
+    const gifNodeBegin = document.createElement("img");
+    gifNodeBegin.className = "live-gif";
+    gifNodeBegin.src = metroid;
+    node.insertAdjacentElement("afterbegin", gifNodeBegin);
+
+    const gifNodeEnd = document.createElement("img");
+    gifNodeEnd.className = "live-gif";
+    gifNodeEnd.src = metroid;
+    node.insertAdjacentElement("beforeend", gifNodeEnd);
+
+    return node;
+  }
+
+  createPenguinNode() {
+    const node = document.createElement("div");
+    node.className = "special-bonus-text";
+    node.innerText = " super super ";
+
+    const gifNodeBegin = document.createElement("img");
+    gifNodeBegin.className = "live-gif";
+    gifNodeBegin.src = penguin;
+    node.insertAdjacentElement("afterbegin", gifNodeBegin);
+
+    const gifNodeEnd = document.createElement("img");
+    gifNodeEnd.className = "live-gif";
+    gifNodeEnd.src = penguin;
+    node.insertAdjacentElement("beforeend", gifNodeEnd);
+
+    return node;
+  }
+
+  createNiceWorkNode() {
+    const node = document.createElement("div");
+    node.className = "special-bonus-text";
+    node.innerHTML = "yee ";
+
+    const gifNodeBegin = document.createElement("img");
+    gifNodeBegin.className = "live-gif";
+    gifNodeBegin.src = yahooGamesWoman;
+    node.insertAdjacentElement("beforeend", gifNodeBegin);
+
+    node.innerHTML += " nice work";
+    return node;
   }
 
   // add all emojis at the current timestamp to the screen

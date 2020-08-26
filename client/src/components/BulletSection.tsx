@@ -39,8 +39,7 @@ const TEXT_HEIGHT = 30;
 const LETTER_WIDTH = 7.5;
 const BULLET_SCREEN_OFFSET_TOP = 45;
 const SEC_PER_LETTER = 0.025;
-const LETTER_DURATION_FACTOR = 5;
-const TOTAL_DURATION_FACTOR = 5.5;
+const DURATION_FACTOR = 12;
 
 class BulletSection extends React.Component<
   IBulletSectionProps,
@@ -234,10 +233,8 @@ class BulletSection extends React.Component<
       let width = this.bulletDiv.current.clientWidth;
       anime({
         targets: node,
-        translateX: width + text.length * LETTER_WIDTH,
-        duration:
-          (width + text.length * LETTER_DURATION_FACTOR) *
-          TOTAL_DURATION_FACTOR,
+        translateX: 2 * width + node.offsetLeft,
+        duration: width * DURATION_FACTOR,
         easing: "linear",
         complete: () => {
           try {
