@@ -229,6 +229,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const onSongEnd = useCallback(() => {
     setIsPlaying(false);
+    onPause();
     if (points > 0) {
       setDisplayingScoreModal(true);
     }
@@ -541,20 +542,22 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   return (
     <div className="player-page-container">
-      <div style={{ width: "100%" }}>
-        <Button
-          style={{
-            minWidth: 20,
-            color: "white",
-            background: "grey",
-            padding: 10,
-          }}
-          variant="contained"
-          onClick={onClickHome}
-        >
-          HOME
-        </Button>
-      </div>
+      {!isYoutube && (
+        <div style={{ width: "100%" }}>
+          <Button
+            style={{
+              minWidth: 20,
+              color: "white",
+              background: "grey",
+              padding: 10,
+            }}
+            variant="contained"
+            onClick={onClickHome}
+          >
+            HOME
+          </Button>
+        </div>
+      )}
 
       <div
         ref={playerBodyRef}
@@ -568,6 +571,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
             url={song?.url}
             controls={true}
             ref={youtubeRef}
+            width={Math.min(640, window.innerWidth)}
             onReady={bulletRef.current?.matchPlayerDim}
             onPlay={onPlayYoutube}
             onPause={onPause}
@@ -609,6 +613,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
               youtubeRef={isYoutube ? youtubeRef : undefined}
               ref={liveEmojiRef}
               onChangePoints={setPoints}
+              scores={song?.highscores}
             />
           </>
         )}
