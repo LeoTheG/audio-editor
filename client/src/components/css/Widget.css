@@ -205,7 +205,6 @@
   position: absolute;
   color: orangered;
   width: fit-content;
-  font-family: 'Baloo Tamma 2'; 
 }
 
 .bullet-screen {
@@ -216,7 +215,15 @@
   pointer-events: none;
 }
 
-.bullet-input {
+.font-dropdown-container {
+  position: relative;
+  width: 150px;
+  font-size: 12px;
+  height: 35px;
+  top: 3px;
+}
+
+.bullet-input-container {
   position: relative;
   display: flex;
   flex-direction: row;
@@ -226,6 +233,11 @@
   border-radius: 2px;
   padding: 0.25rem 0.25rem 0.25rem;
   /* background: transparent; */
+}
+
+.bullet-input {
+  position: relative;
+  display: flex;
 }
 
 .bullet-input input {
@@ -272,11 +284,6 @@
   animation: gradient 3s linear infinite;
 }
 
-.bullet-input-container {
-  display: flex;
-  justify-content: center;
-}
-
 /* .bullet-input-container > *:not(:first-child) {
   display: flex;
   justify-content: center;
@@ -294,6 +301,7 @@
   border: none; 
   outline: none; 
 }
+
 .bullet-input button :hover {
   color: #bfd2ff;
 }

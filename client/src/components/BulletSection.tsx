@@ -2,6 +2,8 @@ import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
 import ReactPlayer from "react-player";
+import Dropdown from "react-dropdown";
+import "react-dropdown/style.css";
 import { IBullets } from "../types";
 
 interface IBulletSectionProps {
@@ -11,6 +13,7 @@ interface IBulletSectionProps {
 
 interface IBulletSectionState {
   inputValue: string;
+  font: string;
 }
 
 const INTERVAL_DELAY = 500;
@@ -41,6 +44,14 @@ const BULLET_SCREEN_OFFSET_TOP = 45;
 const SEC_PER_LETTER = 0.025;
 const DURATION_FACTOR = 12;
 
+const fonts = [
+  "Default",
+  "Shadows Into Light, cursive",
+  "Lobster, cursive",
+  "Caveat, cursive",
+];
+const defaultFont = fonts[0];
+
 class BulletSection extends React.Component<
   IBulletSectionProps,
   IBulletSectionState
@@ -65,6 +76,7 @@ class BulletSection extends React.Component<
     super(props);
     this.state = {
       inputValue: "",
+      font: defaultFont,
     };
     this.youtubeRef = props.youtubeRef;
     this.resetColor();
@@ -144,8 +156,10 @@ class BulletSection extends React.Component<
   };
 
   onPlayCallback = () => {
-    this.clearBulletInterval();
-    this.interval = setInterval(this.bulletScreen, INTERVAL_DELAY);
+    setTimeout(() => {
+      this.clearBulletInterval();
+      this.interval = setInterval(this.bulletScreen, INTERVAL_DELAY);
+    }, INTERVAL_DELAY);
   };
 
   onPauseCallback = () => {
@@ -209,6 +223,7 @@ class BulletSection extends React.Component<
     node.innerText = text;
     node.style.top = lane + "px";
     node.style.left = -text.length * LETTER_WIDTH + "px";
+    node.style.fontFamily = this.state.font;
 
     // choose a random color for the text
     const choice = Math.floor(Math.random() * this.availColor.length);
@@ -258,25 +273,40 @@ class BulletSection extends React.Component<
       });
     }
   };
+
+  onFontChange = (option: any) => {
+    console.log(option.label);
+    this.setState({ font: option.label });
+  };
+
   render() {
     return (
       <div id="bullet-sec">
         <div className="bullet-screen" ref={this.bulletDiv}></div>
-        <div className="bullet-input">
-          <input
-            type="text"
-            placeholder="What do u think?"
-            value={this.state.inputValue}
-            onChange={this.onChangeInput}
-            onKeyUp={(event) => {
-              if (event.key === "Enter") {
-                this.addBullet();
-              }
-            }}
-          ></input>
-          <button type="submit" onClick={this.addBullet}>
-            <i className="fas">{"=>"}</i>
-          </button>
+        <div className="bullet-input-container">
+          <Dropdown
+            className="font-dropdown-container"
+            options={fonts}
+            onChange={this.onFontChange}
+            value={defaultFont}
+            placeholder="Select a font"
+          />
+          <div className="bullet-input">
+            <input
+              type="text"
+              placeholder="What do u think?"
+              value={this.state.inputValue}
+              onChange={this.onChangeInput}
+              onKeyUp={(event) => {
+                if (event.key === "Enter") {
+                  this.addBullet();
+                }
+              }}
+            ></input>
+            <button type="submit" onClick={this.addBullet}>
+              <i className="fas">{"=>"}</i>
+            </button>
+          </div>
         </div>
       </div>
     );
