@@ -6,12 +6,8 @@ const clientPositions = {};
 // {[clientId: string]: string}
 const clientRooms = {};
 
-// todo: emit client disconnects and room changes, should hide for former roommates
-
 io.on("connection", (client) => {
   client.on("connect room", (id) => {
-    console.log("connecting to room ", id);
-
     client.join(id);
     clientRooms[client.id] = id;
     // leave old rooms
@@ -21,14 +17,9 @@ io.on("connection", (client) => {
         client.leave(room);
       }
     }
-    /* … */
   });
 
   client.on("disconnect room", () => {
-    // for (room in client.rooms) {
-    //     client.to(room).emit("roommate disconnect", client.id);
-    //     client.leave(room);
-    // }
     const clientRoom = getClientRoom(client);
     client.leave(clientRoom);
     client.to(clientRoom).emit("roommate disconnect", client.id);
@@ -46,8 +37,6 @@ io.on("connection", (client) => {
   });
 
   client.on("disconnect", () => {
-    /* … */
-    console.log("disconnected client", client.id);
     const clientRoom = clientRooms[client.id];
 
     if (!clientRoom) return;

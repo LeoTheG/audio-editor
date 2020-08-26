@@ -1,3 +1,5 @@
+import "./css/InteractivePlayer.css";
+
 import {
   Button,
   IconButton,
@@ -42,20 +44,28 @@ import { MusicController } from "adventure-component-library";
 import ReactPlayer from "react-player";
 import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
+import ghost from "../assets/red_ghost.gif";
 import io from "socket.io-client";
+import kirby from "../assets/kirby.gif";
+import link from "../assets/link-run.gif";
+import mario from "../assets/mario.gif";
+import nyancat from "../assets/nyancat_big.gif";
 import { useHistory } from "react-router-dom";
 import { useParam } from "../util";
+import yoshi from "../assets/yoshi.gif";
 
 const socket = io("wss://yeeplayer.herokuapp.com");
 // const socket = io("ws://localhost:8000");
 
 interface IUserConnections {
-  [userId: string]: { location: { x: number; y: number } };
+  [userId: string]: { location: { x: number; y: number }; avatar: string };
 }
 
 interface IInteractivePlayerProps {
   isYoutube?: boolean;
 }
+
+const selectedProfiles: { [clientId: string]: string } = {};
 
 export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -131,6 +141,8 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       socket.emit("connect room", id);
     } else {
       socket.emit("disconnect room");
+      setUserConnections({});
+      setAmountOnline(0);
     }
   }, [isCollaborating, id]);
 
@@ -139,14 +151,9 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   }, []);
 
   useEffect(() => {
-    setAmountOnline(Object.keys(userConnections).length);
-  }, [userConnections]);
-
-  useEffect(() => {
     setUserConnections({});
     socket.emit("connect room", id);
     socket.on("connect", function () {
-      console.log("connected to ws");
       socket.emit("connect room", id);
     });
     socket.on("roommate disconnect", (clientId: string) => {
@@ -156,11 +163,14 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         };
 
         delete newUserConnections[clientId];
+        delete selectedProfiles[clientId];
+
+        setAmountOnline(Math.max(Object.keys(userConnections).length - 1, 0));
 
         return newUserConnections;
       });
+      //   setAmountOnline((amountOnline) => amountOnline - 1);
     });
-    // socket.on("disconnect", function () {});
     socket.on("cursor move", (clientId: string, [x, y]: number[]) => {
       if (!playerBodyRef.current) return;
 
@@ -172,13 +182,45 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       const absoluteX = width * x;
       const absoluteY = height * y;
 
+      // set profile for new clients
+
       setUserConnections((userConnections) => {
         const newUserConnections = {
           ...userConnections,
-          [clientId]: { location: { x: absoluteX, y: absoluteY } },
+          [clientId]: {
+            ...userConnections[clientId],
+            location: { x: absoluteX, y: absoluteY },
+          },
         };
 
-        setAmountOnline(Object.keys(newUserConnections).length);
+        if (!userConnections[clientId]) {
+          setAmountOnline(Object.keys(userConnections).length + 1);
+        }
+
+        if (!newUserConnections[clientId].avatar) {
+          const selectedProfilesValues = Object.values(selectedProfiles);
+
+          let newAvatar = "";
+
+          if (selectedProfilesValues.length >= profileOptions.avatars.length) {
+            newAvatar =
+              profileOptions.avatars[
+                Math.floor(Math.random() * profileOptions.avatars.length)
+              ];
+          } else {
+            const availableAvatars = profileOptions.avatars.filter(
+              (avatar) => !selectedProfilesValues.includes(avatar)
+            );
+            newAvatar =
+              availableAvatars[
+                Math.floor(Math.random() * availableAvatars.length)
+              ];
+          }
+
+          newUserConnections[clientId].avatar = newAvatar;
+
+          selectedProfiles[clientId] = newAvatar;
+        }
 
         return newUserConnections;
       });
@@ -369,6 +411,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       newSongIndex = userSongs.length - 1;
     }
     playSong(newSongIndex);
+    setAmountOnline(0);
   };
 
   const onClickNextSong = () => {
@@ -377,6 +420,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       newSongIndex = 0;
     }
     playSong(newSongIndex);
+    setAmountOnline(0);
   };
 
   const onPlayYoutube = () => {
@@ -517,26 +561,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         className="player-body"
         onMouseMove={onMouseMove}
       >
-        {isCollaborating &&
-          Object.entries(userConnections).map(([key, value]) => {
-            const { x, y } = value.location;
-            return (
-              <div
-                style={{
-                  position: "absolute",
-                  top: y,
-                  left: x,
-                  background: "red",
-                  width: 100,
-                  height: 100,
-                }}
-                className="user-connection-cursor"
-                key={key}
-              >
-                CURSOR {key}
-              </div>
-            );
-          })}
+        {isCollaborating && <UserCursors userConnections={userConnections} />}
 
         {isYoutube ? (
           <ReactPlayer
@@ -574,7 +599,11 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
                   onChange={onChangeCollaboration}
                 />
               </div>
-              {isCollaborating && <div>online: {amountOnline}</div>}
+              {isCollaborating && (
+                <div style={{ background: "white", padding: 5 }}>
+                  online: {amountOnline}
+                </div>
+              )}
             </div>
             <LiveEmojiSection
               youtubeRef={isYoutube ? youtubeRef : undefined}
@@ -756,4 +785,68 @@ const generateUrl = (isYoutube?: boolean, song?: userSong) => {
   return `${window.location.origin}/#/${isYoutube ? "youtube" : "player"}?id=${
     song.id
   }`;
+};
+
+interface IUserCursorsProps {
+  userConnections: IUserConnections;
+}
+
+const profileOptions = {
+  prefixes: [
+    "amazing",
+    "deranged",
+    "charming",
+    "dapper",
+    "eager",
+    "defiant",
+    "spotted",
+    "rare",
+  ],
+  suffixes: [
+    "woodpecker",
+    "mallard",
+    "grasshopper",
+    "boar",
+    "snail",
+    "coyote",
+    "meerkat",
+    "narwhal",
+    "scorpion",
+  ],
+  avatars: [kirby, link, mario, nyancat, ghost, yoshi],
+};
+
+const userNames: { [clientId: string]: string } = {};
+
+const UserCursors = (props: IUserCursorsProps) => {
+  return (
+    <>
+      {Object.entries(props.userConnections).map(([key, value], index) => {
+        const { x, y } = value.location;
+        if (!userNames[key]) {
+          userNames[key] =
+            profileOptions.prefixes[
+              Math.floor(Math.random() * profileOptions.prefixes.length)
+            ] +
+            " " +
+            profileOptions.suffixes[
+              Math.floor(Math.random() * profileOptions.suffixes.length)
+            ];
+        }
+
+        const name = userNames[key];
+
+        return (
+          <div
+            style={{ top: y, left: x }}
+            className="user-connection-cursor"
+            key={key}
+          >
+            <img key={key} src={value.avatar} alt="avatar" />
+            <div>{name}</div>
+          </div>
+        );
+      })}
+    </>
+  );
 };
