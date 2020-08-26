@@ -41,7 +41,7 @@ const COLOR_PALLET = [
 const TEXT_HEIGHT = 30;
 const LETTER_WIDTH = 7.5;
 const BULLET_SCREEN_OFFSET_TOP = 45;
-const SEC_PER_LETTER = 0.025;
+const SEC_PER_LETTER = 0.03;
 const DURATION_FACTOR = 12;
 
 const fonts = [
@@ -248,7 +248,7 @@ class BulletSection extends React.Component<
       let width = this.bulletDiv.current.clientWidth;
       anime({
         targets: node,
-        translateX: 2 * width + node.offsetLeft,
+        translateX: 2 * width,
         duration: width * DURATION_FACTOR,
         easing: "linear",
         complete: () => {
