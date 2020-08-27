@@ -272,10 +272,11 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const history = useHistory();
 
-  const selectedEmojis =
-    userSongs.length && userSongs[songPlayingIndex]
+  const selectedEmojis = useMemo(() => {
+    return userSongs.length && userSongs[songPlayingIndex]
       ? selectedSongEmojis[userSongs[songPlayingIndex].id] || {}
       : {};
+  }, [userSongs, songPlayingIndex, selectedSongEmojis]);
 
   const liveEmojiRef = useRef<LiveEmojiSection>(null);
   const bulletRef = useRef<BulletSection>(null);
