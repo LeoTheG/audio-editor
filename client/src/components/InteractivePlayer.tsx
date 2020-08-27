@@ -33,6 +33,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useHistory, useParams } from "react-router-dom";
 
 import { AdventureLogo } from "../components/AdventureLogo";
 import BulletSection from "../components/BulletSection";
@@ -50,19 +51,30 @@ import kirby from "../assets/kirby.gif";
 import link from "../assets/link-run.gif";
 import mario from "../assets/mario.gif";
 import nyancat from "../assets/nyancat_big.gif";
-import { useHistory } from "react-router-dom";
-import { useParam } from "../util";
 import yoshi from "../assets/yoshi.gif";
 
 const socket = io("wss://yeeplayer.herokuapp.com");
 // const socket = io("ws://localhost:8000");
 
-interface IUserConnections {
-  [userId: string]: { location: { x: number; y: number }; avatar: string };
+const avatarMap: { [key: string]: string } = {
+  mario: mario,
+  kirby: kirby,
+  link: link,
+  nyancat: nyancat,
+  ghost: ghost,
+  yoshi: yoshi,
+};
+
+interface IUserLocations {
+  [userId: string]: { x: number; y: number };
 }
 
 interface IInteractivePlayerProps {
   isYoutube?: boolean;
+}
+
+interface IUserProfiles {
+  [clientId: string]: { name: string; avatar: string };
 }
 
 const selectedProfiles: { [clientId: string]: string } = {};
@@ -74,9 +86,12 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const youtubeRef = useRef<ReactPlayer>(null);
 
   const playerBodyRef = useRef<HTMLDivElement>(null);
+  const [playerBodyRect, setPlayerBodyRect] = useState<DOMRect>();
 
-  const id = useParam("id") || "";
+  const { id } = useParams();
 
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [song, setSong] = useState<userSong>();
   const [error, setError] = useState<string | null>(null);
   const [songPlayingIndex, setSongPlayingIndex] = useState(-1);
   const firebaseContext = useContext(FirebaseContext);
@@ -107,7 +122,8 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const [isCollaborating, setCollaborating] = useState(false);
   const [amountOnline, setAmountOnline] = useState(0);
-  const [userConnections, setUserConnections] = useState<IUserConnections>({});
+  const [userLocations, setUserLocations] = useState<IUserLocations>({});
+  const [userProfiles, setUserProfiles] = useState<IUserProfiles>({});
 
   const updateCursorPosition = useCallback(
     _.throttle((position: [number, number]) => {
@@ -118,12 +134,11 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (!isCollaborating) {
+      if (!isCollaborating || !playerBodyRect) {
         return;
       }
-      const rect = event.currentTarget.getBoundingClientRect();
-      const x = event.clientX - rect.left; //x position within the element.
-      const y = event.clientY - rect.top; //y position within the element.
+      const x = event.clientX - playerBodyRect.left; //x position within the element.
+      const y = event.clientY - playerBodyRect.top; //y position within the element.
 
       const width = event.currentTarget.clientWidth;
       const height = event.currentTarget.clientHeight;
@@ -133,15 +148,29 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
       updateCursorPosition([relativeX, relativeY]);
     },
-    [isCollaborating, updateCursorPosition]
+    [isCollaborating, updateCursorPosition, playerBodyRect]
   );
+
+  useEffect(() => {
+    window.onresize = () => {
+      if (playerBodyRef.current) {
+        const rect = playerBodyRef.current.getBoundingClientRect();
+        setPlayerBodyRect(rect);
+      }
+    };
+    if (playerBodyRef.current) {
+      const rect = playerBodyRef.current.getBoundingClientRect();
+      setPlayerBodyRect(rect);
+    }
+  }, [playerBodyRef]);
 
   useEffect(() => {
     if (isCollaborating) {
       socket.emit("connect room", id);
     } else {
       socket.emit("disconnect room");
-      setUserConnections({});
+      setUserProfiles({});
+      setUserLocations({});
       setAmountOnline(0);
     }
   }, [isCollaborating, id]);
@@ -150,104 +179,90 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     setCollaborating(isCollaborating);
   }, []);
 
+  const onCursorMove = useCallback(function cursorMove(
+    clientId: string,
+    [x, y]: number[]
+  ) {
+    if (!playerBodyRef.current) return;
+
+    const rect = playerBodyRef.current.getBoundingClientRect();
+
+    const width = rect.width;
+    const height = rect.height;
+
+    const absoluteX = width * x;
+    const absoluteY = height * y;
+
+    setUserLocations((userLocations) => {
+      const newUserLocations = {
+        ...userLocations,
+        [clientId]: {
+          ...userLocations[clientId],
+          x: absoluteX,
+          y: absoluteY,
+        },
+      };
+
+      if (!userLocations[clientId]) {
+        setAmountOnline(Object.keys(userLocations).length + 1);
+      }
+
+      return newUserLocations;
+    });
+  },
+  []);
+
   useEffect(() => {
-    setUserConnections({});
+    setUserLocations({});
+
     socket.emit("connect room", id);
     socket.on("connect", function () {
       socket.emit("connect room", id);
     });
     socket.on("roommate disconnect", (clientId: string) => {
-      setUserConnections((userConnections) => {
-        const newUserConnections = {
-          ...userConnections,
+      setUserLocations((userLocations) => {
+        const newUserLocations = {
+          ...userLocations,
         };
 
-        delete newUserConnections[clientId];
+        delete newUserLocations[clientId];
         delete selectedProfiles[clientId];
 
-        setAmountOnline(Math.max(Object.keys(userConnections).length - 1, 0));
+        setAmountOnline(Math.max(Object.keys(userLocations).length - 1, 0));
 
-        return newUserConnections;
-      });
-      //   setAmountOnline((amountOnline) => amountOnline - 1);
-    });
-    socket.on("cursor move", (clientId: string, [x, y]: number[]) => {
-      if (!playerBodyRef.current) return;
-
-      const rect = playerBodyRef.current.getBoundingClientRect();
-
-      const width = rect.width;
-      const height = rect.height;
-
-      const absoluteX = width * x;
-      const absoluteY = height * y;
-
-      // set profile for new clients
-
-      setUserConnections((userConnections) => {
-        const newUserConnections = {
-          ...userConnections,
-          [clientId]: {
-            ...userConnections[clientId],
-            location: { x: absoluteX, y: absoluteY },
-          },
-        };
-
-        if (!userConnections[clientId]) {
-          setAmountOnline(Object.keys(userConnections).length + 1);
-        }
-
-        if (!newUserConnections[clientId].avatar) {
-          const selectedProfilesValues = Object.values(selectedProfiles);
-
-          let newAvatar = "";
-
-          if (selectedProfilesValues.length >= profileOptions.avatars.length) {
-            newAvatar =
-              profileOptions.avatars[
-                Math.floor(Math.random() * profileOptions.avatars.length)
-              ];
-          } else {
-            const availableAvatars = profileOptions.avatars.filter(
-              (avatar) => !selectedProfilesValues.includes(avatar)
-            );
-            newAvatar =
-              availableAvatars[
-                Math.floor(Math.random() * availableAvatars.length)
-              ];
-          }
-
-          newUserConnections[clientId].avatar = newAvatar;
-
-          selectedProfiles[clientId] = newAvatar;
-        }
-
-        return newUserConnections;
+        return newUserLocations;
       });
     });
-  }, [id]);
+    socket.on(
+      "profile info",
+      (clientId: string, clientProfile: { name: string; avatar: string }) => {
+        setUserProfiles((userProfiles) => ({
+          ...userProfiles,
+          [clientId]: clientProfile,
+        }));
+      }
+    );
 
-  const onSongEnd = useCallback(() => {
-    setIsPlaying(false);
-    onPause();
-    if (points > 0) {
-      setDisplayingScoreModal(true);
-    }
-  }, [points]);
+    socket.on("room profile info", (profileInfo: IUserProfiles) => {
+      setUserProfiles(profileInfo);
+    });
 
-  const onSubmitPoints = () => {
+    socket.on("cursor move", onCursorMove);
+  }, [id, onCursorMove]);
+
+  const onSubmitPoints = useCallback(() => {
     if (song) {
       const highscores = song.highscores || [];
       highscores.push({ name: scoreName, score: points });
       firebaseContext.updateLiveEmojiPoints(song.id, highscores);
       setDisplayingScoreModal(false);
-      setUserSongs([
+      setUserSongs((userSongs) => [
         ...userSongs.slice(0, songPlayingIndex),
         { ...song, highscores },
         ...userSongs.slice(songPlayingIndex + 1),
       ]);
     }
-  };
+  }, [song, firebaseContext, points, scoreName, songPlayingIndex]);
 
   useEffect(() => {
     if (!isDisplayingScoreModal && liveEmojiRef.current) {
@@ -261,10 +276,6 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     userSongs.length && userSongs[songPlayingIndex]
       ? selectedSongEmojis[userSongs[songPlayingIndex].id] || {}
       : {};
-
-  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-
-  const [song, setSong] = useState<userSong>();
 
   const liveEmojiRef = useRef<LiveEmojiSection>(null);
   const bulletRef = useRef<BulletSection>(null);
@@ -301,7 +312,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   useEffect(() => {
     if (songPlayingIndex !== -1) {
       const song = userSongs[songPlayingIndex];
-      history.push(`/${historyURL}?id=${song.id}`);
+      history.push(`/${historyURL}/${song.id}`);
     }
   }, [history, songPlayingIndex, userSongs, historyURL]);
 
@@ -391,53 +402,15 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   );
 
   useEffect(() => {
-    if (audio === null) return;
-    audio.addEventListener("ended", onSongEnd);
-  }, [audio, onSongEnd]);
-
-  useEffect(() => {
     if (!userSongs.length) return;
     const songIndex = userSongs.findIndex((upload) => upload.id === id);
     if (songIndex === -1) {
-      if (id.length) alert("Song with id " + id + " not found");
+      if (id) alert("Song with id " + id + " not found");
       setSongPlayingIndex(0);
     } else {
       setSongPlayingIndex(songIndex);
     }
   }, [id, userSongs]);
-
-  const onClickPrevSong = () => {
-    let newSongIndex = songPlayingIndex - 1;
-    if (newSongIndex < 0) {
-      newSongIndex = userSongs.length - 1;
-    }
-    playSong(newSongIndex);
-    setAmountOnline(0);
-  };
-
-  const onClickNextSong = () => {
-    let newSongIndex = songPlayingIndex + 1;
-    if (newSongIndex >= userSongs.length) {
-      newSongIndex = 0;
-    }
-    playSong(newSongIndex);
-    setAmountOnline(0);
-  };
-
-  const onPlayYoutube = () => {
-    updatePlayCount(songPlayingIndex);
-    onPlay();
-  };
-
-  const onPlay = () => {
-    liveEmojiRef.current?.onPlayCallback();
-    bulletRef.current?.onPlayCallback();
-  };
-
-  const onPause = () => {
-    liveEmojiRef.current?.onPauseCallback();
-    bulletRef.current?.onPauseCallback();
-  };
 
   const updatePlayCount = useCallback(
     (songIndex: number) => {
@@ -452,33 +425,82 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     [playedSong, firebaseContext, userSongs]
   );
 
-  const playSong = (index: number) => {
-    updatePlayCount(index);
+  const onPlay = useCallback(() => {
+    liveEmojiRef.current?.onPlayCallback();
+    bulletRef.current?.onPlayCallback();
+  }, [liveEmojiRef, bulletRef]);
 
-    if (index === songPlayingIndex && audio) {
-      audio.play();
-    } else {
-      audio?.pause();
-      const song = userSongs[index];
-      if (!song) return;
+  const onPlayYoutube = useCallback(() => {
+    updatePlayCount(songPlayingIndex);
+    onPlay();
+  }, [onPlay, updatePlayCount, songPlayingIndex]);
 
-      let _audio: HTMLAudioElement = audio || new window.Audio(song.url);
+  const onPause = useCallback(() => {
+    liveEmojiRef.current?.onPauseCallback();
+    bulletRef.current?.onPauseCallback();
+  }, [liveEmojiRef, bulletRef]);
 
-      _audio.src = song.url;
-      _audio?.play();
-      if (!audio) {
-        setAudio(_audio);
-        liveEmojiRef.current?.initializeAudio(_audio);
-        bulletRef.current?.initializeAudio(_audio);
-        _audio.onplaying = onPlay;
-        _audio.onpause = onPause;
+  const playSong = useCallback(
+    (index: number) => {
+      updatePlayCount(index);
+
+      if (index === songPlayingIndex && audio) {
+        audio.play();
+      } else {
+        audio?.pause();
+        const song = userSongs[index];
+        if (!song) return;
+
+        let _audio: HTMLAudioElement = audio || new window.Audio(song.url);
+
+        _audio.src = song.url;
+        _audio?.play();
+        if (!audio) {
+          setAudio(_audio);
+          liveEmojiRef.current?.initializeAudio(_audio);
+          bulletRef.current?.initializeAudio(_audio);
+          _audio.onplaying = onPlay;
+          _audio.onpause = onPause;
+        }
+        setSongPlayingIndex(index);
       }
-      setSongPlayingIndex(index);
-    }
-    setIsPlaying(true);
-  };
+      setIsPlaying(true);
+    },
+    [updatePlayCount, audio, onPause, onPlay, songPlayingIndex, userSongs]
+  );
 
-  const onTogglePlaySong = () => {
+  const onClickPrevSong = useCallback(() => {
+    let newSongIndex = songPlayingIndex - 1;
+    if (newSongIndex < 0) {
+      newSongIndex = userSongs.length - 1;
+    }
+    playSong(newSongIndex);
+    setAmountOnline(0);
+  }, [playSong, songPlayingIndex, userSongs.length]);
+
+  const onClickNextSong = useCallback(() => {
+    let newSongIndex = songPlayingIndex + 1;
+    if (newSongIndex >= userSongs.length) {
+      newSongIndex = 0;
+    }
+    playSong(newSongIndex);
+    setAmountOnline(0);
+  }, [playSong, songPlayingIndex, userSongs.length]);
+
+  const onSongEnd = useCallback(() => {
+    setIsPlaying(false);
+    onPause();
+    if (points > 0) {
+      setDisplayingScoreModal(true);
+    }
+  }, [points, onPause]);
+
+  useEffect(() => {
+    if (audio === null) return;
+    audio.addEventListener("ended", onSongEnd);
+  }, [audio, onSongEnd]);
+
+  const onTogglePlaySong = useCallback(() => {
     if (userSongs.length && !isPlaying) {
       if (songPlayingIndex !== -1) {
         playSong(songPlayingIndex);
@@ -487,19 +509,27 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       audio.pause();
       setIsPlaying(false);
     }
-  };
+  }, [userSongs, isPlaying, playSong, audio, songPlayingIndex]);
 
-  const convertedSong = song
-    ? {
+  const convertedSong = useMemo<{
+    url: string;
+    artist: string;
+    songName: string;
+  }>(() => {
+    if (song) {
+      return {
         url: song.url,
         artist: song.authorName,
         songName: song.songName,
-      }
-    : {
+      };
+    } else {
+      return {
         url: "",
         artist: "",
         songName: "",
       };
+    }
+  }, [song]);
 
   const onClickEmojiPanel = useCallback(
     (key: string) => () => {
@@ -564,7 +594,12 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         className="player-body"
         onMouseMove={onMouseMove}
       >
-        {isCollaborating && <UserCursors userConnections={userConnections} />}
+        {isCollaborating && (
+          <UserCursors
+            userLocations={userLocations}
+            userProfiles={userProfiles}
+          />
+        )}
 
         {isYoutube ? (
           <ReactPlayer
@@ -793,61 +828,28 @@ const generateUrl = (isYoutube?: boolean, song?: userSong) => {
 };
 
 interface IUserCursorsProps {
-  userConnections: IUserConnections;
+  userLocations: IUserLocations;
+  userProfiles: IUserProfiles;
 }
-
-const profileOptions = {
-  prefixes: [
-    "amazing",
-    "deranged",
-    "charming",
-    "dapper",
-    "eager",
-    "defiant",
-    "spotted",
-    "rare",
-  ],
-  suffixes: [
-    "woodpecker",
-    "mallard",
-    "grasshopper",
-    "boar",
-    "snail",
-    "coyote",
-    "meerkat",
-    "narwhal",
-    "scorpion",
-  ],
-  avatars: [kirby, link, mario, nyancat, ghost, yoshi],
-};
-
-const userNames: { [clientId: string]: string } = {};
 
 const UserCursors = (props: IUserCursorsProps) => {
   return (
     <>
-      {Object.entries(props.userConnections).map(([key, value], index) => {
-        const { x, y } = value.location;
-        if (!userNames[key]) {
-          userNames[key] =
-            profileOptions.prefixes[
-              Math.floor(Math.random() * profileOptions.prefixes.length)
-            ] +
-            " " +
-            profileOptions.suffixes[
-              Math.floor(Math.random() * profileOptions.suffixes.length)
-            ];
-        }
+      {Object.entries(props.userLocations).map(([key, value]) => {
+        const { x, y } = value;
 
-        const name = userNames[key];
+        if (!props.userProfiles[key]) {
+          return null;
+        }
+        const { avatar, name } = props.userProfiles[key];
 
         return (
           <div
-            style={{ top: y, left: x }}
+            style={{ transform: `translate(${x}px, ${y}px)` }}
             className="user-connection-cursor"
             key={key}
           >
-            <img key={key} src={value.avatar} alt="avatar" />
+            <img src={avatarMap[avatar]} alt="avatar" />
             <div>{name}</div>
           </div>
         );

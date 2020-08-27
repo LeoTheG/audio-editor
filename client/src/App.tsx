@@ -32,10 +32,10 @@ function App() {
                 <Homepage />
               </DndProvider>
             </Route>
-            <Route path={"/player"}>
+            <Route path={"/player/:id?"}>
               <PlayerPage />
             </Route>
-            <Route path={"/youtube"}>
+            <Route path={"/youtube/:id?"}>
               <YoutubePage />
             </Route>
             <Redirect from="*" to={"/"} />

@@ -105,7 +105,7 @@
 }
 
 .high-score {
-  position: absolute
+  position: absolute;
 }
 
 #emojis {
@@ -121,6 +121,8 @@
   position: absolute;
   left: -2rem;
   overflow: hidden;
+  user-select: none;
+  cursor: pointer;
 }
 
 .point-container {
@@ -132,7 +134,7 @@
   /* border: black 2px solid; */
 }
 
-.point-count{
+.point-count {
   position: absolute;
   margin: auto;
   padding-right: 1rem;
@@ -280,15 +282,15 @@
 } */
 
 .bullet-input button {
-  color:  #7881A1;
+  color: #7881a1;
   font-size: 1.4rem;
   line-height: 2.4rem;
   vertical-align: middle;
-  transition: color .25s;
-  padding: 0; 
-  background: none; 
-  border: none; 
-  outline: none; 
+  transition: color 0.25s;
+  padding: 0;
+  background: none;
+  border: none;
+  outline: none;
 }
 .bullet-input button :hover {
   color: #bfd2ff;
