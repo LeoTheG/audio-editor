@@ -6,7 +6,8 @@ import { IBullets } from "../types";
 
 interface IBulletSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
-  updateBullets: CallableFunction;
+  updateBullets: () => void;
+  submitBullet: (text: string) => void;
 }
 
 interface IBulletSectionState {
@@ -177,11 +178,12 @@ class BulletSection extends React.Component<
     if (text.length === 0) return;
 
     this.textToScreen(text);
+    this.props.submitBullet(text);
+    this.setState({ inputValue: "" });
 
     const time = this.getTimeStamp();
-    if (parseInt(time) <= 0) return;
 
-    this.setState({ inputValue: "" });
+    if (parseInt(time) <= 0) return;
     // add the emoji to the list 0.5 sec later to avoid outputing emoji twice
     setTimeout(() => {
       if (!(time in this.bullets)) this.bullets[time] = [];
