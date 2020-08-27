@@ -128,7 +128,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const updateCursorPosition = useCallback(
     _.throttle((position: [number, number]) => {
       socket.emit("cursor move", { x: position[0], y: position[1] });
-    }, 100),
+    }, 200),
     []
   );
 
