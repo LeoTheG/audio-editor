@@ -154,37 +154,12 @@
   height: 35px;
 }
 
-.streak-bonus-text {
-  font-size: 25px;
-  font-style: italic;
-  position: absolute;
-  color: red;
-  left: -14.5rem;
-  top: 220px;
-}
-
-.goomba-bonus-text {
-  font-size: 25px;
-  font-style: italic;
-  position: absolute;
-  color: rgb(255, 115, 0);
-  top: 220px;
-  left: -10rem;
-}
-
 .special-bonus-text {
   font-size: 25px;
   font-style: italic;
   position: absolute;
   color: rgb(255, 115, 0);
   top: -220px;
-  left: -10rem;
-}
-
-.star-gif {
-  position: relative;
-  width: 35px;
-  height: 35px;
   left: -10rem;
 }
 

@@ -41,7 +41,7 @@ const COLOR_PALLET = [
 const TEXT_HEIGHT = 30;
 const LETTER_WIDTH = 7.5;
 const BULLET_SCREEN_OFFSET_TOP = 45;
-const SEC_PER_LETTER = 0.03;
+const SEC_PER_LETTER = 0.05;
 const DURATION_FACTOR = 12;
 
 const fonts = [
@@ -49,7 +49,9 @@ const fonts = [
   "Shadows Into Light, cursive",
   "Lobster, cursive",
   "Caveat, cursive",
+  "Patrick Hand, cursive",
 ];
+
 const defaultFont = fonts[0];
 
 class BulletSection extends React.Component<
@@ -184,7 +186,7 @@ class BulletSection extends React.Component<
   }
 
   // find a random lane that suits the bullet (make sure no overlap)
-  getLane(text: string) {
+  getLane() {
     const result: number[] = [];
     Object.keys(this.lanes).forEach((value: string) => {
       // the lane is available only if it was being used earlier enough
@@ -215,7 +217,7 @@ class BulletSection extends React.Component<
   };
 
   createBulletNode(text: string) {
-    const lane = this.getLane(text);
+    const lane = this.getLane();
     if (lane < 0) return null;
 
     const node = document.createElement("div");
@@ -274,11 +276,6 @@ class BulletSection extends React.Component<
     }
   };
 
-  onFontChange = (option: any) => {
-    console.log(option.label);
-    this.setState({ font: option.label });
-  };
-
   render() {
     return (
       <div id="bullet-sec">
@@ -287,7 +284,9 @@ class BulletSection extends React.Component<
           <Dropdown
             className="font-dropdown-container"
             options={fonts}
-            onChange={this.onFontChange}
+            onChange={(option) => {
+              this.setState({ font: option.value });
+            }}
             value={defaultFont}
             placeholder="Select a font"
           />

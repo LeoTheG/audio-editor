@@ -62,7 +62,7 @@ const HIGHSCORE_DELAY = 750;
 const HIGHSCORE_DURATION_FACTOR = 6;
 
 const BONUS_WIDTH = 200;
-const BONUS_DURATION_FACTOR = 3.6;
+const BONUS_DURATION_FACTOR = 4;
 
 interface ILiveEmojiSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
@@ -409,14 +409,13 @@ class LiveEmojiSection extends React.Component<
       this.state.totalPoints + 1 + Math.floor(streakPoints / 5);
 
     // checking whether to send out a special message animation
-    if (streakPoints === 5) this.messageToScreen(this.createStreakBonusNode());
-    else if (Math.random() < 0.1)
-      this.messageToScreen(this.createBananadanceNode());
-    else if (
-      Math.floor(totalPoints / 10) > Math.floor(this.state.totalPoints / 10)
+    if (
+      streakPoints % 5 === 0 ||
+      Math.floor(totalPoints / 20) > Math.floor(this.state.totalPoints / 20)
     )
-      this.messageToScreen(this.createGoombaNode());
-    else this.messageToScreen(this.createMarchonNode());
+      this.messageToScreen(this.randomBonusNode(), 220);
+    else if (Math.random() < 0.1)
+      this.messageToScreen(this.randomSpecialNode(), -220);
 
     // update the state
     this.setState({
@@ -522,8 +521,9 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
-  messageToScreen(node: HTMLDivElement) {
-    if (this.emojiDiv.current) {
+  messageToScreen(node: HTMLDivElement | undefined, top: number) {
+    if (this.emojiDiv.current && node) {
+      node.style.top = top + "px";
       this.emojiDiv.current.appendChild(node);
       let width = this.emojiDiv.current.clientWidth;
       const animation = anime({
@@ -541,119 +541,97 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
-  // all functions below here are for bonus message calls
-  createStreakBonusNode() {
+  // create div node in the form of (gif text gif)
+  gifTextGifNode(frontGif: string, text: string, backGif: string) {
     const node = document.createElement("div");
-    node.className = "streak-bonus-text";
-    node.innerText = " builder bonus 10+ ";
+    node.className = "special-bonus-text";
+    node.innerText = text;
 
     const gifNodeBegin = document.createElement("img");
     gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = streakBonusBuildsGif;
+    gifNodeBegin.src = frontGif;
     node.insertAdjacentElement("afterbegin", gifNodeBegin);
 
     const gifNodeEnd = document.createElement("img");
     gifNodeEnd.className = "live-gif";
-    gifNodeEnd.src = streakBonusBuildsGif;
+    gifNodeEnd.src = backGif;
     node.insertAdjacentElement("beforeend", gifNodeEnd);
 
     return node;
+  }
+
+  // create div node in the form of (text gif text)
+  textGifTextNode(frontText: string, gif: string, backText: string) {
+    const node = document.createElement("div");
+    node.className = "special-bonus-text";
+    node.innerHTML = frontText;
+
+    const gifNodeBegin = document.createElement("img");
+    gifNodeBegin.className = "live-gif";
+    gifNodeBegin.src = gif;
+    node.insertAdjacentElement("beforeend", gifNodeBegin);
+
+    node.innerHTML += backText;
+    return node;
+  }
+
+  randomBonusNode() {
+    const choice = Math.floor(Math.random() * 4);
+    switch (choice) {
+      case 0:
+        return this.createBuildNode();
+      case 1:
+        return this.createPenguinNode();
+      case 2:
+        return this.createNiceWorkNode();
+      case 3:
+        return this.createMegamegaNode();
+    }
+  }
+
+  randomSpecialNode() {
+    const choice = Math.floor(Math.random() * 3);
+    switch (choice) {
+      case 0:
+        return this.createGoombaNode();
+      case 1:
+        return this.createBananadanceNode();
+      case 2:
+        return this.createMarchonNode();
+    }
+  }
+
+  // all functions below here are for bonus message calls
+  createBuildNode() {
+    return this.gifTextGifNode(
+      streakBonusBuildsGif,
+      " builder bonus 10+ ",
+      streakBonusBuildsGif
+    );
   }
 
   createGoombaNode() {
-    const node = document.createElement("div");
-    node.className = "goomba-bonus-text";
-    node.innerHTML = "yee ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = letsGoGoombaGif;
-    node.insertAdjacentElement("beforeend", gifNodeBegin);
-
-    node.innerHTML += " lets go";
-    return node;
+    return this.textGifTextNode("yee ", letsGoGoombaGif, " lets go");
   }
 
   createBananadanceNode() {
-    const node = document.createElement("div");
-    node.className = "special-bonus-text";
-    node.innerHTML = "Go bananas ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = bananadanceGif;
-    node.insertAdjacentElement("beforeend", gifNodeBegin);
-
-    node.innerHTML += " go go";
-    return node;
+    return this.textGifTextNode("Go bananas ", bananadanceGif, " go go");
   }
 
   createMegamegaNode() {
-    const node = document.createElement("div");
-    node.className = "special-bonus-text";
-    node.innerText = " mega mega ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = mega;
-    node.insertAdjacentElement("afterbegin", gifNodeBegin);
-
-    const gifNodeEnd = document.createElement("img");
-    gifNodeEnd.className = "live-gif";
-    gifNodeEnd.src = mega;
-    node.insertAdjacentElement("beforeend", gifNodeEnd);
-
-    return node;
+    return this.gifTextGifNode(mega, " mega mega ", mega);
   }
 
   createMarchonNode() {
-    const node = document.createElement("div");
-    node.className = "special-bonus-text";
-    node.innerText = " march on ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = metroid;
-    node.insertAdjacentElement("afterbegin", gifNodeBegin);
-
-    const gifNodeEnd = document.createElement("img");
-    gifNodeEnd.className = "live-gif";
-    gifNodeEnd.src = metroid;
-    node.insertAdjacentElement("beforeend", gifNodeEnd);
-
-    return node;
+    return this.gifTextGifNode(metroid, " march on ", metroid);
   }
 
   createPenguinNode() {
-    const node = document.createElement("div");
-    node.className = "special-bonus-text";
-    node.innerText = " super super ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = penguin;
-    node.insertAdjacentElement("afterbegin", gifNodeBegin);
-
-    const gifNodeEnd = document.createElement("img");
-    gifNodeEnd.className = "live-gif";
-    gifNodeEnd.src = penguin;
-    node.insertAdjacentElement("beforeend", gifNodeEnd);
-
-    return node;
+    return this.gifTextGifNode(penguin, " super super ", penguin);
   }
 
   createNiceWorkNode() {
-    const node = document.createElement("div");
-    node.className = "special-bonus-text";
-    node.innerHTML = "yee ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = yahooGamesWoman;
-    node.insertAdjacentElement("beforeend", gifNodeBegin);
-
-    node.innerHTML += " nice work";
-    return node;
+    return this.textGifTextNode("yee ", yahooGamesWoman, " nice work");
   }
 
   // add all emojis at the current timestamp to the screen
