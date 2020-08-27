@@ -78,7 +78,6 @@ io.on("connection", (client) => {
   }
 
   client.on("connect room", (roomId) => {
-    console.log("client " + client.id + " ===connected to room===" + roomId);
     client.join(roomId);
     if (
       clientRooms[client.id] &&
@@ -95,13 +94,6 @@ io.on("connection", (client) => {
 
     roomToClientProfiles[roomId][client.id] = clientProfiles[client.id];
 
-    console.log(
-      "room to client profiles for room ",
-      roomId,
-      " are ",
-      roomToClientProfiles[roomId]
-    );
-
     // leave old rooms
     for (room in client.rooms) {
       if (client.id !== room && roomId !== room) {
@@ -109,11 +101,6 @@ io.on("connection", (client) => {
         client.leave(room);
 
         if (roomToClientProfiles[room][client.id]) {
-          console.log(
-            "deleted old room profile for room and id",
-            room,
-            client.id
-          );
           delete roomToClientProfiles[room][client.id];
         }
       }
@@ -138,7 +125,6 @@ io.on("connection", (client) => {
     const clientRoom = getClientRoom(client);
     if (!clientRoom) return;
 
-    console.log("emitting cursor move for client and x y ", client.id, x, y);
     client.to(clientRoom).emit("cursor move", client.id, [x, y]);
   });
 
@@ -154,6 +140,7 @@ io.on("connection", (client) => {
       delete clientRooms[client.id];
     }
     delete clientProfiles[client.id];
+    delete selectedProfiles[client.id];
   });
 });
 
