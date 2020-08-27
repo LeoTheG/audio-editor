@@ -45,11 +45,17 @@ const SEC_PER_LETTER = 0.05;
 const DURATION_FACTOR = 12;
 
 const fonts = [
-  "Default",
-  "Shadows Into Light, cursive",
-  "Lobster, cursive",
-  "Caveat, cursive",
-  "Patrick Hand, cursive",
+  "fonts",
+  "bangers, cursive",
+  "bio rhyme, serif",
+  "caveat, cursive",
+  "fjalla one, sans-serif",
+  "ibm plex mono, monospace",
+  "lobster, cursive",
+  "noto sans, sans-serif",
+  "patrick hand, cursive",
+  "shadows into light, cursive",
+  "yatra one, cursive",
 ];
 
 const defaultFont = fonts[0];
@@ -97,7 +103,7 @@ class BulletSection extends React.Component<
     if (this.bulletDiv.current) {
       const screen = this.bulletDiv.current;
       const options = Math.floor(screen.clientHeight / TEXT_HEIGHT);
-      for (var i = 0; i < options; i++) this.lanes[i * TEXT_HEIGHT] = 0;
+      for (var i = 0; i < options - 1; i++) this.lanes[i * TEXT_HEIGHT] = 0;
     }
   }
 
@@ -293,7 +299,7 @@ class BulletSection extends React.Component<
           <div className="bullet-input">
             <input
               type="text"
-              placeholder="What do u think?"
+              placeholder="type a danmu to leave your imprint, click enter to send"
               value={this.state.inputValue}
               onChange={this.onChangeInput}
               onKeyUp={(event) => {
@@ -302,8 +308,8 @@ class BulletSection extends React.Component<
                 }
               }}
             ></input>
-            <button type="submit" onClick={this.addBullet}>
-              <i className="fas">{"=>"}</i>
+            <button type="submit">
+              <i className="fas"></i>
             </button>
           </div>
         </div>

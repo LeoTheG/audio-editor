@@ -113,7 +113,7 @@
   height: 220px;
   align-self: center;
   position: relative;
-  /* border: 3px black solid; */
+  /* border: 2px rgb(0, 204, 255) dashed; */
 }
 
 .live-emoji {
@@ -126,10 +126,10 @@
 
 .point-container {
   position: relative;
-  align-self: center;
-  width: 300px;
-  height: 30px;
   margin: auto;
+  top: -35px;
+  width: 300px;
+  color: white;
   /* border: black 2px solid; */
 }
 
@@ -198,6 +198,7 @@
   height: 35px;
   top: 7px;
   padding-right: 5px;
+  border: none;
 }
 
 .bullet-input-container {
@@ -206,10 +207,10 @@
   flex-direction: row;
   width: 100%;
   max-width: 400px;
-  
   margin: 0 auto;
   border-radius: 2px;
   padding: 0.25rem 0.25rem;
+  padding-bottom: 1rem;
   /* background: transparent; */
 }
 
@@ -221,7 +222,10 @@
 .bullet-input input {
   flex-grow: 1;
   color: rgb(97, 93, 93);
-  font-size: 1.1rem;
+  width: 250px;
+  font-family: "Lato, sans-serif";
+  font-style: italic;
+  font-size: 11px;
   line-height: 2rem;
   vertical-align: middle;
   border-style: none;
