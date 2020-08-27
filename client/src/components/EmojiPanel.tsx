@@ -13,6 +13,9 @@ export const EmojiPanel = (props: IEmojiPanelProps) => {
 
   return (
     <div className="emoji-panel-container">
+      <div style={{ width: "100%", textAlign: "center", background: "white" }}>
+        In-Game Emojis
+      </div>
       {Object.entries(selectedEmojis).map(([key, value]) => (
         <div key={key} style={{ textAlign: "center" }}>
           <IconButton disabled={isDisabled} onClick={onClickEmoji(key)}>
@@ -22,7 +25,7 @@ export const EmojiPanel = (props: IEmojiPanelProps) => {
               alt="emoji"
             />
           </IconButton>
-          <div>{value}</div>
+          {/* <div>{value}</div> */}
         </div>
       ))}
     </div>

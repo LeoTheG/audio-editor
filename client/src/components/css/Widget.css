@@ -113,7 +113,7 @@
   height: 220px;
   align-self: center;
   position: relative;
-  border: 3px black solid;
+  /* border: 3px black solid; */
 }
 
 .live-emoji {
@@ -186,7 +186,7 @@
   width: 100vw;
   height: 200px;
   position: absolute;
-  border: 3px solid orange;
+  /* border: 3px solid orange; */
   pointer-events: none;
 }
 
