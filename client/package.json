@@ -1,7 +1,7 @@
 {
   "homepage": "http://leotheg.github.io/audio-editor",
   "name": "client",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.10.0",
@@ -14,6 +14,8 @@
     "@types/react": "^16.9.0",
     "@types/react-dnd-multi-backend": "^6.0.0",
     "@types/react-dom": "^16.9.0",
+    "@types/socket.io": "^2.1.11",
+    "@types/socket.io-client": "^1.4.33",
     "@types/underscore": "^1.10.9",
     "adventure-component-library": "0.0.24",
     "animejs": "^3.2.0",
@@ -31,6 +33,7 @@
     "react-player": "^2.6.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
+    "socket.io-client": "^2.3.0",
     "typescript": "~3.7.2",
     "underscore": "^1.10.2",
     "uuid": "^8.1.0",

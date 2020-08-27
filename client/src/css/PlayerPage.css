@@ -40,6 +40,7 @@
   align-items: center;
   flex: 1;
   flex-direction: column;
+  position: relative;
 }
 
 .emoji-picker-container {
@@ -114,6 +115,13 @@
   width: 400px;
   justify-content: center;
   background: white;
+}
+
+.collaboration-container {
+  width: 400px;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
 }
 
 @media screen and (max-width: 500px) {

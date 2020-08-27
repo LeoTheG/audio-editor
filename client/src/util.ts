@@ -2,7 +2,6 @@ import { ITrack, UserFiles } from "./types";
 
 import WaveformData from "waveform-data";
 import audioBufferToWav from "./audioBufferToWav";
-import { useLocation } from "react-router-dom";
 
 // @ts-ignore
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -78,12 +77,6 @@ export function downloadFromUrl(url: string) {
   link.click();
   // Cleanup the DOM
   document.body.removeChild(link);
-}
-
-export function useParam(paramName: string) {
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  return params.get(paramName);
 }
 
 export const isiOS = () => {
