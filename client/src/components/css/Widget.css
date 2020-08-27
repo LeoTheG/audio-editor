@@ -160,7 +160,7 @@
   position: absolute;
   color: rgb(255, 115, 0);
   top: -220px;
-  left: -10rem;
+  left: -15rem;
 }
 
 #live-emoji-sec {
@@ -192,10 +192,12 @@
 
 .font-dropdown-container {
   position: relative;
-  width: 150px;
+  width: 120px;
   font-size: 12px;
+  font-family: Arial, Helvetica, sans-serif;
   height: 35px;
-  top: 3px;
+  top: 7px;
+  padding-right: 5px;
 }
 
 .bullet-input-container {
@@ -204,9 +206,10 @@
   flex-direction: row;
   width: 100%;
   max-width: 400px;
+  
   margin: 0 auto;
   border-radius: 2px;
-  padding: 0.25rem 0.25rem 0.25rem;
+  padding: 0.25rem 0.25rem;
   /* background: transparent; */
 }
 
@@ -218,7 +221,7 @@
 .bullet-input input {
   flex-grow: 1;
   color: rgb(97, 93, 93);
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   line-height: 2rem;
   vertical-align: middle;
   border-style: none;

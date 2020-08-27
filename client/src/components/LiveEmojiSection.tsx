@@ -28,7 +28,7 @@ const TEST_EMOJI_DATA = {
 };
 
 const INTERVAL_DELAY = 50;
-
+// before this timestamp, we consider resetting the state of the widget
 const RESET_STATE_TIMESTAMP = 0.5;
 
 const WELCOME_CONTAINER_WIDTH = 200;
@@ -39,6 +39,7 @@ const EMOJI_HEIGHT = 30;
 const EMOJI_WIDTH = 30;
 const EMOJI_TOP_OFFSET = 10;
 const EMOJI_DURATION_FACTOR = 4.8;
+const EMOJI_MIN_DURATION = 2000;
 
 const INSTRUCTIONS = [
   "Press emojis to tally points ",
@@ -61,8 +62,9 @@ const HIGHSCORE_HEIGHT = 50;
 const HIGHSCORE_DELAY = 750;
 const HIGHSCORE_DURATION_FACTOR = 6;
 
-const BONUS_WIDTH = 200;
-const BONUS_DURATION_FACTOR = 4;
+const MESSAGE_WIDTH = 250;
+const MESSAGE_DURATION_FACTOR = 4;
+const MESSAGE_MIN_DURATION = 2300;
 
 interface ILiveEmojiSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
@@ -507,7 +509,7 @@ class LiveEmojiSection extends React.Component<
         targets: node,
         translateX: width + EMOJI_WIDTH,
         scale: anime.random(13, 17) / 10,
-        duration: width * EMOJI_DURATION_FACTOR,
+        duration: Math.max(EMOJI_MIN_DURATION, width * EMOJI_DURATION_FACTOR),
         easing: "linear",
         complete: () => {
           try {
@@ -521,25 +523,21 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
-  messageToScreen(node: HTMLDivElement | undefined, top: number) {
-    if (this.emojiDiv.current && node) {
-      node.style.top = top + "px";
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: width + BONUS_WIDTH,
-        duration: width * BONUS_DURATION_FACTOR,
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-          } catch (e) {}
-        },
+  // add all emojis at the current timestamp to the screen
+  liveEmojiScreen = () => {
+    const time = this.getTimeStamp();
+    if (time in this.chosenEmoji) {
+      this.chosenEmoji[time].forEach((emoji: string) => {
+        const node = this.createEmojiNode(emoji);
+        if (node !== undefined) {
+          // have a random time offset for each emoji (dont clutter together)
+          setTimeout(() => {
+            this.emojiToScreen(node);
+          }, Math.random() * INTERVAL_DELAY);
+        }
       });
-      return animation;
     }
-  }
+  };
 
   // create div node in the form of (gif text gif)
   gifTextGifNode(frontGif: string, text: string, backGif: string) {
@@ -634,21 +632,28 @@ class LiveEmojiSection extends React.Component<
     return this.textGifTextNode("yee ", yahooGamesWoman, " nice work");
   }
 
-  // add all emojis at the current timestamp to the screen
-  liveEmojiScreen = () => {
-    const time = this.getTimeStamp();
-    if (time in this.chosenEmoji) {
-      this.chosenEmoji[time].forEach((emoji: string) => {
-        const node = this.createEmojiNode(emoji);
-        if (node !== undefined) {
-          // have a random time offset for each emoji (dont clutter together)
-          setTimeout(() => {
-            this.emojiToScreen(node);
-          }, Math.random() * INTERVAL_DELAY);
-        }
+  messageToScreen(node: HTMLDivElement | undefined, top: number) {
+    if (this.emojiDiv.current && node) {
+      node.style.top = top + "px";
+      this.emojiDiv.current.appendChild(node);
+      let width = this.emojiDiv.current.clientWidth;
+      const animation = anime({
+        targets: node,
+        translateX: width + MESSAGE_WIDTH,
+        duration: Math.max(
+          MESSAGE_MIN_DURATION,
+          width * MESSAGE_DURATION_FACTOR
+        ),
+        easing: "linear",
+        complete: () => {
+          try {
+            node.parentElement?.removeChild(node);
+          } catch (e) {}
+        },
       });
+      return animation;
     }
-  };
+  }
 
   getStreakColor() {
     const r = 255;
