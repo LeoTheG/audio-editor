@@ -39,7 +39,7 @@ const COLOR_PALLET = [
 const TEXT_HEIGHT = 30;
 const LETTER_WIDTH = 7.5;
 const BULLET_SCREEN_OFFSET_TOP = 45;
-const SEC_PER_LETTER = 0.05;
+const SEC_PER_LETTER = 0.03;
 const DURATION_FACTOR = 12;
 
 // const fonts = [
