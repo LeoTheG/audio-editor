@@ -10,14 +10,14 @@ import coolDoge from "../assets/cool-doge.gif";
 import handWave from "../assets/hand_wave.gif";
 import koopaTroopaMarioKart from "../assets/koopa_troopa_mario_kart.gif";
 import letsGoGoombaGif from "../assets/goomba.gif";
+import mega from "../assets/mega.gif";
+import metroid from "../assets/metroid.gif";
+import penguin from "../assets/penguin.gif";
 import powerup from "../assets/powerup.gif";
 import readMyMind from "../assets/read-my-mind.gif";
 import star from "../assets/star.gif";
 import streakBonusBuildsGif from "../assets/builds.gif";
 import upRedArrow from "../assets/up-red-arrow.gif";
-import mega from "../assets/mega.gif";
-import metroid from "../assets/metroid.gif";
-import penguin from "../assets/penguin.gif";
 import yahooGamesWoman from "../assets/yahoo_games_woman.png";
 
 // a sample data for chosenEmoji

@@ -1,10 +1,8 @@
-import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
-import ReactPlayer from "react-player";
-import Dropdown from "react-dropdown";
-import "react-dropdown/style.css";
 import { IBullets } from "../types";
+import React from "react";
+import ReactPlayer from "react-player";
 
 interface IBulletSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
@@ -44,21 +42,19 @@ const BULLET_SCREEN_OFFSET_TOP = 45;
 const SEC_PER_LETTER = 0.05;
 const DURATION_FACTOR = 12;
 
-const fonts = [
-  "fonts",
-  "bangers, cursive",
-  "bio rhyme, serif",
-  "caveat, cursive",
-  "fjalla one, sans-serif",
-  "ibm plex mono, monospace",
-  "lobster, cursive",
-  "noto sans, sans-serif",
-  "patrick hand, cursive",
-  "shadows into light, cursive",
-  "yatra one, cursive",
-];
-
-const defaultFont = fonts[0];
+// const fonts = [
+//   "fonts",
+//   "bangers, cursive",
+//   "bio rhyme, serif",
+//   "caveat, cursive",
+//   "fjalla one, sans-serif",
+//   "ibm plex mono, monospace",
+//   "lobster, cursive",
+//   "noto sans, sans-serif",
+//   "patrick hand, cursive",
+//   "shadows into light, cursive",
+//   "yatra one, cursive",
+// ];
 
 class BulletSection extends React.Component<
   IBulletSectionProps,
