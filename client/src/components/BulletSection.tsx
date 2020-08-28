@@ -98,7 +98,7 @@ class BulletSection extends React.Component<
     if (this.bulletDiv.current) {
       const screen = this.bulletDiv.current;
       const options = Math.floor(screen.clientHeight / TEXT_HEIGHT);
-      for (var i = 0; i < options - 1; i++) this.lanes[i * TEXT_HEIGHT] = 0;
+      for (var i = 0; i < options - 1; i++) this.lanes[i * TEXT_HEIGHT] = -1;
     }
   }
 
@@ -283,7 +283,7 @@ class BulletSection extends React.Component<
           <div className="bullet-input">
             <input
               type="text"
-              placeholder="type a danmu to leave your imprint, click enter to send"
+              placeholder="What do you think? "
               value={this.state.inputValue}
               onChange={this.onChangeInput}
               onKeyUp={(event) => {
