@@ -159,10 +159,8 @@ class BulletSection extends React.Component<
   };
 
   onPlayCallback = () => {
-    setTimeout(() => {
-      this.clearBulletInterval();
-      this.interval = setInterval(this.bulletScreen, INTERVAL_DELAY);
-    }, INTERVAL_DELAY);
+    this.clearBulletInterval();
+    this.interval = setInterval(this.bulletScreen, INTERVAL_DELAY);
   };
 
   onPauseCallback = () => {

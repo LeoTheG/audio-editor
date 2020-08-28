@@ -457,15 +457,6 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     onPause();
   }, [onPause]);
 
-  useEffect(() => {
-    window.onblur = () => {
-      if (isPlaying) onPause();
-    };
-    window.onfocus = () => {
-      if (isPlaying) onPlay();
-    };
-  }, [isPlaying, onPause, onPlay]);
-
   const playSong = useCallback(
     (index: number) => {
       updatePlayCount(index);
