@@ -212,6 +212,14 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   },
   []);
 
+  const onSubmitBullet = useCallback((text: string) => {
+    socket.emit("submit bullet", text);
+  }, []);
+
+  const onReceiveBullet = useCallback((text: string) => {
+    bulletRef.current?.textToScreen(text);
+  }, []);
+
   useEffect(() => {
     setUserLocations({});
 
@@ -248,7 +256,9 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     });
 
     socket.on("cursor move", onCursorMove);
-  }, [id, onCursorMove]);
+
+    socket.on("receive bullet", onReceiveBullet);
+  }, [id, onCursorMove, onReceiveBullet]);
 
   const onSubmitPoints = useCallback(() => {
     if (song) {
@@ -659,6 +669,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
               if (song) updateBullets(song.id, selectedSongBullets[song.id]);
             }}
             ref={bulletRef}
+            submitBullet={onSubmitBullet}
             youtubeRef={isYoutube ? youtubeRef : undefined}
           />
         )}
