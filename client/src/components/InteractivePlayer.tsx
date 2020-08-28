@@ -53,8 +53,8 @@ import mario from "../assets/mario.gif";
 import nyancat from "../assets/nyancat_big.gif";
 import yoshi from "../assets/yoshi.gif";
 
-const socket = io("wss://yeeplayer.herokuapp.com");
-// const socket = io("ws://localhost:8000");
+// const socket = io("wss://yeeplayer.herokuapp.com");
+const socket = io("ws://localhost:8001");
 
 const avatarMap: { [key: string]: string } = {
   mario: mario,
@@ -71,6 +71,7 @@ interface IUserLocations {
 
 interface IInteractivePlayerProps {
   isYoutube?: boolean;
+  isLobby?: boolean;
 }
 
 interface IUserProfiles {
@@ -79,7 +80,14 @@ interface IUserProfiles {
 
 const selectedProfiles: { [clientId: string]: string } = {};
 
-export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
+export const InteractivePlayer = ({
+  isYoutube,
+  isLobby,
+}: IInteractivePlayerProps) => {
+  const [isLobbyPlaying, setIsLobbyPlaying] = useState(false);
+  const [lobbyPlayTime, setLobbyPlaytime] = useState(-1);
+  const [lobbyPlayInterval, setLobbyPlayInterval] = useState<NodeJS.Timeout>();
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
@@ -113,8 +121,16 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const [scoreName, setScoreName] = useState<string>("");
 
   const historyURL = useMemo<string>(() => {
-    return isYoutube ? "youtube" : "player";
-  }, [isYoutube]);
+    if (isYoutube) {
+      if (isLobby) {
+        return "lobby";
+      } else {
+        return "youtube";
+      }
+    } else {
+      return "player";
+    }
+  }, [isYoutube, isLobby]);
 
   const [playedSong, setPlayedSong] = useState<{ [songId: string]: boolean }>(
     {}
@@ -165,8 +181,11 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   }, [playerBodyRef]);
 
   useEffect(() => {
+    if (!id) return;
     if (isCollaborating) {
-      socket.emit("connect room", id);
+      //   socket.emit("connect room", id);
+      console.log("calling connect room", id);
+      socket.emit("lobby playtime", id);
     } else {
       socket.emit("disconnect room");
       setUserProfiles({});
@@ -215,9 +234,12 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   useEffect(() => {
     setUserLocations({});
 
-    socket.emit("connect room", id);
     socket.on("connect", function () {
-      socket.emit("connect room", id);
+      if (id) {
+        console.log("connecting to room", id);
+        socket.emit("connect room", id);
+      }
+      //   socket.emit("connect room", id);
     });
     socket.on("roommate disconnect", (clientId: string) => {
       setUserLocations((userLocations) => {
@@ -248,6 +270,19 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     });
 
     socket.on("cursor move", onCursorMove);
+
+    socket.on("lobby playtime", (playTime: number) => {
+      setLobbyPlaytime(playTime);
+    });
+
+    socket.on("lobby play", () => {
+      console.log("got lobby play");
+      setIsLobbyPlaying(true);
+    });
+
+    socket.on("lobby pause", () => {
+      setIsLobbyPlaying(false);
+    });
   }, [id, onCursorMove]);
 
   const onSubmitPoints = useCallback(() => {
@@ -314,6 +349,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     if (songPlayingIndex !== -1) {
       const song = userSongs[songPlayingIndex];
       history.push(`/${historyURL}/${song.id}`);
+      socket.emit("connect room", song.id);
     }
   }, [history, songPlayingIndex, userSongs, historyURL]);
 
@@ -429,7 +465,11 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const onPlay = useCallback(() => {
     liveEmojiRef.current?.onPlayCallback();
     bulletRef.current?.onPlayCallback();
-  }, [liveEmojiRef, bulletRef]);
+    if (isLobby) {
+      console.log("emitting lobby play for id", id);
+      socket.emit("lobby play", id);
+    }
+  }, [liveEmojiRef, bulletRef, id, isLobby]);
 
   const onPlayYoutube = useCallback(() => {
     updatePlayCount(songPlayingIndex);
@@ -439,7 +479,10 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const onPause = useCallback(() => {
     liveEmojiRef.current?.onPauseCallback();
     bulletRef.current?.onPauseCallback();
-  }, [liveEmojiRef, bulletRef]);
+    if (isLobby) {
+      socket.emit("lobby pause", id);
+    }
+  }, [liveEmojiRef, bulletRef, id, isLobby]);
 
   const playSong = useCallback(
     (index: number) => {
@@ -571,6 +614,12 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     history.push("/");
   }, [audio, history]);
 
+  useEffect(() => {
+    if (isLobbyPlaying) {
+      socket.emit("lobby play");
+    }
+  }, [isLobbyPlaying]);
+
   return (
     <div className="player-page-container">
       {!isYoutube && (
@@ -605,13 +654,19 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         {isYoutube ? (
           <ReactPlayer
             url={song?.url}
-            controls={true}
+            controls
             ref={youtubeRef}
             width={Math.min(640, window.innerWidth)}
             onReady={bulletRef.current?.matchPlayerDim}
             onPlay={onPlayYoutube}
             onPause={onPause}
             onEnded={onSongEnd}
+            playing={isLobby ? isLobbyPlaying : undefined}
+            config={
+              isLobby && isLobbyPlaying
+                ? { youtube: { playerVars: { start: lobbyPlayTime } } }
+                : undefined
+            }
           />
         ) : error === null && song && song.gifUrl ? (
           <img

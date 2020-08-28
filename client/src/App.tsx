@@ -10,6 +10,7 @@ import {
 import { DndProvider } from "react-dnd-multi-backend";
 import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
 import { Homepage } from "./routes/Homepage";
+import { LobbyPage } from "./routes/LobbyPage";
 import { PlayerPage } from "./routes/PlayerPage";
 import React from "react";
 import { YoutubePage } from "./routes/YoutubePage";
@@ -37,6 +38,9 @@ function App() {
             </Route>
             <Route path={"/youtube/:id?"}>
               <YoutubePage />
+            </Route>
+            <Route path={"/lobby/:id?"}>
+              <LobbyPage />
             </Route>
             <Redirect from="*" to={"/"} />
           </Switch>

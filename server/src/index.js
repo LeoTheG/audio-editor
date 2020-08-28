@@ -15,6 +15,9 @@ const selectedProfiles = {};
 // { [clientId: string]: string }
 const userNames = {};
 
+// { [roomId: string]: number }
+const roomPlaytimes = {};
+
 const profileOptions = {
   prefixes: [
     "amazing",
@@ -42,42 +45,11 @@ const profileOptions = {
 
 io.on("connection", (client) => {
   if (!clientProfiles[client.id]) {
-    userNames[client.id] =
-      profileOptions.prefixes[
-        Math.floor(Math.random() * profileOptions.prefixes.length)
-      ] +
-      " " +
-      profileOptions.suffixes[
-        Math.floor(Math.random() * profileOptions.suffixes.length)
-      ];
-
-    const selectedProfilesValues = Object.values(selectedProfiles);
-
-    let newAvatar = "";
-
-    // basic attempt to prevent duplicate sprites, not checking for different rooms
-    if (selectedProfilesValues.length >= profileOptions.avatars.length) {
-      newAvatar =
-        profileOptions.avatars[
-          Math.floor(Math.random() * profileOptions.avatars.length)
-        ];
-    } else {
-      const availableAvatars = profileOptions.avatars.filter(
-        (avatar) => !selectedProfilesValues.includes(avatar)
-      );
-      newAvatar =
-        availableAvatars[Math.floor(Math.random() * availableAvatars.length)];
-    }
-
-    selectedProfiles[client.id] = newAvatar;
-
-    clientProfiles[client.id] = {
-      name: userNames[client.id],
-      avatar: newAvatar,
-    };
+    createProfile(client);
   }
 
   client.on("connect room", (roomId) => {
+    console.log("connected to room ", roomId, " for client ", client.id);
     client.join(roomId);
     if (
       clientRooms[client.id] &&
@@ -94,17 +66,17 @@ io.on("connection", (client) => {
 
     roomToClientProfiles[roomId][client.id] = clientProfiles[client.id];
 
-    // leave old rooms
-    for (room in client.rooms) {
-      if (client.id !== room && roomId !== room) {
-        client.to(room).emit("roommate disconnect", client.id);
-        client.leave(room);
+    // // leave old rooms
+    // for (room in client.rooms) {
+    //   if (client.id !== room && roomId !== room) {
+    //     client.to(room).emit("roommate disconnect", client.id);
+    //     client.leave(room);
 
-        if (roomToClientProfiles[room][client.id]) {
-          delete roomToClientProfiles[room][client.id];
-        }
-      }
-    }
+    //     if (roomToClientProfiles[room][client.id]) {
+    //       delete roomToClientProfiles[room][client.id];
+    //     }
+    //   }
+    // }
     client
       .to(roomId)
       .emit("profile info", client.id, clientProfiles[client.id]);
@@ -142,10 +114,74 @@ io.on("connection", (client) => {
     delete clientProfiles[client.id];
     delete selectedProfiles[client.id];
   });
+
+  client.on("lobby playtime", (roomId) => {
+    client.emit(
+      "lobby playtime",
+      roomPlaytimes[roomId],
+      roomToClientProfiles[roomId]
+    );
+  });
+
+  client.on("lobby play", (roomId) => {
+    if (!roomId) return;
+    // const clientRoom = getClientRoom(client);
+    // if (!clientRoom) return console.log("no room");
+
+    console.log("emitting lobby play to room", roomId);
+    console.log("------client.rooms---------");
+    console.log(client.rooms);
+    console.log("======clientRooms=========");
+    console.log(clientRooms);
+    client.to(roomId).emit("lobby play");
+    // console.log(roo[roomId]);
+    // client.to(clientRoom).emit("lobby play");
+  });
+
+  client.on("lobby pause", (roomId) => {
+    client.to(roomId).emit("lobby pause");
+    console.log("emitting lobby pause");
+  });
 });
 
 server.listen(port);
 
 const getClientRoom = (client) => {
   return Object.keys(client.rooms).find((room) => client.id !== room);
+};
+
+const createProfile = (client) => {
+  userNames[client.id] =
+    profileOptions.prefixes[
+      Math.floor(Math.random() * profileOptions.prefixes.length)
+    ] +
+    " " +
+    profileOptions.suffixes[
+      Math.floor(Math.random() * profileOptions.suffixes.length)
+    ];
+
+  const selectedProfilesValues = Object.values(selectedProfiles);
+
+  let newAvatar = "";
+
+  // basic attempt to prevent duplicate sprites, not checking for different rooms
+  if (selectedProfilesValues.length >= profileOptions.avatars.length) {
+    newAvatar =
+      profileOptions.avatars[
+        Math.floor(Math.random() * profileOptions.avatars.length)
+      ];
+  } else {
+    const availableAvatars = profileOptions.avatars.filter(
+      (avatar) => !selectedProfilesValues.includes(avatar)
+    );
+    newAvatar =
+      availableAvatars[Math.floor(Math.random() * availableAvatars.length)];
+  }
+
+  selectedProfiles[client.id] = newAvatar;
+
+  clientProfiles[client.id] = {
+    name: userNames[client.id],
+    avatar: newAvatar,
+  };
 };
