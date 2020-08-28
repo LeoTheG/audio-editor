@@ -124,7 +124,6 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const [amountOnline, setAmountOnline] = useState(0);
   const [userLocations, setUserLocations] = useState<IUserLocations>({});
   const [userProfiles, setUserProfiles] = useState<IUserProfiles>({});
-  console.log("is coll", isCollaborating);
 
   const updateCursorPosition = useCallback(
     _.throttle((position: [number, number]) => {
