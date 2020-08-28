@@ -10,17 +10,60 @@ import coolDoge from "../assets/cool-doge.gif";
 import handWave from "../assets/hand_wave.gif";
 import koopaTroopaMarioKart from "../assets/koopa_troopa_mario_kart.gif";
 import letsGoGoombaGif from "../assets/goomba.gif";
+import mega from "../assets/mega.gif";
+import metroid from "../assets/metroid.gif";
+import penguin from "../assets/penguin.gif";
 import powerup from "../assets/powerup.gif";
 import readMyMind from "../assets/read-my-mind.gif";
 import star from "../assets/star.gif";
 import streakBonusBuildsGif from "../assets/builds.gif";
 import upRedArrow from "../assets/up-red-arrow.gif";
+import yahooGamesWoman from "../assets/yahoo_games_woman.png";
 
 // a sample data for chosenEmoji
-const testEmojiData = {
+const TEST_EMOJI_DATA = {
   1.5: ["1f605", "1f605"],
   2.0: ["1f3e0"],
 };
+
+const INTERVAL_DELAY = 50;
+// before this timestamp, we consider resetting the state of the widget
+const RESET_STATE_TIMESTAMP = 0.5;
+
+const WELCOME_CONTAINER_WIDTH = 200;
+const LETTER_WIDTH = 7.5;
+const GIF_WIDTH = 35;
+
+const EMOJI_HEIGHT = 30;
+const EMOJI_WIDTH = 30;
+const EMOJI_TOP_OFFSET = 10;
+const EMOJI_DURATION_FACTOR = 4.8;
+const EMOJI_MIN_DURATION = 2000;
+
+const INSTRUCTIONS = [
+  "Press emojis to tally points ",
+  "Go for consecutive streaks ",
+  "Enter comments to display above ",
+  "Add emojis below to flow ",
+  "You are great ",
+];
+const INSTRUCTION_GIFS = [coolDoge, powerup, readMyMind, star, blobOctopus];
+const INSTRUCTION_TOP_OFFSET = 20;
+const INSTRUCTION_HEIGHT = 45;
+const INSTRUCTION_DELAY = 2000;
+const INSTRUCTION_STAY_TIME = 5000;
+const INSTRUCTION_DURATION_FACTOR = 4;
+const INSTRUCTION_WIDTH = 200;
+
+const MEDAL_EMOJIS = ["1f947", "1f948", "1f949"];
+const HIGHSCORE_TOP_OFFSET = 70;
+const HIGHSCORE_HEIGHT = 50;
+const HIGHSCORE_DELAY = 750;
+const HIGHSCORE_DURATION_FACTOR = 6;
+
+const MESSAGE_WIDTH = 250;
+const MESSAGE_DURATION_FACTOR = 4;
+const MESSAGE_MIN_DURATION = 2300;
 
 interface ILiveEmojiSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
@@ -39,9 +82,9 @@ class LiveEmojiSection extends React.Component<
   ILiveEmojiSectionProps,
   ILiveEmojiSectionState
 > {
-  chosenEmoji: ILiveEmojis = testEmojiData;
+  chosenEmoji: ILiveEmojis = TEST_EMOJI_DATA;
   audio: HTMLAudioElement | null = null;
-  interval: NodeJS.Timeout | null = null; //Timeout object
+  interval: NodeJS.Timeout | null = null;
   id: number = 0;
   streakId: number = 0;
   // this stores pairs of <id, animation>
@@ -69,6 +112,7 @@ class LiveEmojiSection extends React.Component<
 
   initializeEmojis(liveEmojis: ILiveEmojis) {
     this.chosenEmoji = liveEmojis;
+    this.instructionOut();
     this.resetPoints();
     this.setState({
       showInstruction: true,
@@ -78,10 +122,11 @@ class LiveEmojiSection extends React.Component<
 
   animateWelcome(fast: boolean) {
     if (this.emojiDiv.current) {
+      // if we want fast animation, the duration is low, vice versa
       const duration = this.emojiDiv.current.clientWidth * (fast ? 1 : 3);
       anime.timeline().add({
         targets: ".welcome-container",
-        translateX: this.emojiDiv.current.clientWidth + 200,
+        translateX: this.emojiDiv.current.clientWidth + WELCOME_CONTAINER_WIDTH,
         duration: duration,
         easing: fast ? "easeInExpo" : "linear",
         complete: () => {
@@ -92,26 +137,22 @@ class LiveEmojiSection extends React.Component<
   }
 
   openingScreen() {
-    const instrs = [
-      "Press emojis to tally points ",
-      "Go for consecutive streaks ",
-      "Enter comments to display above ",
-      "Add emojis below to flow ",
-      "You are great ",
-    ];
-    const gifSrcs = [coolDoge, powerup, readMyMind, star, blobOctopus];
-    const base = 20;
-    const space = 45;
-    const delay = 2000;
-    for (var i = 0; i < instrs.length; i++) {
+    INSTRUCTIONS.forEach((value, index) => {
       const node = this.createInstructionNode(
-        instrs[i],
-        gifSrcs[i],
-        base + space * i + "px"
+        value,
+        INSTRUCTION_GIFS[index],
+        INSTRUCTION_TOP_OFFSET + INSTRUCTION_HEIGHT * index + "px"
       );
-      this.animateInstrNode(node, i * delay, (instrs.length + 3 + i) * delay);
-    }
-    this.finalInstruction((instrs.length * 2 + 3) * delay);
+      this.animateInstrNode(
+        node,
+        index * INSTRUCTION_DELAY,
+        (INSTRUCTIONS.length + index) * INSTRUCTION_DELAY +
+          INSTRUCTION_STAY_TIME
+      );
+    });
+    this.finalInstruction(
+      INSTRUCTIONS.length * 2 * INSTRUCTION_DELAY + INSTRUCTION_STAY_TIME
+    );
   }
 
   createInstructionNode(text: string, gifSrc: string, top: string) {
@@ -123,7 +164,7 @@ class LiveEmojiSection extends React.Component<
     gifNode.src = gifSrc;
     node.insertAdjacentElement("beforeend", gifNode);
     node.style.top = top;
-    node.style.left = -text.length * 7.5 - 35 + "px";
+    node.style.left = -text.length * LETTER_WIDTH - GIF_WIDTH + "px";
     return node;
   }
 
@@ -138,12 +179,8 @@ class LiveEmojiSection extends React.Component<
         .add(
           {
             targets: node,
-            translateX: function () {
-              return (width + node.clientWidth) / 2 + 20;
-            },
-            duration: function () {
-              return width * 2.5;
-            },
+            translateX: (width + node.clientWidth + GIF_WIDTH) / 2,
+            duration: (width * INSTRUCTION_DURATION_FACTOR) / 2,
             easing: "easeOutQuad",
           },
           delayIn
@@ -151,12 +188,8 @@ class LiveEmojiSection extends React.Component<
         .add(
           {
             targets: node,
-            translateX: function () {
-              return width + node.clientWidth + 20;
-            },
-            duration: function () {
-              return width * 2.5;
-            },
+            translateX: width + node.clientWidth + GIF_WIDTH,
+            duration: (width * INSTRUCTION_DURATION_FACTOR) / 2,
             easing: "easeInQuad",
             complete: () => {
               try {
@@ -173,7 +206,8 @@ class LiveEmojiSection extends React.Component<
 
   // show high scores
   highScores() {
-    if (!this.props.scores || this.getPreciseTime() >= 0.5) return;
+    if (!this.props.scores || this.getPreciseTime() >= RESET_STATE_TIMESTAMP)
+      return;
 
     const titleNode = this.createInstructionNode(
       "High scores ",
@@ -185,19 +219,14 @@ class LiveEmojiSection extends React.Component<
     const inOrderScores = this.props.scores.sort((a, b) => b.score - a.score);
     const texts = inOrderScores.map((score) => score.name + ": " + score.score);
 
-    // medal emojis
-    const emojis = ["1f947", "1f948", "1f949"];
-    const base = 70;
-    const space = 50;
-    const delay = 750;
     // getting the top 3 of the leaderboard (if there are more than 3 players)
     for (var i = 0; i < Math.min(3, texts.length); i++) {
       const node = this.createHighScoreNode(
         texts[i],
-        emojis[i],
-        base + space * i + "px"
+        MEDAL_EMOJIS[i],
+        HIGHSCORE_TOP_OFFSET + HIGHSCORE_HEIGHT * i + "px"
       );
-      this.animateHighScoreNode(node, (i + 1) * delay);
+      this.animateHighScoreNode(node, (i + 1) * HIGHSCORE_DELAY);
     }
     this.setState({ showHighscore: false });
   }
@@ -209,12 +238,8 @@ class LiveEmojiSection extends React.Component<
       anime.timeline().add(
         {
           targets: node,
-          translateX: function () {
-            return width + node.clientWidth;
-          },
-          duration: function () {
-            return width * 6;
-          },
+          translateX: width + node.clientWidth,
+          duration: width * HIGHSCORE_DURATION_FACTOR,
           easing: "linear",
           complete: () => {
             try {
@@ -238,7 +263,7 @@ class LiveEmojiSection extends React.Component<
     emojiNode.src = getEmojiImageURL(emoji);
     node.insertAdjacentElement("beforeend", emojiNode);
     node.style.top = top;
-    node.style.left = -text.length * 7.5 - 35 + "px";
+    node.style.left = -text.length * LETTER_WIDTH - GIF_WIDTH + "px";
     return node;
   }
 
@@ -256,12 +281,8 @@ class LiveEmojiSection extends React.Component<
       anime.timeline().add(
         {
           targets: node,
-          translateX: function () {
-            return (width + node.clientWidth) / 2 + 20;
-          },
-          duration: function () {
-            return width * 2;
-          },
+          translateX: (width + node.clientWidth + GIF_WIDTH) / 2,
+          duration: INSTRUCTION_DURATION_FACTOR / 2,
           easing: "easeOutQuad",
         },
         delay
@@ -275,7 +296,7 @@ class LiveEmojiSection extends React.Component<
       const width = this.emojiDiv.current.clientWidth;
       anime({
         targets: this.movingNodes,
-        translateX: width + 20,
+        translateX: width + INSTRUCTION_WIDTH,
         duration: width / 2,
         easing: "easeInExpo",
         complete: () => {
@@ -305,11 +326,12 @@ class LiveEmojiSection extends React.Component<
     if (
       this.props.youtubeRef &&
       this.props.youtubeRef.current &&
-      this.props.youtubeRef.current.getCurrentTime() < 0.1
+      this.props.youtubeRef.current.getCurrentTime() < RESET_STATE_TIMESTAMP
     )
       this.resetPoints();
-    else if (this.audio && this.audio.currentTime < 0.1) this.resetPoints();
-    this.interval = setInterval(this.liveEmojiScreen, 50);
+    else if (this.audio && this.audio.currentTime < RESET_STATE_TIMESTAMP)
+      this.resetPoints();
+    this.interval = setInterval(this.liveEmojiScreen, INTERVAL_DELAY);
   };
 
   onPauseCallback = () => {
@@ -336,7 +358,7 @@ class LiveEmojiSection extends React.Component<
     setTimeout(() => {
       if (!(time in this.chosenEmoji)) this.chosenEmoji[time] = [];
       this.chosenEmoji[time].push(emoji);
-    }, 50);
+    }, INTERVAL_DELAY);
   }
 
   // round the current time stamp to nearest 0.2 value
@@ -388,13 +410,13 @@ class LiveEmojiSection extends React.Component<
       this.state.totalPoints + 1 + Math.floor(streakPoints / 5);
 
     // checking whether to send out a special message animation
-    if (streakPoints === 5) this.streakBonusToScreen();
-    else if (Math.random() < 0.1) this.bananadanceToScreen();
-    else if (
-      Math.floor(totalPoints / 10) - Math.floor(this.state.totalPoints / 10) ===
-      1
+    if (
+      streakPoints % 5 === 0 ||
+      Math.floor(totalPoints / 20) > Math.floor(this.state.totalPoints / 20)
     )
-      this.goombaToScreen();
+      this.messageToScreen(this.randomBonusNode(), 220);
+    else if (Math.random() < 0.1)
+      this.messageToScreen(this.randomSpecialNode(), -220);
 
     // update the state
     this.setState({
@@ -435,7 +457,7 @@ class LiveEmojiSection extends React.Component<
       transInfo.substring(transInfo.indexOf("(") + 1, transInfo.indexOf("px"))
     );
 
-    this.animeCanvas.current?.animateParticules(x, y);
+    this.animeCanvas.current?.animateParticules(x, y, this.state.streakPoints);
 
     this.withinClickZone(x, y, node);
     this.emojiAnimations[node.id].pause();
@@ -443,12 +465,8 @@ class LiveEmojiSection extends React.Component<
     // shrinks the emoji and make it disappear
     anime({
       targets: node,
-      scale: function () {
-        return 0.01;
-      },
-      duration: function () {
-        return 100;
-      },
+      scale: 0.01,
+      duration: 100,
       easing: "linear",
       complete: () => {
         try {
@@ -469,9 +487,11 @@ class LiveEmojiSection extends React.Component<
 
     if (this.emojiDiv.current) {
       // the number of emojis in a column the screen can hold
-      const options = Math.floor(this.emojiDiv.current.clientHeight / 30) - 1;
+      const options =
+        Math.floor(this.emojiDiv.current.clientHeight / EMOJI_HEIGHT) - 1;
       // randomly picks a row and calculate the respective height
-      let random = Math.floor(Math.random() * options) * 30 + 10;
+      let random =
+        Math.floor(Math.random() * options) * EMOJI_HEIGHT + EMOJI_TOP_OFFSET;
       node.style.top = random + "px";
     }
 
@@ -486,15 +506,9 @@ class LiveEmojiSection extends React.Component<
       let width = this.emojiDiv.current.clientWidth;
       const animation = anime({
         targets: node,
-        translateX: function () {
-          return width + 30;
-        },
-        scale: function () {
-          return anime.random(13, 17) / 10;
-        },
-        duration: function () {
-          return width * 4.8;
-        },
+        translateX: width + EMOJI_WIDTH,
+        scale: anime.random(13, 17) / 10,
+        duration: Math.max(EMOJI_MIN_DURATION, width * EMOJI_DURATION_FACTOR),
         easing: "linear",
         complete: () => {
           try {
@@ -508,125 +522,6 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
-  // all functions below here are for bonus message calls
-  createStreakBonusNode() {
-    const node = document.createElement("div");
-    node.className = "streak-bonus-text";
-    node.innerText = " builder bonus 10+ ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = streakBonusBuildsGif;
-    node.insertAdjacentElement("afterbegin", gifNodeBegin);
-
-    const gifNodeEnd = document.createElement("img");
-    gifNodeEnd.className = "live-gif";
-    gifNodeEnd.src = streakBonusBuildsGif;
-    node.insertAdjacentElement("beforeend", gifNodeEnd);
-
-    return node;
-  }
-
-  streakBonusToScreen() {
-    const node = this.createStreakBonusNode();
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: function () {
-          return width + node.clientWidth * 1.5;
-        },
-        duration: function () {
-          return width * 3.6;
-        },
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-          } catch (e) {}
-        },
-      });
-      return animation;
-    }
-  }
-
-  createGoombaNode() {
-    const node = document.createElement("div");
-    node.className = "goomba-bonus-text";
-    node.innerHTML = "yee ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = letsGoGoombaGif;
-    node.insertAdjacentElement("beforeend", gifNodeBegin);
-
-    node.innerHTML += " lets go";
-    return node;
-  }
-
-  goombaToScreen() {
-    const node = this.createGoombaNode();
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: function () {
-          return width + node.clientWidth * 1.5;
-        },
-        duration: function () {
-          return width * 3.6;
-        },
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-          } catch (e) {}
-        },
-      });
-      return animation;
-    }
-  }
-
-  createBananadanceNode() {
-    const node = document.createElement("div");
-    node.className = "special-bonus-text";
-    node.innerHTML = "Go bananas ";
-
-    const gifNodeBegin = document.createElement("img");
-    gifNodeBegin.className = "live-gif";
-    gifNodeBegin.src = bananadanceGif;
-    node.insertAdjacentElement("beforeend", gifNodeBegin);
-
-    node.innerHTML += " go go";
-    return node;
-  }
-
-  bananadanceToScreen() {
-    const node = this.createBananadanceNode();
-    if (this.emojiDiv.current) {
-      this.emojiDiv.current.appendChild(node);
-      let width = this.emojiDiv.current.clientWidth;
-      const animation = anime({
-        targets: node,
-        translateX: function () {
-          return width + node.clientWidth * 1.5;
-        },
-        duration: function () {
-          return width * 4;
-        },
-        easing: "linear",
-        complete: () => {
-          try {
-            node.parentElement?.removeChild(node);
-          } catch (e) {}
-        },
-      });
-      return animation;
-    }
-  }
-
   // add all emojis at the current timestamp to the screen
   liveEmojiScreen = () => {
     const time = this.getTimeStamp();
@@ -637,11 +532,127 @@ class LiveEmojiSection extends React.Component<
           // have a random time offset for each emoji (dont clutter together)
           setTimeout(() => {
             this.emojiToScreen(node);
-          }, Math.random() * 50);
+          }, Math.random() * INTERVAL_DELAY);
         }
       });
     }
   };
+
+  // create div node in the form of (gif text gif)
+  gifTextGifNode(frontGif: string, text: string, backGif: string) {
+    const node = document.createElement("div");
+    node.className = "special-bonus-text";
+    node.innerText = text;
+
+    const gifNodeBegin = document.createElement("img");
+    gifNodeBegin.className = "live-gif";
+    gifNodeBegin.src = frontGif;
+    node.insertAdjacentElement("afterbegin", gifNodeBegin);
+
+    const gifNodeEnd = document.createElement("img");
+    gifNodeEnd.className = "live-gif";
+    gifNodeEnd.src = backGif;
+    node.insertAdjacentElement("beforeend", gifNodeEnd);
+
+    return node;
+  }
+
+  // create div node in the form of (text gif text)
+  textGifTextNode(frontText: string, gif: string, backText: string) {
+    const node = document.createElement("div");
+    node.className = "special-bonus-text";
+    node.innerHTML = frontText;
+
+    const gifNodeBegin = document.createElement("img");
+    gifNodeBegin.className = "live-gif";
+    gifNodeBegin.src = gif;
+    node.insertAdjacentElement("beforeend", gifNodeBegin);
+
+    node.innerHTML += backText;
+    return node;
+  }
+
+  randomBonusNode() {
+    const choice = Math.floor(Math.random() * 4);
+    switch (choice) {
+      case 0:
+        return this.createBuildNode();
+      case 1:
+        return this.createPenguinNode();
+      case 2:
+        return this.createNiceWorkNode();
+      case 3:
+        return this.createMegamegaNode();
+    }
+  }
+
+  randomSpecialNode() {
+    const choice = Math.floor(Math.random() * 3);
+    switch (choice) {
+      case 0:
+        return this.createGoombaNode();
+      case 1:
+        return this.createBananadanceNode();
+      case 2:
+        return this.createMarchonNode();
+    }
+  }
+
+  // all functions below here are for bonus message calls
+  createBuildNode() {
+    return this.gifTextGifNode(
+      streakBonusBuildsGif,
+      " builder bonus 10+ ",
+      streakBonusBuildsGif
+    );
+  }
+
+  createGoombaNode() {
+    return this.textGifTextNode("yee ", letsGoGoombaGif, " lets go");
+  }
+
+  createBananadanceNode() {
+    return this.textGifTextNode("Go bananas ", bananadanceGif, " go go");
+  }
+
+  createMegamegaNode() {
+    return this.gifTextGifNode(mega, " mega mega ", mega);
+  }
+
+  createMarchonNode() {
+    return this.gifTextGifNode(metroid, " march on ", metroid);
+  }
+
+  createPenguinNode() {
+    return this.gifTextGifNode(penguin, " super super ", penguin);
+  }
+
+  createNiceWorkNode() {
+    return this.textGifTextNode("yee ", yahooGamesWoman, " nice work");
+  }
+
+  messageToScreen(node: HTMLDivElement | undefined, top: number) {
+    if (this.emojiDiv.current && node) {
+      node.style.top = top + "px";
+      this.emojiDiv.current.appendChild(node);
+      let width = this.emojiDiv.current.clientWidth;
+      const animation = anime({
+        targets: node,
+        translateX: width + MESSAGE_WIDTH,
+        duration: Math.max(
+          MESSAGE_MIN_DURATION,
+          width * MESSAGE_DURATION_FACTOR
+        ),
+        easing: "linear",
+        complete: () => {
+          try {
+            node.parentElement?.removeChild(node);
+          } catch (e) {}
+        },
+      });
+      return animation;
+    }
+  }
 
   getStreakColor() {
     const r = 255;

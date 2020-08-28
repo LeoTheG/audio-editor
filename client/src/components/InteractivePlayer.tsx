@@ -442,6 +442,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   }, [liveEmojiRef, bulletRef]);
 
   const onPlayYoutube = useCallback(() => {
+    setIsPlaying(true);
     updatePlayCount(songPlayingIndex);
     onPlay();
   }, [onPlay, updatePlayCount, songPlayingIndex]);
@@ -450,6 +451,11 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     liveEmojiRef.current?.onPauseCallback();
     bulletRef.current?.onPauseCallback();
   }, [liveEmojiRef, bulletRef]);
+
+  const onPauseYoutube = useCallback(() => {
+    setIsPlaying(false);
+    onPause();
+  }, [onPause]);
 
   const playSong = useCallback(
     (index: number) => {
@@ -620,7 +626,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
             width={Math.min(640, window.innerWidth)}
             onReady={bulletRef.current?.matchPlayerDim}
             onPlay={onPlayYoutube}
-            onPause={onPause}
+            onPause={onPauseYoutube}
             onEnded={onSongEnd}
           />
         ) : error === null && song && song.gifUrl ? (

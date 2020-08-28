@@ -1,8 +1,8 @@
-import React from "react";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
-import ReactPlayer from "react-player";
 import { IBullets } from "../types";
+import React from "react";
+import ReactPlayer from "react-player";
 
 interface IBulletSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
@@ -14,8 +14,10 @@ interface IBulletSectionState {
   inputValue: string;
 }
 
+const INTERVAL_DELAY = 500;
+
 // potential colors bullet text can use
-const colorPallet = [
+const COLOR_PALLET = [
   "#86de89",
   "#49a01c",
   "#3f3ee2",
@@ -33,6 +35,26 @@ const colorPallet = [
   "#ad9041",
   "#ca141f",
 ];
+
+const TEXT_HEIGHT = 30;
+const LETTER_WIDTH = 7.5;
+const BULLET_SCREEN_OFFSET_TOP = 45;
+const SEC_PER_LETTER = 0.03;
+const DURATION_FACTOR = 12;
+
+// const fonts = [
+//   "fonts",
+//   "bangers, cursive",
+//   "bio rhyme, serif",
+//   "caveat, cursive",
+//   "fjalla one, sans-serif",
+//   "ibm plex mono, monospace",
+//   "lobster, cursive",
+//   "noto sans, sans-serif",
+//   "patrick hand, cursive",
+//   "shadows into light, cursive",
+//   "yatra one, cursive",
+// ];
 
 class BulletSection extends React.Component<
   IBulletSectionProps,
@@ -64,22 +86,23 @@ class BulletSection extends React.Component<
   }
 
   resetColor() {
-    this.availColor = [...colorPallet];
+    this.availColor = [...COLOR_PALLET];
   }
 
   onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ inputValue: e.target.value });
   };
 
+  // get all possible lanes in the screen
   initializeLanes() {
     if (this.bulletDiv.current) {
       const screen = this.bulletDiv.current;
-      const textHeight = 30;
-      const options = Math.floor(screen.clientHeight / textHeight);
-      for (var i = 0; i < options; i++) this.lanes[i * textHeight] = -10;
+      const options = Math.floor(screen.clientHeight / TEXT_HEIGHT);
+      for (var i = 0; i < options - 1; i++) this.lanes[i * TEXT_HEIGHT] = -1;
     }
   }
 
+  // called when the youtube player is ready, to match the dimension of the player
   matchPlayerDim = () => {
     if (this.bulletDiv.current) {
       const screen = this.bulletDiv.current;
@@ -99,10 +122,11 @@ class BulletSection extends React.Component<
     const initializeBulletScreen = () => {
       if (this.bulletDiv.current) {
         const screen = this.bulletDiv.current;
+        // move the bullet section to the top of the screen
         if (screen.parentElement)
           screen.style.top =
             -screen.parentElement.offsetTop +
-            (this.props.youtubeRef ? 0 : 45) +
+            (this.props.youtubeRef ? 0 : BULLET_SCREEN_OFFSET_TOP) +
             "px";
         this.initializeLanes();
       }
@@ -136,7 +160,7 @@ class BulletSection extends React.Component<
 
   onPlayCallback = () => {
     this.clearBulletInterval();
-    this.interval = setInterval(this.bulletScreen, 500);
+    this.interval = setInterval(this.bulletScreen, INTERVAL_DELAY);
   };
 
   onPauseCallback = () => {
@@ -161,7 +185,7 @@ class BulletSection extends React.Component<
   }
 
   // find a random lane that suits the bullet (make sure no overlap)
-  getLane(text: string) {
+  getLane() {
     const result: number[] = [];
     Object.keys(this.lanes).forEach((value: string) => {
       // the lane is available only if it was being used earlier enough
@@ -189,18 +213,18 @@ class BulletSection extends React.Component<
       if (!(time in this.bullets)) this.bullets[time] = [];
       this.bullets[time].push(text);
       this.props.updateBullets();
-    }, 500);
+    }, INTERVAL_DELAY);
   };
 
   createBulletNode(text: string) {
-    const lane = this.getLane(text);
+    const lane = this.getLane();
     if (lane < 0) return null;
 
     const node = document.createElement("div");
     node.className = "bullet-text";
     node.innerText = text;
     node.style.top = lane + "px";
-    node.style.left = -text.length * 7.5 + "px";
+    node.style.left = -text.length * LETTER_WIDTH + "px";
 
     // choose a random color for the text
     const choice = Math.floor(Math.random() * this.availColor.length);
@@ -213,7 +237,7 @@ class BulletSection extends React.Component<
       (item) => item !== this.availColor[choice]
     );
 
-    this.lanes[lane] = this.getPreciseTime() + text.length * 0.025;
+    this.lanes[lane] = this.getPreciseTime() + text.length * SEC_PER_LETTER;
     return node;
   }
 
@@ -225,12 +249,8 @@ class BulletSection extends React.Component<
       let width = this.bulletDiv.current.clientWidth;
       anime({
         targets: node,
-        translateX: function () {
-          return width + text.length * 7.5;
-        },
-        duration: function () {
-          return (width + text.length * 5) * 5.5;
-        },
+        translateX: 2 * width,
+        duration: width * DURATION_FACTOR,
         easing: "linear",
         complete: () => {
           try {
@@ -249,30 +269,30 @@ class BulletSection extends React.Component<
           // have a random time offset for each emoji (dont clutter together)
           setTimeout(() => {
             this.textToScreen(text);
-          }, Math.random() * 500);
+          }, Math.random() * INTERVAL_DELAY);
         }
       });
     }
   };
+
   render() {
     return (
       <div id="bullet-sec">
         <div className="bullet-screen" ref={this.bulletDiv}></div>
-        <div className="bullet-input">
-          <input
-            type="text"
-            placeholder="What do u think?"
-            value={this.state.inputValue}
-            onChange={this.onChangeInput}
-            onKeyUp={(event) => {
-              if (event.key === "Enter") {
-                this.addBullet();
-              }
-            }}
-          ></input>
-          <button type="submit" onClick={this.addBullet}>
-            <i className="fas">{"=>"}</i>
-          </button>
+        <div className="bullet-input-container">
+          <div className="bullet-input">
+            <input
+              type="text"
+              placeholder="What do you think? "
+              value={this.state.inputValue}
+              onChange={this.onChangeInput}
+              onKeyUp={(event) => {
+                if (event.key === "Enter") {
+                  this.addBullet();
+                }
+              }}
+            ></input>
+          </div>
         </div>
       </div>
     );
