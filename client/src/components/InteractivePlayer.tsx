@@ -120,10 +120,11 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     {}
   );
 
-  const [isCollaborating, setCollaborating] = useState(false);
+  const [isCollaborating, setCollaborating] = useState(true);
   const [amountOnline, setAmountOnline] = useState(0);
   const [userLocations, setUserLocations] = useState<IUserLocations>({});
   const [userProfiles, setUserProfiles] = useState<IUserProfiles>({});
+  console.log("is coll", isCollaborating);
 
   const updateCursorPosition = useCallback(
     _.throttle((position: [number, number]) => {
@@ -645,7 +646,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
                 <div>collaboration</div>
                 <Switch
                   color="primary"
-                  value={isCollaborating}
+                  checked={isCollaborating}
                   onChange={onChangeCollaboration}
                 />
               </div>
