@@ -213,12 +213,10 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   []);
 
   const onSubmitBullet = useCallback((text: string) => {
-    console.log("submitting bullet");
     socket.emit("submit bullet", text);
   }, []);
 
   const onReceiveBullet = useCallback((text: string) => {
-    console.log("Receiving bullet");
     bulletRef.current?.textToScreen(text);
   }, []);
 
