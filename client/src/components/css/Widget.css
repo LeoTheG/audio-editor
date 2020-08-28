@@ -129,11 +129,8 @@
 .point-container {
   position: relative;
   margin: auto;
-  top: -70px;
+  top: 0px;
   width: 300px;
-  color: white;
-  background: rgba(128, 128, 128, 0.3);
-  
   /* border: black 2px solid; */
 }
 
@@ -202,7 +199,6 @@
   height: 35px;
   top: 7px;
   padding-right: 5px;
-  border: none;
 }
 
 .bullet-input-container {
@@ -214,7 +210,7 @@
   margin: 0 auto;
   border-radius: 2px;
   padding: 0.25rem 0.25rem;
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
   /* background: transparent; */
 }
 
@@ -226,10 +222,10 @@
 .bullet-input input {
   flex-grow: 1;
   color: rgb(97, 93, 93);
-  width: 250px;
+  width: 400px;
   font-family: "Lato, sans-serif";
   font-style: italic;
-  font-size: 11px;
+  font-size: 16px;
   line-height: 2rem;
   vertical-align: middle;
   border-style: none;
@@ -246,7 +242,7 @@
   }
 }
 
-.bullet-input ::after {
+.bullet-input-container ::after {
   content: "";
   position: absolute;
   left: 0px;
@@ -275,19 +271,3 @@
   justify-content: center;
   margin-left: 10px;
 } */
-
-.bullet-input button {
-  color: #7881a1;
-  font-size: 1.4rem;
-  line-height: 2.4rem;
-  vertical-align: middle;
-  transition: color 0.25s;
-  padding: 0;
-  background: none;
-  border: none;
-  outline: none;
-}
-
-.bullet-input button :hover {
-  color: #bfd2ff;
-}
