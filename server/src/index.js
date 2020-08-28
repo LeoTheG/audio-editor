@@ -128,6 +128,12 @@ io.on("connection", (client) => {
     client.to(clientRoom).emit("cursor move", client.id, [x, y]);
   });
 
+  client.on("submit bullet", (text) => {
+    const clientRoom = getClientRoom(client);
+    if (!clientRoom) return;
+    client.to(clientRoom).emit("receive bullet", text);
+  });
+
   client.on("disconnect", () => {
     const clientRoom = clientRooms[client.id];
 
