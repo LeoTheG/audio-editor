@@ -493,6 +493,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     }
     playSong(newSongIndex);
     setAmountOnline(0);
+    liveEmojiRef.current?.resetState();
   }, [playSong, songPlayingIndex, userSongs.length]);
 
   const onClickNextSong = useCallback(() => {
@@ -502,6 +503,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     }
     playSong(newSongIndex);
     setAmountOnline(0);
+    liveEmojiRef.current?.resetState();
   }, [playSong, songPlayingIndex, userSongs.length]);
 
   const generateRandomUrls = useCallback(() => {

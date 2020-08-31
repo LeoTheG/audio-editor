@@ -117,13 +117,8 @@ class LiveEmojiSection extends React.Component<
 
   initializeEmojis(liveEmojis: ILiveEmojis) {
     this.chosenEmoji = liveEmojis;
-    this.urlsOut();
     this.instructionOut();
     this.resetPoints();
-    this.setState({
-      showInstruction: true,
-      showHighscore: true,
-    });
   }
 
   initializeAudio(audio: HTMLAudioElement) {
@@ -193,6 +188,14 @@ class LiveEmojiSection extends React.Component<
       streakPoints: 0,
     });
   };
+
+  resetState() {
+    this.setState({
+      showInstruction: true,
+      showHighscore: true,
+    });
+    this.urlsOut();
+  }
 
   animatePoint() {
     anime.timeline().add({
@@ -528,6 +531,7 @@ class LiveEmojiSection extends React.Component<
     node.style.top = top + "px";
     node.onclick = () => {
       this.props.setSongPlayingIndex(parseInt(node.id));
+      this.resetState();
     };
     return node;
   }
