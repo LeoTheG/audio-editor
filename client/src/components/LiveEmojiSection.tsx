@@ -5,6 +5,7 @@ import ReactPlayer from "react-player";
 //@ts-ignore
 import anime from "animejs/lib/anime.es";
 import bananadanceGif from "../assets/bananadance.gif";
+import blobExcited from "../assets/blob_excited.gif";
 import blobOctopus from "../assets/blob-octopus.gif";
 import coolDoge from "../assets/cool-doge.gif";
 import handWave from "../assets/hand_wave.gif";
@@ -65,10 +66,14 @@ const MESSAGE_WIDTH = 250;
 const MESSAGE_DURATION_FACTOR = 4;
 const MESSAGE_MIN_DURATION = 2300;
 
+const URL_TOP_OFFSET = 70;
+const URL_HEIGHT = 50;
+
 interface ILiveEmojiSectionProps {
   youtubeRef?: React.RefObject<ReactPlayer>;
   onChangePoints: (points: number) => void;
   scores: { name: string; score: number }[] | undefined;
+  setSongPlayingIndex: (index: number) => void;
 }
 
 interface ILiveEmojiSectionState {
@@ -112,6 +117,7 @@ class LiveEmojiSection extends React.Component<
 
   initializeEmojis(liveEmojis: ILiveEmojis) {
     this.chosenEmoji = liveEmojis;
+    this.choicesOut();
     this.instructionOut();
     this.resetPoints();
     this.setState({
@@ -319,6 +325,7 @@ class LiveEmojiSection extends React.Component<
 
   onPlayCallback = () => {
     this.instructionOut();
+    this.choicesOut();
     this.animateWelcome(true);
     if (this.state.showHighscore) this.highScores();
 
@@ -598,6 +605,38 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
+  randomSongUrl(choices: { index: number; name: string }[]) {
+    const titleNode = this.createInstructionNode(
+      "Check these out! ",
+      blobExcited,
+      "20px"
+    );
+    titleNode.className = "url-title-container";
+    this.songChoiceToScreen(titleNode, true);
+    console.log(choices);
+    choices.forEach((choice, index) => {
+      const node = this.createSongUrlNode(
+        choice,
+        URL_TOP_OFFSET + index * URL_HEIGHT
+      );
+      this.songChoiceToScreen(node, false);
+    });
+  }
+
+  createSongUrlNode(choice: { index: number; name: string }, top: number) {
+    const node = document.createElement("div");
+    node.id = choice.index.toString();
+    node.innerText = choice.name;
+    node.className = "url-container";
+    if (choice.name)
+      node.style.left = -choice.name.length * LETTER_WIDTH + "px";
+    node.style.top = top + "px";
+    node.onclick = () => {
+      this.props.setSongPlayingIndex(parseInt(node.id));
+    };
+    return node;
+  }
+
   // all functions below here are for bonus message calls
   createBuildNode() {
     return this.gifTextGifNode(
@@ -651,6 +690,47 @@ class LiveEmojiSection extends React.Component<
         },
       });
       return animation;
+    }
+  }
+
+  songChoiceToScreen(node: HTMLDivElement, title: boolean) {
+    if (this.emojiDiv.current && node) {
+      this.emojiDiv.current.appendChild(node);
+      let width = this.emojiDiv.current.clientWidth;
+      const animation = anime({
+        targets: node,
+        translateX:
+          (width +
+            node.innerText.length * LETTER_WIDTH +
+            (title ? GIF_WIDTH : 0)) /
+          2,
+        duration: (width * MESSAGE_DURATION_FACTOR) / 2,
+        easing: "easeOutExpo",
+      });
+      return animation;
+    }
+  }
+
+  // quickly move the instructions out of the way when the video is being played.
+  choicesOut() {
+    if (this.emojiDiv.current) {
+      const width = this.emojiDiv.current.clientWidth;
+      anime({
+        targets: [".url-container", ".url-title-container"],
+        translateX: width * 2,
+        duration: width / 2,
+        easing: "easeInExpo",
+        complete: () => {
+          this.movingNodes.forEach((node) => {
+            try {
+              node.parentElement?.removeChild(node);
+            } catch (e) {
+              //console.log(e);
+            }
+          });
+          this.movingNodes = [];
+        },
+      });
     }
   }
 

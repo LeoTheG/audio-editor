@@ -504,13 +504,27 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
     setAmountOnline(0);
   }, [playSong, songPlayingIndex, userSongs.length]);
 
+  const generateRandomUrls = useCallback(() => {
+    const choices: { index: number; name: string }[] = [];
+    console.log(userSongs.length);
+    while (choices.length < 3) {
+      const choice = Math.floor(Math.random() * userSongs.length);
+      const info = { index: choice, name: userSongs[choice].name };
+      if (choice !== songPlayingIndex && info.name && !choices.includes(info)) {
+        choices.push(info);
+      }
+    }
+    liveEmojiRef.current?.randomSongUrl(choices);
+  }, [songPlayingIndex, userSongs]);
+
   const onSongEnd = useCallback(() => {
     setIsPlaying(false);
     onPause();
     if (points > 0) {
       setDisplayingScoreModal(true);
     }
-  }, [points, onPause]);
+    generateRandomUrls();
+  }, [points, onPause, generateRandomUrls]);
 
   useEffect(() => {
     if (audio === null) return;
@@ -666,6 +680,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
               ref={liveEmojiRef}
               onChangePoints={setPoints}
               scores={song?.highscores}
+              setSongPlayingIndex={setSongPlayingIndex}
             />
           </>
         )}
