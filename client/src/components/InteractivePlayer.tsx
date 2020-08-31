@@ -506,12 +506,17 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const generateRandomUrls = useCallback(() => {
     const choices: { index: number; name: string }[] = [];
-    console.log(userSongs.length);
-    while (choices.length < 3) {
+    const picked: number[] = [];
+    while (userSongs.length > 3 && choices.length < 3) {
       const choice = Math.floor(Math.random() * userSongs.length);
       const info = { index: choice, name: userSongs[choice].name };
-      if (choice !== songPlayingIndex && info.name && !choices.includes(info)) {
+      if (
+        choice !== songPlayingIndex &&
+        info.name &&
+        !picked.includes(info.index)
+      ) {
         choices.push(info);
+        picked.push(info.index);
       }
     }
     liveEmojiRef.current?.randomSongUrl(choices);
