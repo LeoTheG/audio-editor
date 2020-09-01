@@ -70,12 +70,6 @@ class BulletSection extends React.Component<
   bulletDiv: React.RefObject<HTMLDivElement> = React.createRef();
   youtubeRef?: React.RefObject<ReactPlayer> = React.createRef();
 
-  // the value could either be "touchstart" or "mousedown", used to detect both taps and mouse clicks
-  tap: "touchstart" | "mousedown" =
-    "ontouchstart" in window || navigator.msMaxTouchPoints
-      ? "touchstart"
-      : "mousedown";
-
   constructor(props: IBulletSectionProps) {
     super(props);
     this.state = {
