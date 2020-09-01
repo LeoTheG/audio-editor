@@ -397,14 +397,14 @@ class LiveEmojiSection extends React.Component<
       "20px"
     );
     titleNode.className = "url-title-container";
-    this.songChoiceToScreen(titleNode, true);
+    this.urlsToScreen(titleNode, true);
     console.log(choices);
     choices.forEach((choice, index) => {
       const node = this.createSongUrlNode(
         choice,
         URL_TOP_OFFSET + index * URL_HEIGHT
       );
-      this.songChoiceToScreen(node, false);
+      this.urlsToScreen(node, false);
     });
   }
 
@@ -681,7 +681,7 @@ class LiveEmojiSection extends React.Component<
     }
   }
 
-  songChoiceToScreen(node: HTMLDivElement, title: boolean) {
+  urlsToScreen(node: HTMLDivElement, title: boolean) {
     if (this.emojiDiv.current && node) {
       this.emojiDiv.current.appendChild(node);
       let width = this.emojiDiv.current.clientWidth;
