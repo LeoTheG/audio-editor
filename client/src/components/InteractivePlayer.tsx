@@ -133,6 +133,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const [userProfiles, setUserProfiles] = useState<IUserProfiles>({});
 
   const onUpdatePoints = (points: number) => {
+    if (points < 0) points = 0;
     setPoints(points);
   };
 
