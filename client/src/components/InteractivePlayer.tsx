@@ -625,8 +625,21 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   return (
     <div className="player-page-container">
-      {!isYoutube && (
-        <div style={{ width: "100%" }}>
+      <div style={{ width: "100%", marginBottom: 10 }}>
+        {isYoutube ? (
+          <Button
+            style={{
+              minWidth: 20,
+              color: "white",
+              background: "grey",
+              padding: 10,
+            }}
+            variant="contained"
+            onClick={() => history.push("/upload")}
+          >
+            UPLOAD
+          </Button>
+        ) : (
           <Button
             style={{
               minWidth: 20,
@@ -639,8 +652,8 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
           >
             HOME
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       <div
         ref={playerBodyRef}
@@ -829,9 +842,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
           <div className="plays-container">plays: {song?.playCount || 0}</div>
         </div>
       </div>
-
       <AdventureLogo />
-
       <Popover
         open={Boolean(shareAnchor)}
         anchorEl={shareAnchor}
@@ -846,7 +857,6 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
           {generateUrl(isYoutube, song)}
         </a>
       </Popover>
-
       <Modal open={isDisplayingScoreModal}>
         <div className="streak-modal-container">
           <div
@@ -879,7 +889,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
 const generateUrl = (isYoutube?: boolean, song?: userSong) => {
   if (!song) return "";
-  return `${window.location.origin}/#/${isYoutube ? "youtube" : "player"}?id=${
+  return `${window.location.origin}/#/${isYoutube ? "youtube" : "player"}/${
     song.id
   }`;
 };

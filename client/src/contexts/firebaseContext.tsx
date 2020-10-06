@@ -37,6 +37,7 @@ interface firebaseContext {
     scores: { name: string; score: number }[]
   ) => void;
   updatePlayCount: (songId: string, playCount: number) => void;
+  uploadYoutubeVideo: (songId: string, url: string) => Promise<string>;
 }
 
 export const FirebaseContext = React.createContext<firebaseContext>({
@@ -49,6 +50,7 @@ export const FirebaseContext = React.createContext<firebaseContext>({
   updateBullets: () => {},
   updateLiveEmojiPoints: () => {},
   updatePlayCount: () => {},
+  uploadYoutubeVideo: () => Promise.resolve(""),
 });
 
 export function withFirebaseContext(Component: JSX.Element) {
@@ -191,6 +193,30 @@ export function withFirebaseContext(Component: JSX.Element) {
         },
         { merge: true }
       );
+    },
+    uploadYoutubeVideo: (songId, url) => {
+      return new Promise(async (resolve, reject) => {
+        db.collection("userSongs")
+          .doc(songId)
+          .get()
+          .then((result) => {
+            if (result.exists) {
+              reject(new Error(`song with ID ${songId} already exists`));
+            } else {
+              db.collection("userSongs")
+                .doc(songId)
+                .set({
+                  url,
+                  id: songId,
+                })
+                .then(() => {
+                  resolve(songId);
+                })
+                .catch(reject);
+            }
+          })
+          .catch(reject);
+      });
     },
   };
 

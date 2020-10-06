@@ -5,7 +5,8 @@
     "pre-commit": "lint-staged",
     "postinstall": "cd client && npm install",
     "build": "PUBLIC_URL=https://yeeplayer.com npm run build --prefix client",
-    "deploy:heroku": "git subtree push --prefix server heroku master"
+    "deploy:heroku": "git subtree push --prefix server heroku master",
+    "start": "docker-compose up"
   },
   "pre-commit": [
     "pre-commit"
