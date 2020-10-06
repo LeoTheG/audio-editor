@@ -14,10 +14,11 @@ Features:
 
 # setup
 
-The server is only used for static hosting, for development just use the client.
+`npm install` in client and server
 
-`cd client && npm install`
-`npm start`
+# start
+
+`docker-compose up`
 
 # example
 

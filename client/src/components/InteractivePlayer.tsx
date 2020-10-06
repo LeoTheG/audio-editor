@@ -77,6 +77,10 @@ interface IUserProfiles {
   [clientId: string]: { name: string; avatar: string };
 }
 
+interface IUserPoints {
+  [clientId: string]: number;
+}
+
 const selectedProfiles: { [clientId: string]: string } = {};
 
 export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
@@ -88,8 +92,11 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   const playerBodyRef = useRef<HTMLDivElement>(null);
   const [playerBodyRect, setPlayerBodyRect] = useState<DOMRect>();
 
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
+  const [userPoints, setUserPoints] = useState<{ [clientId: string]: number }>(
+    {}
+  );
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [song, setSong] = useState<userSong>();
   const [error, setError] = useState<string | null>(null);
@@ -121,13 +128,17 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
   );
 
   const [isCollaborating, setCollaborating] = useState(true);
-  const [amountOnline, setAmountOnline] = useState(0);
+  const [amountOnline, setAmountOnline] = useState(1);
   const [userLocations, setUserLocations] = useState<IUserLocations>({});
   const [userProfiles, setUserProfiles] = useState<IUserProfiles>({});
 
+  const onUpdatePoints = (points: number) => {
+    setPoints(points);
+  };
+
   const updateCursorPosition = useCallback(
-    _.throttle((position: [number, number]) => {
-      socket.emit("cursor move", { x: position[0], y: position[1] });
+    _.throttle((position: [number, number], points: number) => {
+      socket.emit("cursor move", { x: position[0], y: position[1], points });
     }, 200),
     []
   );
@@ -146,9 +157,9 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       const relativeX = x / width;
       const relativeY = y / height;
 
-      updateCursorPosition([relativeX, relativeY]);
+      updateCursorPosition([relativeX, relativeY], points);
     },
-    [isCollaborating, updateCursorPosition, playerBodyRect]
+    [isCollaborating, updateCursorPosition, playerBodyRect, points]
   );
 
   useEffect(() => {
@@ -171,7 +182,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       socket.emit("disconnect room");
       setUserProfiles({});
       setUserLocations({});
-      setAmountOnline(0);
+      setAmountOnline(1);
     }
   }, [isCollaborating, id]);
 
@@ -181,7 +192,8 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   const onCursorMove = useCallback(function cursorMove(
     clientId: string,
-    [x, y]: number[]
+    [x, y]: number[],
+    points
   ) {
     if (!playerBodyRef.current) return;
 
@@ -204,11 +216,13 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       };
 
       if (!userLocations[clientId]) {
-        setAmountOnline(Object.keys(userLocations).length + 1);
+        setAmountOnline(Object.keys(userLocations).length + 2);
       }
 
       return newUserLocations;
     });
+
+    setUserPoints((userPoints) => ({ ...userPoints, [clientId]: points }));
   },
   []);
 
@@ -236,7 +250,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
         delete newUserLocations[clientId];
         delete selectedProfiles[clientId];
 
-        setAmountOnline(Math.max(Object.keys(userLocations).length - 1, 0));
+        setAmountOnline(Math.max(Object.keys(userLocations).length - 1, 1));
 
         return newUserLocations;
       });
@@ -492,7 +506,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       newSongIndex = userSongs.length - 1;
     }
     playSong(newSongIndex);
-    setAmountOnline(0);
+    setAmountOnline(1);
     liveEmojiRef.current?.resetState();
   }, [playSong, songPlayingIndex, userSongs.length]);
 
@@ -502,7 +516,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
       newSongIndex = 0;
     }
     playSong(newSongIndex);
-    setAmountOnline(0);
+    setAmountOnline(1);
     liveEmojiRef.current?.resetState();
   }, [playSong, songPlayingIndex, userSongs.length]);
 
@@ -636,6 +650,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
           <UserCursors
             userLocations={userLocations}
             userProfiles={userProfiles}
+            userPoints={userPoints}
           />
         )}
 
@@ -688,6 +703,7 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
               onChangePoints={setPoints}
               scores={song?.highscores}
               setSongPlayingIndex={setSongPlayingIndex}
+              updatePoints={onUpdatePoints}
             />
           </>
         )}
@@ -870,6 +886,7 @@ const generateUrl = (isYoutube?: boolean, song?: userSong) => {
 interface IUserCursorsProps {
   userLocations: IUserLocations;
   userProfiles: IUserProfiles;
+  userPoints: IUserPoints;
 }
 
 const UserCursors = (props: IUserCursorsProps) => {
@@ -882,6 +899,7 @@ const UserCursors = (props: IUserCursorsProps) => {
           return null;
         }
         const { avatar, name } = props.userProfiles[key];
+        const points = props.userPoints[key];
 
         return (
           <div
@@ -891,6 +909,7 @@ const UserCursors = (props: IUserCursorsProps) => {
           >
             <img src={avatarMap[avatar]} alt="avatar" />
             <div>{name}</div>
+            <div>{points}</div>
           </div>
         );
       })}

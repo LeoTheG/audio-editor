@@ -74,6 +74,7 @@ interface ILiveEmojiSectionProps {
   onChangePoints: (points: number) => void;
   scores: { name: string; score: number }[] | undefined;
   setSongPlayingIndex: (index: number) => void;
+  updatePoints: (points: number) => void;
 }
 
 interface ILiveEmojiSectionState {
@@ -283,6 +284,15 @@ class LiveEmojiSection extends React.Component<
       });
     }
   };
+
+  componentDidUpdate(
+    _: ILiveEmojiSectionProps,
+    prevState: ILiveEmojiSectionState
+  ) {
+    if (this.state.totalPoints !== prevState.totalPoints) {
+      this.props.updatePoints(this.state.totalPoints);
+    }
+  }
 
   /*
    * Below are all helper functions
