@@ -1,0 +1,48 @@
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5%;
+  font-size: 1.3em;
+}
+
+.upload-container > * {
+  margin-bottom: 50px !important;
+}
+
+.upload-preview-url {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 1em;
+}
+
+.upload-preview-url-string {
+  text-decoration: underline;
+  margin-left: 10px;
+}
+
+.upload-error {
+  color: red;
+}
+
+.upload-latest-submitted {
+  display: flex;
+}
+
+.upload-latest-submitted > a {
+  margin-left: 10px;
+}
+
+.upload-button-container {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+@media screen and (max-width: 500px) {
+  .upload-preview-url {
+    font-size: 20px;
+  }
+}

@@ -90,14 +90,20 @@ io.on("connection", (client) => {
     delete clientRooms[client.id];
   });
 
-  client.on("cursor move", (position) => {
-    const { x, y } = position;
+  client.on("cursor move", (data) => {
+    const { x, y, points } = data;
     clientPositions[client.id] = { x, y };
 
     const clientRoom = getClientRoom(client);
     if (!clientRoom) return;
 
-    client.to(clientRoom).emit("cursor move", client.id, [x, y]);
+    client.to(clientRoom).emit("cursor move", client.id, [x, y], points);
+  });
+
+  client.on("submit bullet", (text) => {
+    const clientRoom = getClientRoom(client);
+    if (!clientRoom) return;
+    client.to(clientRoom).emit("receive bullet", text);
   });
 
   client.on("disconnect", () => {
@@ -144,7 +150,9 @@ io.on("connection", (client) => {
   });
 });
 
-server.listen(port);
+server.listen(port, () => {
+  console.log("server listening on port", port);
+});
 
 const getClientRoom = (client) => {
   return Object.keys(client.rooms).find((room) => client.id !== room);

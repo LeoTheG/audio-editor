@@ -17,12 +17,11 @@ services:
     volumes:
       - ./server/src:/usr/local/app/server/src
       - ./server/node_modules:/usr/local/app/server/node_modules
-    command: npm run dev
+    command: npm run start:dev
     ports:
       - 8000:8000
     environment:
       - PORT=8000
-
   client:
     build:
       context: ./client

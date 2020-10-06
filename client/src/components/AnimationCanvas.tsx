@@ -33,10 +33,9 @@ class AnimationCanvas extends React.Component<
         const canvasEl = this.emojiCanvas.current;
         if (canvasEl.parentElement) {
           canvasEl.width = canvasEl.parentElement.clientWidth;
-          canvasEl.height = canvasEl.parentElement.clientHeight;
-          canvasEl.width = canvasEl.offsetWidth;
-          canvasEl.height = canvasEl.offsetHeight;
-          // canvasEl.style.border = "3px solid red"
+          // canvasEl.width = canvasEl.offsetWidth;
+          // canvasEl.height = canvasEl.offsetHeight;
+          // canvasEl.style.border = "2px rgb(0, 204, 255) dashed";
         }
       }
     };
@@ -100,9 +99,10 @@ class AnimationCanvas extends React.Component<
   };
 
   // The animation for the firework
-  animateParticules = (x: number, y: number) => {
+  animateParticules = (x: number, y: number, points: number) => {
     const particules = [];
-    for (var i = 0; i < 30; i++) {
+    const particuleCount = points >= 10 ? 50 : 30;
+    for (var i = 0; i < particuleCount; i++) {
       particules.push(this.createParticule(x, y));
     }
     anime.timeline().add({
@@ -121,7 +121,13 @@ class AnimationCanvas extends React.Component<
   };
 
   render() {
-    return <canvas ref={this.emojiCanvas}></canvas>;
+    return (
+      <canvas
+        height="270px"
+        style={{ position: "absolute" }}
+        ref={this.emojiCanvas}
+      ></canvas>
+    );
   }
 }
 

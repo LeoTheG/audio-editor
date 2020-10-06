@@ -22,6 +22,7 @@ export interface userSong {
   isLocked?: boolean;
   highscores?: { name: string; score: number }[];
   playCount?: number;
+  name: string;
 }
 
 export interface ILibraryMetadata {

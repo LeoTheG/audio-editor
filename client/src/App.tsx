@@ -13,6 +13,7 @@ import { Homepage } from "./routes/Homepage";
 import { LobbyPage } from "./routes/LobbyPage";
 import { PlayerPage } from "./routes/PlayerPage";
 import React from "react";
+import { UploadPage } from "./routes/UploadPage";
 import { YoutubePage } from "./routes/YoutubePage";
 import backgroundImage from "./assets/Polka-Dots.svg";
 import { withFirebaseContext } from "./contexts/firebaseContext";
@@ -41,6 +42,9 @@ function App() {
             </Route>
             <Route path={"/lobby/:id?"}>
               <LobbyPage />
+            </Route>
+            <Route path={"/upload"}>
+              <UploadPage />
             </Route>
             <Redirect from="*" to={"/"} />
           </Switch>

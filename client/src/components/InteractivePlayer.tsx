@@ -78,6 +78,10 @@ interface IUserProfiles {
   [clientId: string]: { name: string; avatar: string };
 }
 
+interface IUserPoints {
+  [clientId: string]: number;
+}
+
 const selectedProfiles: { [clientId: string]: string } = {};
 
 export const InteractivePlayer = ({
@@ -96,8 +100,11 @@ export const InteractivePlayer = ({
   const playerBodyRef = useRef<HTMLDivElement>(null);
   const [playerBodyRect, setPlayerBodyRect] = useState<DOMRect>();
 
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
+  const [userPoints, setUserPoints] = useState<{ [clientId: string]: number }>(
+    {}
+  );
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [song, setSong] = useState<userSong>();
   const [error, setError] = useState<string | null>(null);
@@ -136,14 +143,19 @@ export const InteractivePlayer = ({
     {}
   );
 
-  const [isCollaborating, setCollaborating] = useState(false);
-  const [amountOnline, setAmountOnline] = useState(0);
+  const [isCollaborating, setCollaborating] = useState(true);
+  const [amountOnline, setAmountOnline] = useState(1);
   const [userLocations, setUserLocations] = useState<IUserLocations>({});
   const [userProfiles, setUserProfiles] = useState<IUserProfiles>({});
 
+  const onUpdatePoints = (points: number) => {
+    if (points < 0) points = 0;
+    setPoints(points);
+  };
+
   const updateCursorPosition = useCallback(
-    _.throttle((position: [number, number]) => {
-      socket.emit("cursor move", { x: position[0], y: position[1] });
+    _.throttle((position: [number, number], points: number) => {
+      socket.emit("cursor move", { x: position[0], y: position[1], points });
     }, 200),
     []
   );
@@ -162,9 +174,9 @@ export const InteractivePlayer = ({
       const relativeX = x / width;
       const relativeY = y / height;
 
-      updateCursorPosition([relativeX, relativeY]);
+      updateCursorPosition([relativeX, relativeY], points);
     },
-    [isCollaborating, updateCursorPosition, playerBodyRect]
+    [isCollaborating, updateCursorPosition, playerBodyRect, points]
   );
 
   useEffect(() => {
@@ -190,7 +202,7 @@ export const InteractivePlayer = ({
       socket.emit("disconnect room");
       setUserProfiles({});
       setUserLocations({});
-      setAmountOnline(0);
+      setAmountOnline(1);
     }
   }, [isCollaborating, id]);
 
@@ -200,7 +212,8 @@ export const InteractivePlayer = ({
 
   const onCursorMove = useCallback(function cursorMove(
     clientId: string,
-    [x, y]: number[]
+    [x, y]: number[],
+    points
   ) {
     if (!playerBodyRef.current) return;
 
@@ -223,13 +236,23 @@ export const InteractivePlayer = ({
       };
 
       if (!userLocations[clientId]) {
-        setAmountOnline(Object.keys(userLocations).length + 1);
+        setAmountOnline(Object.keys(userLocations).length + 2);
       }
 
       return newUserLocations;
     });
+
+    setUserPoints((userPoints) => ({ ...userPoints, [clientId]: points }));
   },
   []);
+
+  const onSubmitBullet = useCallback((text: string) => {
+    socket.emit("submit bullet", text);
+  }, []);
+
+  const onReceiveBullet = useCallback((text: string) => {
+    bulletRef.current?.textToScreen(text);
+  }, []);
 
   useEffect(() => {
     setUserLocations({});
@@ -250,7 +273,7 @@ export const InteractivePlayer = ({
         delete newUserLocations[clientId];
         delete selectedProfiles[clientId];
 
-        setAmountOnline(Math.max(Object.keys(userLocations).length - 1, 0));
+        setAmountOnline(Math.max(Object.keys(userLocations).length - 1, 1));
 
         return newUserLocations;
       });
@@ -283,7 +306,9 @@ export const InteractivePlayer = ({
     socket.on("lobby pause", () => {
       setIsLobbyPlaying(false);
     });
-  }, [id, onCursorMove]);
+
+    socket.on("receive bullet", onReceiveBullet);
+  }, [id, onCursorMove, onReceiveBullet]);
 
   const onSubmitPoints = useCallback(() => {
     if (song) {
@@ -472,6 +497,7 @@ export const InteractivePlayer = ({
   }, [liveEmojiRef, bulletRef, id, isLobby]);
 
   const onPlayYoutube = useCallback(() => {
+    setIsPlaying(true);
     updatePlayCount(songPlayingIndex);
     onPlay();
   }, [onPlay, updatePlayCount, songPlayingIndex]);
@@ -483,6 +509,11 @@ export const InteractivePlayer = ({
       socket.emit("lobby pause", id);
     }
   }, [liveEmojiRef, bulletRef, id, isLobby]);
+
+  const onPauseYoutube = useCallback(() => {
+    setIsPlaying(false);
+    onPause();
+  }, [onPause]);
 
   const playSong = useCallback(
     (index: number) => {
@@ -519,7 +550,8 @@ export const InteractivePlayer = ({
       newSongIndex = userSongs.length - 1;
     }
     playSong(newSongIndex);
-    setAmountOnline(0);
+    setAmountOnline(1);
+    liveEmojiRef.current?.resetState();
   }, [playSong, songPlayingIndex, userSongs.length]);
 
   const onClickNextSong = useCallback(() => {
@@ -528,8 +560,27 @@ export const InteractivePlayer = ({
       newSongIndex = 0;
     }
     playSong(newSongIndex);
-    setAmountOnline(0);
+    setAmountOnline(1);
+    liveEmojiRef.current?.resetState();
   }, [playSong, songPlayingIndex, userSongs.length]);
+
+  const generateRandomUrls = useCallback(() => {
+    const choices: { index: number; name: string }[] = [];
+    const picked: number[] = [];
+    while (userSongs.length > 3 && choices.length < 3) {
+      const choice = Math.floor(Math.random() * userSongs.length);
+      const info = { index: choice, name: userSongs[choice].name };
+      if (
+        choice !== songPlayingIndex &&
+        info.name &&
+        !picked.includes(info.index)
+      ) {
+        choices.push(info);
+        picked.push(info.index);
+      }
+    }
+    liveEmojiRef.current?.randomSongUrl(choices);
+  }, [songPlayingIndex, userSongs]);
 
   const onSongEnd = useCallback(() => {
     setIsPlaying(false);
@@ -537,7 +588,8 @@ export const InteractivePlayer = ({
     if (points > 0) {
       setDisplayingScoreModal(true);
     }
-  }, [points, onPause]);
+    generateRandomUrls();
+  }, [points, onPause, generateRandomUrls]);
 
   useEffect(() => {
     if (audio === null) return;
@@ -622,8 +674,21 @@ export const InteractivePlayer = ({
 
   return (
     <div className="player-page-container">
-      {!isYoutube && (
-        <div style={{ width: "100%" }}>
+      <div style={{ width: "100%", marginBottom: 10 }}>
+        {isYoutube ? (
+          <Button
+            style={{
+              minWidth: 20,
+              color: "white",
+              background: "grey",
+              padding: 10,
+            }}
+            variant="contained"
+            onClick={() => history.push("/upload")}
+          >
+            UPLOAD
+          </Button>
+        ) : (
           <Button
             style={{
               minWidth: 20,
@@ -636,8 +701,8 @@ export const InteractivePlayer = ({
           >
             HOME
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       <div
         ref={playerBodyRef}
@@ -648,6 +713,7 @@ export const InteractivePlayer = ({
           <UserCursors
             userLocations={userLocations}
             userProfiles={userProfiles}
+            userPoints={userPoints}
           />
         )}
 
@@ -659,7 +725,7 @@ export const InteractivePlayer = ({
             width={Math.min(640, window.innerWidth)}
             onReady={bulletRef.current?.matchPlayerDim}
             onPlay={onPlayYoutube}
-            onPause={onPause}
+            onPause={onPauseYoutube}
             onEnded={onSongEnd}
             playing={isLobby ? isLobbyPlaying : undefined}
             config={
@@ -690,7 +756,7 @@ export const InteractivePlayer = ({
                 <div>collaboration</div>
                 <Switch
                   color="primary"
-                  value={isCollaborating}
+                  checked={isCollaborating}
                   onChange={onChangeCollaboration}
                 />
               </div>
@@ -705,6 +771,8 @@ export const InteractivePlayer = ({
               ref={liveEmojiRef}
               onChangePoints={setPoints}
               scores={song?.highscores}
+              setSongPlayingIndex={setSongPlayingIndex}
+              updatePoints={onUpdatePoints}
             />
           </>
         )}
@@ -714,6 +782,7 @@ export const InteractivePlayer = ({
               if (song) updateBullets(song.id, selectedSongBullets[song.id]);
             }}
             ref={bulletRef}
+            submitBullet={onSubmitBullet}
             youtubeRef={isYoutube ? youtubeRef : undefined}
           />
         )}
@@ -828,9 +897,7 @@ export const InteractivePlayer = ({
           <div className="plays-container">plays: {song?.playCount || 0}</div>
         </div>
       </div>
-
       <AdventureLogo />
-
       <Popover
         open={Boolean(shareAnchor)}
         anchorEl={shareAnchor}
@@ -845,7 +912,6 @@ export const InteractivePlayer = ({
           {generateUrl(isYoutube, song)}
         </a>
       </Popover>
-
       <Modal open={isDisplayingScoreModal}>
         <div className="streak-modal-container">
           <div
@@ -878,7 +944,7 @@ export const InteractivePlayer = ({
 
 const generateUrl = (isYoutube?: boolean, song?: userSong) => {
   if (!song) return "";
-  return `${window.location.origin}/#/${isYoutube ? "youtube" : "player"}?id=${
+  return `${window.location.origin}/#/${isYoutube ? "youtube" : "player"}/${
     song.id
   }`;
 };
@@ -886,6 +952,7 @@ const generateUrl = (isYoutube?: boolean, song?: userSong) => {
 interface IUserCursorsProps {
   userLocations: IUserLocations;
   userProfiles: IUserProfiles;
+  userPoints: IUserPoints;
 }
 
 const UserCursors = (props: IUserCursorsProps) => {
@@ -898,6 +965,7 @@ const UserCursors = (props: IUserCursorsProps) => {
           return null;
         }
         const { avatar, name } = props.userProfiles[key];
+        const points = props.userPoints[key];
 
         return (
           <div
@@ -907,6 +975,7 @@ const UserCursors = (props: IUserCursorsProps) => {
           >
             <img src={avatarMap[avatar]} alt="avatar" />
             <div>{name}</div>
+            <div>{points}</div>
           </div>
         );
       })}
