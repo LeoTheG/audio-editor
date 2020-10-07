@@ -11,3 +11,7 @@
   width: 60px;
   height: 60px;
 }
+
+.player-page-container .player-logo {
+  margin: 0;
+}

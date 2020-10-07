@@ -7,9 +7,9 @@ import {
   Switch,
 } from "react-router-dom";
 
+import { CreatePage } from "./routes/CreatePage";
 import { DndProvider } from "react-dnd-multi-backend";
 import HTML5toTouch from "react-dnd-multi-backend/dist/esm/HTML5toTouch";
-import { Homepage } from "./routes/Homepage";
 import { PlayerPage } from "./routes/PlayerPage";
 import React from "react";
 import { UploadPage } from "./routes/UploadPage";
@@ -29,9 +29,7 @@ function App() {
         <Router>
           <Switch>
             <Route exact path={"/"}>
-              <DndProvider options={HTML5toTouch}>
-                <Homepage />
-              </DndProvider>
+              <UploadPage />
             </Route>
             <Route path={"/player/:id?"}>
               <PlayerPage />
@@ -39,8 +37,10 @@ function App() {
             <Route path={"/youtube/:id?"}>
               <YoutubePage />
             </Route>
-            <Route path={"/upload"}>
-              <UploadPage />
+            <Route path={"/create"}>
+              <DndProvider options={HTML5toTouch}>
+                <CreatePage />
+              </DndProvider>
             </Route>
             <Redirect from="*" to={"/"} />
           </Switch>

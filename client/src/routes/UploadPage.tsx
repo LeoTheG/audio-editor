@@ -1,10 +1,13 @@
 import "../css/UploadPage.css";
 
 import { Button, TextField } from "@material-ui/core";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
+import { AdventureLogo } from "../components/AdventureLogo";
 import { FirebaseContext } from "../contexts/firebaseContext";
-import { useHistory } from "react-router-dom";
+import { PlayerLogo } from "../components/PlayerButton";
+import _ from "underscore";
+import { userSong } from "../types";
 
 interface ISubmission {
   url: string;
@@ -12,7 +15,6 @@ interface ISubmission {
 }
 
 export const UploadPage = () => {
-  const history = useHistory();
   const firebaseContext = useContext(FirebaseContext);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [latestSubmitted, setLatestSubmitted] = useState<ISubmission | null>(
@@ -21,6 +23,17 @@ export const UploadPage = () => {
   const [url, setUrl] = useState("");
   const [songId, setSongId] = useState("");
   const [error, setError] = useState<Error | null>(null);
+  const [randomSongs, setRandomSongs] = useState<userSong[]>([]);
+
+  useEffect(() => {
+    firebaseContext.getSongs().then((songs) => {
+      const filter = (song: userSong) => song.url.includes("youtube");
+
+      songs = songs.filter(filter);
+
+      setRandomSongs(getRandomSongs(songs));
+    });
+  }, [firebaseContext]);
 
   const submitVideo = () => {
     if (!isValidYouTubeURL(url)) {
@@ -56,21 +69,11 @@ export const UploadPage = () => {
 
   return (
     <div className="upload-container">
-      <div className="upload-button-container">
-        <Button
-          style={{
-            minWidth: 20,
-            color: "white",
-            background: "grey",
-            padding: 10,
-            height: 50,
-          }}
-          variant="contained"
-          onClick={() => history.push("/youtube")}
-        >
-          PLAYER
-        </Button>
+      <div className="width-100 flex">
+        <PlayerLogo />
       </div>
+
+      <h2>create player page</h2>
 
       {error && <div className="upload-error">{error.message}</div>}
       {latestSubmitted && (
@@ -85,7 +88,6 @@ export const UploadPage = () => {
           </a>
         </div>
       )}
-      <div>link youtube video</div>
       <TextField
         placeholder="YouTube URL"
         value={url}
@@ -107,6 +109,32 @@ export const UploadPage = () => {
         url will look like:{" "}
         <div className="upload-preview-url-string">{previewURL}</div>
       </div>
+
+      <h2>visit player page</h2>
+
+      <div className="visit-player-page-container">
+        {randomSongs.map((song) => (
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href={`${window.location.origin}/#/youtube/${song.id}`}
+          >
+            {`${window.location.origin}/#/youtube/${song.id}`}
+          </a>
+        ))}
+      </div>
+
+      <div className="width-100 flex justify-between">
+        <AdventureLogo />
+        <a
+          className="about-us"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="http://adventure.pizza"
+        >
+          about us
+        </a>
+      </div>
     </div>
   );
 };
@@ -122,4 +150,22 @@ const trimURL = (url: string): string => {
     url = url.slice(0, indexAmpersand);
   }
   return url.trim();
+};
+
+const getRandomSongs = (songs: userSong[]) => {
+  if (songs.length <= 5) return songs;
+
+  const indexArr = _.shuffle(Array.from(Array(songs.length).keys())).slice(
+    0,
+    5
+  );
+
+  console.log("index arr is ", indexArr);
+
+  const randomSongArr = indexArr.map((index) => {
+    return songs[index];
+  });
+
+  console.log("randomSongArr is ", randomSongArr);
+  return randomSongArr;
 };

@@ -28,7 +28,7 @@ enum drawerTypes {
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
 
-export const Homepage: React.FC = () => {
+export const CreatePage: React.FC = () => {
   const [userFiles, setUserFiles] = useState<UserFiles>({});
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerType, setDrawerType] = useState<drawerTypes | null>(null);

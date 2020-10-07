@@ -40,8 +40,10 @@ import BulletSection from "../components/BulletSection";
 import { EmojiPanel } from "./EmojiPanel";
 import { FirebaseContext } from "../contexts/firebaseContext";
 import { Leaderboard } from "../components/Leaderboard";
+import { LibraryButton } from "./LibraryButton";
 import LiveEmojiSection from "../components/LiveEmojiSection";
 import { MusicController } from "adventure-component-library";
+import { PlayerLogo } from "./PlayerButton";
 import ReactPlayer from "react-player";
 import _ from "underscore";
 import errorImg from "../assets/error-gif.gif";
@@ -625,34 +627,9 @@ export const InteractivePlayer = ({ isYoutube }: IInteractivePlayerProps) => {
 
   return (
     <div className="player-page-container">
-      <div style={{ width: "100%", marginBottom: 10 }}>
-        {isYoutube ? (
-          <Button
-            style={{
-              minWidth: 20,
-              color: "white",
-              background: "grey",
-              padding: 10,
-            }}
-            variant="contained"
-            onClick={() => history.push("/upload")}
-          >
-            UPLOAD
-          </Button>
-        ) : (
-          <Button
-            style={{
-              minWidth: 20,
-              color: "white",
-              background: "grey",
-              padding: 10,
-            }}
-            variant="contained"
-            onClick={onClickHome}
-          >
-            HOME
-          </Button>
-        )}
+      <div className="width-100 flex space-below justify-between">
+        <PlayerLogo />
+        <LibraryButton text="create" onClick={onClickHome} />
       </div>
 
       <div
