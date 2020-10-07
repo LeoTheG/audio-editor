@@ -7,6 +7,7 @@ import { AdventureLogo } from "../components/AdventureLogo";
 import { FirebaseContext } from "../contexts/firebaseContext";
 import { PlayerLogo } from "../components/PlayerButton";
 import _ from "underscore";
+import bananaDance from "../assets/bananadance.gif";
 import { userSong } from "../types";
 
 interface ISubmission {
@@ -69,8 +70,13 @@ export const UploadPage = () => {
 
   return (
     <div className="upload-container">
-      <div className="width-100 flex">
+      <div className="width-100 flex justify-between align-center">
         <PlayerLogo />
+        <img
+          style={{ width: 50, height: 50, marginRight: 10 }}
+          src={bananaDance}
+          alt="banana dance"
+        />
       </div>
 
       <div className="flex-column align-center">
@@ -121,6 +127,7 @@ export const UploadPage = () => {
             target="_blank"
             rel="noopener noreferrer"
             href={`${window.location.origin}/#/youtube/${song.id}`}
+            key={song.id}
           >
             {`${window.location.origin}/#/youtube/${song.id}`}
           </a>
