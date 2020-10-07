@@ -5,6 +5,9 @@
   font-size: 1.3em;
 }
 
+.upload-container .adventure-logo {
+  margin-bottom: 0;
+}
 .upload-container > *:not(:last-child) {
   margin-bottom: 50px !important;
 }
@@ -13,6 +16,8 @@
   display: flex;
   flex-wrap: wrap;
   font-size: 1em;
+  max-width: 100vw;
+  overflow-wrap: break-word;
 }
 
 .upload-preview-url-string {
@@ -62,14 +67,24 @@
 .flex {
   display: flex;
 }
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
 .width-100 {
   width: 100%;
+}
+.justify-center {
+  justify-content: center;
 }
 .justify-end {
   justify-content: flex-end;
 }
 .justify-between {
   justify-content: space-between;
+}
+.align-center {
+  align-items: center;
 }
 
 @media screen and (max-width: 500px) {

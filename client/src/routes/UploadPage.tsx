@@ -73,7 +73,10 @@ export const UploadPage = () => {
         <PlayerLogo />
       </div>
 
-      <h2>create player page</h2>
+      <div className="flex-column align-center">
+        <h2 style={{ margin: 0 }}>create</h2>
+        <h2 style={{ margin: 0 }}>player page</h2>
+      </div>
 
       {error && <div className="upload-error">{error.message}</div>}
       {latestSubmitted && (
@@ -106,11 +109,11 @@ export const UploadPage = () => {
       </Button>
 
       <div className="upload-preview-url">
-        url will look like:{" "}
+        url:
         <div className="upload-preview-url-string">{previewURL}</div>
       </div>
 
-      <h2>visit player page</h2>
+      <h2>visit</h2>
 
       <div className="visit-player-page-container">
         {randomSongs.map((song) => (
@@ -124,7 +127,7 @@ export const UploadPage = () => {
         ))}
       </div>
 
-      <div className="width-100 flex justify-between">
+      <div className="width-100 flex justify-between align-center">
         <AdventureLogo />
         <a
           className="about-us"
