@@ -37,9 +37,9 @@ services:
     stdin_open: true
     environment:
       - DOCKER_IMAGE=true
-  mongo:
-    image: mongo
-    ports:
-      - 27017:27017
-    volumes:
-      - ./mongodb_data:/data/db
+#   mongo:
+#     image: mongo
+#     ports:
+#       - 27017:27017
+#     volumes:
+#       - ./mongodb_data:/data/db

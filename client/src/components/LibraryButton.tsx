@@ -4,9 +4,10 @@ import React from "react";
 
 interface ILibraryButtonProps {
   onClick: () => void;
+  text?: string;
 }
 
-export const LibraryButton = ({ onClick }: ILibraryButtonProps) => (
+export const LibraryButton = ({ onClick, text }: ILibraryButtonProps) => (
   <div
     style={{
       display: "flex",
@@ -18,6 +19,6 @@ export const LibraryButton = ({ onClick }: ILibraryButtonProps) => (
     <IconButton onClick={onClick}>
       <MusicNoteOutlined style={{ height: 40, width: 40 }} />
     </IconButton>
-    library
+    {text || "library"}
   </div>
 );
