@@ -503,7 +503,9 @@ export const InteractivePlayer = ({
   }, [liveEmojiRef, bulletRef, id, isLobby]);
 
   const onProgressYoutube = ({ playedSeconds }: { playedSeconds: number }) => {
-    socket.emit("lobby playtime set", id, playedSeconds);
+    if (isLobby && isLobbyPlaying) {
+      socket.emit("lobby playtime set", id, playedSeconds);
+    }
   };
 
   const onPlayYoutube = useCallback(() => {

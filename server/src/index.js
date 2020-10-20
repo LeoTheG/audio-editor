@@ -18,6 +18,9 @@ const userNames = {};
 // { [roomId: string]: number }
 const roomPlaytimes = {};
 
+// { [roomId: string]: number }
+const lastPausedLobby = {};
+
 const profileOptions = {
   prefixes: [
     "amazing",
@@ -122,7 +125,13 @@ io.on("connection", (client) => {
 
   client.on("lobby playtime set", (roomId, playTime) => {
     roomPlaytimes[roomId] = playTime;
-    // client.to(roomId).emit("lobby play");
+
+    if (
+      !lastPausedLobby[roomId] ||
+      Date.now() - lastPausedLobby[roomId] > 3000
+    ) {
+      client.to(roomId).emit("lobby play");
+    }
   });
 
   client.on("lobby playtime", (roomId) => {
@@ -140,6 +149,7 @@ io.on("connection", (client) => {
   });
 
   client.on("lobby pause", (roomId) => {
+    lastPausedLobby[roomId] = Date.now();
     client.to(roomId).emit("lobby pause");
   });
 });
