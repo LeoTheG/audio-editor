@@ -49,7 +49,6 @@ io.on("connection", (client) => {
   }
 
   client.on("connect room", (roomId) => {
-    console.log("connected to room ", roomId, " for client ", client.id);
     client.join(roomId);
     if (
       clientRooms[client.id] &&
@@ -121,6 +120,11 @@ io.on("connection", (client) => {
     delete selectedProfiles[client.id];
   });
 
+  client.on("lobby playtime set", (roomId, playTime) => {
+    roomPlaytimes[roomId] = playTime;
+    // client.to(roomId).emit("lobby play");
+  });
+
   client.on("lobby playtime", (roomId) => {
     client.emit(
       "lobby playtime",
@@ -131,22 +135,12 @@ io.on("connection", (client) => {
 
   client.on("lobby play", (roomId) => {
     if (!roomId) return;
-    // const clientRoom = getClientRoom(client);
-    // if (!clientRoom) return console.log("no room");
 
-    console.log("emitting lobby play to room", roomId);
-    console.log("------client.rooms---------");
-    console.log(client.rooms);
-    console.log("======clientRooms=========");
-    console.log(clientRooms);
     client.to(roomId).emit("lobby play");
-    // console.log(roo[roomId]);
-    // client.to(clientRoom).emit("lobby play");
   });
 
   client.on("lobby pause", (roomId) => {
     client.to(roomId).emit("lobby pause");
-    console.log("emitting lobby pause");
   });
 });
 

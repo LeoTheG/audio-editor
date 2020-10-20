@@ -56,7 +56,10 @@ import nyancat from "../assets/nyancat_big.gif";
 import yoshi from "../assets/yoshi.gif";
 
 // const socket = io("wss://yeeplayer.herokuapp.com");
-const socket = io("ws://localhost:8001");
+const socket =
+  window.location.hostname === "localhost"
+    ? io("ws://localhost:8000")
+    : io("wss://yeeplayer.herokuapp.com");
 
 const avatarMap: { [key: string]: string } = {
   mario: mario,
@@ -92,7 +95,8 @@ export const InteractivePlayer = ({
 }: IInteractivePlayerProps) => {
   const [isLobbyPlaying, setIsLobbyPlaying] = useState(false);
   const [lobbyPlayTime, setLobbyPlaytime] = useState(-1);
-  const [lobbyPlayInterval, setLobbyPlayInterval] = useState<NodeJS.Timeout>();
+  //   const [lobbyPlayInterval, setLobbyPlayInterval] = useState<NodeJS.Timeout>();
+  //   const [youtubeProgress, setYoutubeProgress] = useState<number>(0);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
@@ -197,8 +201,6 @@ export const InteractivePlayer = ({
   useEffect(() => {
     if (!id) return;
     if (isCollaborating) {
-      //   socket.emit("connect room", id);
-      console.log("calling connect room", id);
       socket.emit("lobby playtime", id);
     } else {
       socket.emit("disconnect room");
@@ -244,7 +246,12 @@ export const InteractivePlayer = ({
       return newUserLocations;
     });
 
-    setUserPoints((userPoints) => ({ ...userPoints, [clientId]: points }));
+    let adjustedPoints = points < 0 ? 0 : points;
+
+    setUserPoints((userPoints) => ({
+      ...userPoints,
+      [clientId]: adjustedPoints,
+    }));
   },
   []);
 
@@ -261,7 +268,6 @@ export const InteractivePlayer = ({
 
     socket.on("connect", function () {
       if (id) {
-        console.log("connecting to room", id);
         socket.emit("connect room", id);
       }
       //   socket.emit("connect room", id);
@@ -301,7 +307,6 @@ export const InteractivePlayer = ({
     });
 
     socket.on("lobby play", () => {
-      console.log("got lobby play");
       setIsLobbyPlaying(true);
     });
 
@@ -493,10 +498,13 @@ export const InteractivePlayer = ({
     liveEmojiRef.current?.onPlayCallback();
     bulletRef.current?.onPlayCallback();
     if (isLobby) {
-      console.log("emitting lobby play for id", id);
       socket.emit("lobby play", id);
     }
   }, [liveEmojiRef, bulletRef, id, isLobby]);
+
+  const onProgressYoutube = ({ playedSeconds }: { playedSeconds: number }) => {
+    socket.emit("lobby playtime set", id, playedSeconds);
+  };
 
   const onPlayYoutube = useCallback(() => {
     setIsPlaying(true);
@@ -586,12 +594,13 @@ export const InteractivePlayer = ({
 
   const onSongEnd = useCallback(() => {
     setIsPlaying(false);
+    socket.emit("lobby playtime set", id, null);
     onPause();
     if (points > 0) {
       setDisplayingScoreModal(true);
     }
     generateRandomUrls();
-  }, [points, onPause, generateRandomUrls]);
+  }, [points, onPause, generateRandomUrls, id]);
 
   useEffect(() => {
     if (audio === null) return;
@@ -704,12 +713,11 @@ export const InteractivePlayer = ({
             onPlay={onPlayYoutube}
             onPause={onPauseYoutube}
             onEnded={onSongEnd}
+            onProgress={onProgressYoutube}
             playing={isLobby ? isLobbyPlaying : undefined}
-            config={
-              isLobby && isLobbyPlaying
-                ? { youtube: { playerVars: { start: lobbyPlayTime } } }
-                : undefined
-            }
+            config={{
+              youtube: { playerVars: { start: Math.ceil(lobbyPlayTime) } },
+            }}
           />
         ) : error === null && song && song.gifUrl ? (
           <img
