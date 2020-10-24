@@ -21,12 +21,6 @@ import streakBonusBuildsGif from "../assets/builds.gif";
 import upRedArrow from "../assets/up-red-arrow.gif";
 import yahooGamesWoman from "../assets/yahoo_games_woman.png";
 
-// a sample data for chosenEmoji
-const TEST_EMOJI_DATA = {
-  1.5: ["1f605", "1f605"],
-  2.0: ["1f3e0"],
-};
-
 const INTERVAL_DELAY = 50;
 // before this timestamp, we consider resetting the state of the widget
 const RESET_STATE_TIMESTAMP = 0.5;
@@ -88,7 +82,7 @@ class LiveEmojiSection extends React.Component<
   ILiveEmojiSectionProps,
   ILiveEmojiSectionState
 > {
-  chosenEmoji: ILiveEmojis = TEST_EMOJI_DATA;
+  chosenEmoji: ILiveEmojis = {};
   audio: HTMLAudioElement | null = null;
   interval: NodeJS.Timeout | null = null;
   id: number = 0;

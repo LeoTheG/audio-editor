@@ -1,7 +1,12 @@
 import "../css/UploadPage.css";
 
-import { Button, TextField } from "@material-ui/core";
-import React, { useContext, useEffect, useState } from "react";
+import {
+  Button,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+} from "@material-ui/core";
+import React, { useContext, useEffect, useRef, useState } from "react";
 
 import { AdventureLogo } from "../components/AdventureLogo";
 import { FirebaseContext } from "../contexts/firebaseContext";
@@ -9,10 +14,13 @@ import { PlayerLogo } from "../components/PlayerButton";
 import _ from "underscore";
 import bananaDance from "../assets/bananadance.gif";
 import { userSong } from "../types";
+import ReactPlayer from "react-player";
+import { ILiveEmojis } from "../types";
 
 interface ISubmission {
   url: string;
   songId: string;
+  generatedEmojis: ILiveEmojis;
 }
 
 export const UploadPage = () => {
@@ -25,6 +33,9 @@ export const UploadPage = () => {
   const [songId, setSongId] = useState("");
   const [error, setError] = useState<Error | null>(null);
   const [randomSongs, setRandomSongs] = useState<userSong[]>([]);
+  const [generateEmoji, setGenerateEmoji] = useState<boolean>(true);
+
+  const youtubeRef = useRef<ReactPlayer>(null);
 
   useEffect(() => {
     firebaseContext.getSongs().then((songs) => {
@@ -36,7 +47,34 @@ export const UploadPage = () => {
     });
   }, [firebaseContext]);
 
+  const roundTime = (num: number) => {
+    const result = Math.floor(num * 20) / 20;
+    // being compatible with previous data
+    if (parseFloat(result.toFixed(1)) === parseFloat(result.toFixed(2)))
+      return result.toFixed(1);
+    return result.toFixed(2);
+  };
+
+  const generateEmojiStream = (emojis: ILiveEmojis) => {
+    if (youtubeRef?.current) {
+      const duration = youtubeRef.current.getDuration();
+      for (
+        var timestamp = 0;
+        timestamp < duration;
+        timestamp += Math.random() * 4
+      ) {
+        //const randomEmojiUnicode = randomEmoji.random({count:1})[0];
+        const roundedTime = roundTime(timestamp);
+        if (!(roundedTime in emojis)) emojis[roundedTime] = [];
+        emojis[roundedTime].push("1f373");
+      }
+    }
+    console.log(emojis);
+  };
+
   const submitVideo = () => {
+    const generatedEmojis: ILiveEmojis = {};
+
     if (!isValidYouTubeURL(url)) {
       setError(new Error("Invalid YouTube URL: " + url));
       return;
@@ -47,15 +85,19 @@ export const UploadPage = () => {
       return;
     }
 
+    if (generateEmoji) {
+      generateEmojiStream(generatedEmojis);
+    }
+
     setIsSubmitting(true);
 
     const trimmedURL = trimURL(url);
 
     firebaseContext
-      .uploadYoutubeVideo(songId, trimmedURL)
+      .uploadYoutubeVideo(songId, trimmedURL, generatedEmojis)
       .then(() => {
         setIsSubmitting(false);
-        setLatestSubmitted({ url: trimmedURL, songId });
+        setLatestSubmitted({ url: trimmedURL, songId, generatedEmojis });
         setUrl("");
         setSongId("");
         setError(null);
@@ -109,6 +151,26 @@ export const UploadPage = () => {
         value={songId}
         onChange={(evt) => setSongId(evt.target.value)}
         disabled={isSubmitting}
+      />
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={generateEmoji}
+            onChange={(event) => {
+              setGenerateEmoji(event.target.checked);
+            }}
+            color="primary"
+          />
+        }
+        label="generate emoji stream"
+      />
+      <ReactPlayer
+        hide={true}
+        url={url}
+        ref={youtubeRef}
+        onReady={() => {
+          console.log("Ready");
+        }}
       />
       <Button variant="contained" disabled={isSubmitting} onClick={submitVideo}>
         submit
