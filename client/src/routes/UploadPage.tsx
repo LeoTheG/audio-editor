@@ -23,6 +23,24 @@ interface ISubmission {
   songName: string;
   generatedEmojis: ILiveEmojis;
 }
+const RANDOM_EMOJIS = [
+  "1f941",
+  "1f48e",
+  "1f3c6",
+  "1f602",
+  "1f3b6",
+  "1f48e",
+  "1f3b9",
+  "1f4f1",
+  "1f63b",
+  "1f499",
+  "1f30d",
+  "1f9e1",
+  "1f525",
+  "1f381",
+  "1f49c",
+];
+const RANDOM_EMOJI_STREAM_OFFSET = 3;
 
 export const UploadPage = () => {
   const firebaseContext = useContext(FirebaseContext);
@@ -49,26 +67,20 @@ export const UploadPage = () => {
     });
   }, [firebaseContext]);
 
-  const roundTime = (num: number) => {
-    const result = Math.floor(num * 20) / 20;
-    // being compatible with previous data
-    if (parseFloat(result.toFixed(1)) === parseFloat(result.toFixed(2)))
-      return result.toFixed(1);
-    return result.toFixed(2);
-  };
-
   const generateEmojiStream = (emojis: ILiveEmojis) => {
     if (youtubeRef?.current) {
       const duration = youtubeRef.current.getDuration();
       for (
         var timestamp = 0;
         timestamp < duration;
-        timestamp += Math.random() * 4
+        timestamp += Math.random() * RANDOM_EMOJI_STREAM_OFFSET
       ) {
         //const randomEmojiUnicode = randomEmoji.random({count:1})[0];
         const roundedTime = roundTime(timestamp);
         if (!(roundedTime in emojis)) emojis[roundedTime] = [];
-        emojis[roundedTime].push("1f373");
+        emojis[roundedTime].push(
+          RANDOM_EMOJIS[Math.floor(Math.random() * RANDOM_EMOJIS.length)]
+        );
       }
     }
     console.log(emojis);
@@ -112,6 +124,7 @@ export const UploadPage = () => {
         });
         setUrl("");
         setSongId("");
+        setSongName("");
         setError(null);
       })
       .catch((err) => {
@@ -182,14 +195,16 @@ export const UploadPage = () => {
         }
         label="generate emoji stream"
       />
-      <ReactPlayer
-        hide={true}
-        url={url}
-        ref={youtubeRef}
-        onReady={() => {
-          console.log("Ready");
-        }}
-      />
+      {isValidYouTubeURL(url) && (
+        <ReactPlayer
+          hide={true}
+          url={url}
+          ref={youtubeRef}
+          onReady={() => {
+            console.log("Ready");
+          }}
+        />
+      )}
       <Button variant="contained" disabled={isSubmitting} onClick={submitVideo}>
         submit
       </Button>
@@ -258,4 +273,12 @@ const getRandomSongs = (songs: userSong[]) => {
 
   console.log("randomSongArr is ", randomSongArr);
   return randomSongArr;
+};
+
+const roundTime = (num: number) => {
+  const result = Math.floor(num * 20) / 20;
+  // being compatible with previous data
+  if (parseFloat(result.toFixed(1)) === parseFloat(result.toFixed(2)))
+    return result.toFixed(1);
+  return result.toFixed(2);
 };
