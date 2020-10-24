@@ -44,6 +44,7 @@ interface firebaseContext {
   updatePlayCount: (songId: string, playCount: number) => void;
   uploadYoutubeVideo: (
     songId: string,
+    songName: string,
     url: string,
     emojis: ILiveEmojis
   ) => Promise<string>;
@@ -203,7 +204,7 @@ export function withFirebaseContext(Component: JSX.Element) {
         { merge: true }
       );
     },
-    uploadYoutubeVideo: (songId, url, emojis) => {
+    uploadYoutubeVideo: (songId, songName, url, emojis) => {
       return new Promise(async (resolve, reject) => {
         db.collection("userSongs")
           .doc(songId)
@@ -217,6 +218,7 @@ export function withFirebaseContext(Component: JSX.Element) {
                 .set({
                   url,
                   id: songId,
+                  name: songName,
                   liveEmojis: emojis,
                 })
                 .then(() => {

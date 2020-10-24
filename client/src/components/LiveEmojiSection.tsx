@@ -89,6 +89,7 @@ class LiveEmojiSection extends React.Component<
   streakId: number = 0;
   // this stores pairs of <id, animation>
   emojiAnimations: { [nodeid: string]: any } = {};
+  latestTimestamp: string = "0"; // store the last timestamp when emojis are sent. Avoid being redundant.
   movingNodes: HTMLDivElement[] = [];
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   animeCanvas: React.RefObject<AnimationCanvas> = React.createRef();
@@ -266,7 +267,8 @@ class LiveEmojiSection extends React.Component<
   // shows the emoji flow
   liveEmojiScreen = () => {
     const time = this.getTimeStamp();
-    if (time in this.chosenEmoji) {
+    if (time in this.chosenEmoji && time !== this.latestTimestamp) {
+      this.latestTimestamp = time;
       this.chosenEmoji[time].forEach((emoji) => {
         const node = this.createEmojiNode(emoji);
         if (node !== undefined) {

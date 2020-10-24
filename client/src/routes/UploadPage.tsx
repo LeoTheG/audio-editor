@@ -20,6 +20,7 @@ import { ILiveEmojis } from "../types";
 interface ISubmission {
   url: string;
   songId: string;
+  songName: string;
   generatedEmojis: ILiveEmojis;
 }
 
@@ -31,6 +32,7 @@ export const UploadPage = () => {
   );
   const [url, setUrl] = useState("");
   const [songId, setSongId] = useState("");
+  const [songName, setSongName] = useState("");
   const [error, setError] = useState<Error | null>(null);
   const [randomSongs, setRandomSongs] = useState<userSong[]>([]);
   const [generateEmoji, setGenerateEmoji] = useState<boolean>(true);
@@ -85,6 +87,11 @@ export const UploadPage = () => {
       return;
     }
 
+    if (!songName) {
+      setError(new Error("No song name submitted"));
+      return;
+    }
+
     if (generateEmoji) {
       generateEmojiStream(generatedEmojis);
     }
@@ -94,10 +101,15 @@ export const UploadPage = () => {
     const trimmedURL = trimURL(url);
 
     firebaseContext
-      .uploadYoutubeVideo(songId, trimmedURL, generatedEmojis)
+      .uploadYoutubeVideo(songId, songName, trimmedURL, generatedEmojis)
       .then(() => {
         setIsSubmitting(false);
-        setLatestSubmitted({ url: trimmedURL, songId, generatedEmojis });
+        setLatestSubmitted({
+          url: trimmedURL,
+          songId,
+          songName,
+          generatedEmojis,
+        });
         setUrl("");
         setSongId("");
         setError(null);
@@ -150,6 +162,12 @@ export const UploadPage = () => {
         placeholder="song id"
         value={songId}
         onChange={(evt) => setSongId(evt.target.value)}
+        disabled={isSubmitting}
+      />
+      <TextField
+        placeholder="song name"
+        value={songName}
+        onChange={(evt) => setSongName(evt.target.value)}
         disabled={isSubmitting}
       />
       <FormControlLabel
