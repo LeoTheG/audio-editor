@@ -5,6 +5,7 @@ import {
   TextField,
   Checkbox,
   FormControlLabel,
+  Tooltip,
 } from "@material-ui/core";
 import React, { useContext, useEffect, useRef, useState } from "react";
 
@@ -170,18 +171,20 @@ export const UploadPage = () => {
         onChange={(evt) => setSongName(evt.target.value)}
         disabled={isSubmitting}
       />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={generateEmoji}
-            onChange={(event) => {
-              setGenerateEmoji(event.target.checked);
-            }}
-            color="primary"
-          />
-        }
-        label="generate emoji stream"
-      />
+      <Tooltip title={"Auto generate an emoji stream for the video"}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={generateEmoji}
+              onChange={(event) => {
+                setGenerateEmoji(event.target.checked);
+              }}
+              color="primary"
+            />
+          }
+          label="generate emoji stream"
+        />
+      </Tooltip>
 
       {error && <div className="upload-error">{error.message}</div>}
       {latestSubmitted && (
@@ -198,6 +201,7 @@ export const UploadPage = () => {
       )}
 
       {isValidYouTubeURL(url) && <ReactPlayer url={url} ref={youtubeRef} />}
+
       <Button variant="contained" disabled={isSubmitting} onClick={submitVideo}>
         submit
       </Button>
