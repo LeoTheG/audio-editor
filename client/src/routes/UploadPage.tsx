@@ -151,19 +151,6 @@ export const UploadPage = () => {
         <h2 style={{ margin: 0 }}>player page</h2>
       </div>
 
-      {error && <div className="upload-error">{error.message}</div>}
-      {latestSubmitted && (
-        <div className="upload-latest-submitted">
-          success! uploaded
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href={`${window.location.origin}/#/youtube/${latestSubmitted.songId}`}
-          >
-            {`${window.location.origin}/#/youtube/${latestSubmitted.songId}`}
-          </a>
-        </div>
-      )}
       <TextField
         placeholder="YouTube URL"
         value={url}
@@ -195,16 +182,22 @@ export const UploadPage = () => {
         }
         label="generate emoji stream"
       />
-      {isValidYouTubeURL(url) && (
-        <ReactPlayer
-          hide={true}
-          url={url}
-          ref={youtubeRef}
-          onReady={() => {
-            console.log("Ready");
-          }}
-        />
+
+      {error && <div className="upload-error">{error.message}</div>}
+      {latestSubmitted && (
+        <div className="upload-latest-submitted">
+          success! uploaded
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href={`${window.location.origin}/#/youtube/${latestSubmitted.songId}`}
+          >
+            {`${window.location.origin}/#/youtube/${latestSubmitted.songId}`}
+          </a>
+        </div>
       )}
+
+      {isValidYouTubeURL(url) && <ReactPlayer url={url} ref={youtubeRef} />}
       <Button variant="contained" disabled={isSubmitting} onClick={submitVideo}>
         submit
       </Button>
