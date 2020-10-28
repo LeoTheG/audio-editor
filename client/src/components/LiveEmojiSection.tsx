@@ -21,12 +21,6 @@ import streakBonusBuildsGif from "../assets/builds.gif";
 import upRedArrow from "../assets/up-red-arrow.gif";
 import yahooGamesWoman from "../assets/yahoo_games_woman.png";
 
-// a sample data for chosenEmoji
-const TEST_EMOJI_DATA = {
-  1.5: ["1f605", "1f605"],
-  2.0: ["1f3e0"],
-};
-
 const INTERVAL_DELAY = 50;
 // before this timestamp, we consider resetting the state of the widget
 const RESET_STATE_TIMESTAMP = 0.5;
@@ -88,13 +82,14 @@ class LiveEmojiSection extends React.Component<
   ILiveEmojiSectionProps,
   ILiveEmojiSectionState
 > {
-  chosenEmoji: ILiveEmojis = TEST_EMOJI_DATA;
+  chosenEmoji: ILiveEmojis = {};
   audio: HTMLAudioElement | null = null;
   interval: NodeJS.Timeout | null = null;
   id: number = 0;
   streakId: number = 0;
   // this stores pairs of <id, animation>
   emojiAnimations: { [nodeid: string]: any } = {};
+  latestTimestamp: string = "0"; // store the last timestamp when emojis are sent. Avoid being redundant.
   movingNodes: HTMLDivElement[] = [];
   emojiDiv: React.RefObject<HTMLDivElement> = React.createRef();
   animeCanvas: React.RefObject<AnimationCanvas> = React.createRef();
@@ -272,7 +267,8 @@ class LiveEmojiSection extends React.Component<
   // shows the emoji flow
   liveEmojiScreen = () => {
     const time = this.getTimeStamp();
-    if (time in this.chosenEmoji) {
+    if (time in this.chosenEmoji && time !== this.latestTimestamp) {
+      this.latestTimestamp = time;
       this.chosenEmoji[time].forEach((emoji) => {
         const node = this.createEmojiNode(emoji);
         if (node !== undefined) {

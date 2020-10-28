@@ -1,4 +1,9 @@
-import { IEmojiSelections, ILibraryMetadata, userSong } from "../types";
+import {
+  IEmojiSelections,
+  ILibraryMetadata,
+  ILiveEmojis,
+  userSong,
+} from "../types";
 
 import React from "react";
 import firebase from "firebase";
@@ -37,7 +42,12 @@ interface firebaseContext {
     scores: { name: string; score: number }[]
   ) => void;
   updatePlayCount: (songId: string, playCount: number) => void;
-  uploadYoutubeVideo: (songId: string, url: string) => Promise<string>;
+  uploadYoutubeVideo: (
+    songId: string,
+    songName: string,
+    url: string,
+    emojis: ILiveEmojis
+  ) => Promise<string>;
 }
 
 export const FirebaseContext = React.createContext<firebaseContext>({
@@ -194,7 +204,7 @@ export function withFirebaseContext(Component: JSX.Element) {
         { merge: true }
       );
     },
-    uploadYoutubeVideo: (songId, url) => {
+    uploadYoutubeVideo: (songId, songName, url, emojis) => {
       return new Promise(async (resolve, reject) => {
         db.collection("userSongs")
           .doc(songId)
@@ -208,6 +218,8 @@ export function withFirebaseContext(Component: JSX.Element) {
                 .set({
                   url,
                   id: songId,
+                  name: songName,
+                  liveEmojis: emojis,
                 })
                 .then(() => {
                   resolve(songId);
