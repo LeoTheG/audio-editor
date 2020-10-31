@@ -7,6 +7,7 @@ import {
   FormControlLabel,
   Popover,
   IconButton,
+  Tooltip,
 } from "@material-ui/core";
 import React, { useContext, useEffect, useRef, useState } from "react";
 
@@ -189,18 +190,20 @@ export const UploadPage = () => {
       />
 
       <div>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={generateEmoji}
-              onChange={(event) => {
-                setGenerateEmoji(event.target.checked);
-              }}
-              color="primary"
-            />
-          }
-          label="generate emoji stream"
-        />
+        <Tooltip title="auto generate an emoji stream for your video">
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={generateEmoji}
+                onChange={(event) => {
+                  setGenerateEmoji(event.target.checked);
+                }}
+                color="primary"
+              />
+            }
+            label="generate emoji stream"
+          />
+        </Tooltip>
 
         <IconButton onClick={handlePopoverOpen}>
           <HelpIcon />
