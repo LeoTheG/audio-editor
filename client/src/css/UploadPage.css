@@ -95,3 +95,8 @@
     font-size: 14px;
   }
 }
+
+.popover_gif {
+  width: 40vw;
+  height: 55vw;
+}
