@@ -129,9 +129,15 @@ export const UploadPage = () => {
     setIsSubmitting(true);
 
     const trimmedURL = trimURL(url);
-
+    const isLocked = generateEmoji; // if we are generating emoji automatically, lock the emojis
     firebaseContext
-      .uploadYoutubeVideo(songId, songName, trimmedURL, generatedEmojis)
+      .uploadYoutubeVideo(
+        songId,
+        songName,
+        trimmedURL,
+        generatedEmojis,
+        isLocked
+      )
       .then(() => {
         setIsSubmitting(false);
         setLatestSubmitted({
