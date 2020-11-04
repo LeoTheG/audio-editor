@@ -46,7 +46,8 @@ interface firebaseContext {
     songId: string,
     songName: string,
     url: string,
-    emojis: ILiveEmojis
+    emojis: ILiveEmojis,
+    isLocked: boolean
   ) => Promise<string>;
 }
 
@@ -204,7 +205,7 @@ export function withFirebaseContext(Component: JSX.Element) {
         { merge: true }
       );
     },
-    uploadYoutubeVideo: (songId, songName, url, emojis) => {
+    uploadYoutubeVideo: (songId, songName, url, emojis, isLocked) => {
       return new Promise(async (resolve, reject) => {
         db.collection("userSongs")
           .doc(songId)
@@ -220,6 +221,7 @@ export function withFirebaseContext(Component: JSX.Element) {
                   id: songId,
                   name: songName,
                   liveEmojis: emojis,
+                  isLocked: isLocked,
                 })
                 .then(() => {
                   resolve(songId);

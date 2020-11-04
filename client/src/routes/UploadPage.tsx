@@ -5,6 +5,8 @@ import {
   TextField,
   Checkbox,
   FormControlLabel,
+  Popover,
+  IconButton,
   Tooltip,
 } from "@material-ui/core";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -17,6 +19,9 @@ import bananaDance from "../assets/bananadance.gif";
 import { userSong } from "../types";
 import ReactPlayer from "react-player";
 import { ILiveEmojis } from "../types";
+
+import HelpIcon from "@material-ui/icons/Help";
+import emojiStreamDemo from "../assets/emoji_stream_demo_gif.gif";
 
 interface ISubmission {
   url: string;
@@ -55,6 +60,18 @@ export const UploadPage = () => {
   const [error, setError] = useState<Error | null>(null);
   const [randomSongs, setRandomSongs] = useState<userSong[]>([]);
   const [generateEmoji, setGenerateEmoji] = useState<boolean>(true);
+  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
+    null
+  );
+  const open = Boolean(anchorEl);
+
+  const handlePopoverOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
 
   const youtubeRef = useRef<ReactPlayer>(null);
 
@@ -112,9 +129,15 @@ export const UploadPage = () => {
     setIsSubmitting(true);
 
     const trimmedURL = trimURL(url);
-
+    const isLocked = generateEmoji; // if we are generating emoji automatically, lock the emojis
     firebaseContext
-      .uploadYoutubeVideo(songId, songName, trimmedURL, generatedEmojis)
+      .uploadYoutubeVideo(
+        songId,
+        songName,
+        trimmedURL,
+        generatedEmojis,
+        isLocked
+      )
       .then(() => {
         setIsSubmitting(false);
         setLatestSubmitted({
@@ -171,20 +194,49 @@ export const UploadPage = () => {
         onChange={(evt) => setSongName(evt.target.value)}
         disabled={isSubmitting}
       />
-      <Tooltip title={"Auto generate an emoji stream for the video"}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={generateEmoji}
-              onChange={(event) => {
-                setGenerateEmoji(event.target.checked);
-              }}
-              color="primary"
-            />
-          }
-          label="generate emoji stream"
-        />
-      </Tooltip>
+
+      <div>
+        <Tooltip title="auto generate an emoji stream for your video">
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={generateEmoji}
+                onChange={(event) => {
+                  setGenerateEmoji(event.target.checked);
+                }}
+                color="primary"
+              />
+            }
+            label="generate emoji stream"
+          />
+        </Tooltip>
+
+        <IconButton onClick={handlePopoverOpen}>
+          <HelpIcon />
+        </IconButton>
+        <Popover
+          id="mouse-over-popover"
+          open={open}
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: "center",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "center",
+            horizontal: "right",
+          }}
+          onClose={handlePopoverClose}
+          disableRestoreFocus
+        >
+          <div>Emoji stream demo</div>
+          <img
+            alt="popover gif"
+            className="popover_gif"
+            src={emojiStreamDemo}
+          />
+        </Popover>
+      </div>
 
       {error && <div className="upload-error">{error.message}</div>}
       {latestSubmitted && (
