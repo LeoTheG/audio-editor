@@ -1,0 +1,40 @@
+{
+  "files": {
+    "main.css": "https://yeeplayer.com/static/css/main.553f00c2.chunk.css",
+    "main.js": "https://yeeplayer.com/static/js/main.c740719b.chunk.js",
+    "main.js.map": "https://yeeplayer.com/static/js/main.c740719b.chunk.js.map",
+    "runtime-main.js": "https://yeeplayer.com/static/js/runtime-main.86ca8392.js",
+    "runtime-main.js.map": "https://yeeplayer.com/static/js/runtime-main.86ca8392.js.map",
+    "static/js/2.f7260bec.chunk.js": "https://yeeplayer.com/static/js/2.f7260bec.chunk.js",
+    "static/js/2.f7260bec.chunk.js.map": "https://yeeplayer.com/static/js/2.f7260bec.chunk.js.map",
+    "index.html": "https://yeeplayer.com/index.html",
+    "precache-manifest.71609dda6edf0e21ae7c99c745bb1b0c.js": "https://yeeplayer.com/precache-manifest.71609dda6edf0e21ae7c99c745bb1b0c.js",
+    "service-worker.js": "https://yeeplayer.com/service-worker.js",
+    "static/css/main.553f00c2.chunk.css.map": "https://yeeplayer.com/static/css/main.553f00c2.chunk.css.map",
+    "static/js/2.f7260bec.chunk.js.LICENSE.txt": "https://yeeplayer.com/static/js/2.f7260bec.chunk.js.LICENSE.txt",
+    "static/media/Polka-Dots.svg": "https://yeeplayer.com/static/media/Polka-Dots.72456503.svg",
+    "static/media/audio-editor-info.gif": "https://yeeplayer.com/static/media/audio-editor-info.e99da68b.gif",
+    "static/media/bananadance.gif": "https://yeeplayer.com/static/media/bananadance.e104fb74.gif",
+    "static/media/blob-octopus.gif": "https://yeeplayer.com/static/media/blob-octopus.5ab1a0d0.gif",
+    "static/media/blob_excited.gif": "https://yeeplayer.com/static/media/blob_excited.18b76bb7.gif",
+    "static/media/builds.gif": "https://yeeplayer.com/static/media/builds.7be2a2f0.gif",
+    "static/media/cool-doge.gif": "https://yeeplayer.com/static/media/cool-doge.53f84b45.gif",
+    "static/media/emoji_stream_demo_gif.gif": "https://yeeplayer.com/static/media/emoji_stream_demo_gif.755a0620.gif",
+    "static/media/error-gif.gif": "https://yeeplayer.com/static/media/error-gif.edb043ea.gif",
+    "static/media/hand_wave.gif": "https://yeeplayer.com/static/media/hand_wave.8c84d0f5.gif",
+    "static/media/kirby.gif": "https://yeeplayer.com/static/media/kirby.f9037c3c.gif",
+    "static/media/koopa_troopa_mario_kart.gif": "https://yeeplayer.com/static/media/koopa_troopa_mario_kart.03b86374.gif",
+    "static/media/nyancat_big.gif": "https://yeeplayer.com/static/media/nyancat_big.aba9e034.gif",
+    "static/media/penguin.gif": "https://yeeplayer.com/static/media/penguin.1953251b.gif",
+    "static/media/read-my-mind.gif": "https://yeeplayer.com/static/media/read-my-mind.b134cbd2.gif",
+    "static/media/star.gif": "https://yeeplayer.com/static/media/star.ba590042.gif",
+    "static/media/up-red-arrow.gif": "https://yeeplayer.com/static/media/up-red-arrow.b97377e2.gif",
+    "static/media/yahoo_games_woman.png": "https://yeeplayer.com/static/media/yahoo_games_woman.d4739355.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.86ca8392.js",
+    "static/js/2.f7260bec.chunk.js",
+    "static/css/main.553f00c2.chunk.css",
+    "static/js/main.c740719b.chunk.js"
+  ]
+}
