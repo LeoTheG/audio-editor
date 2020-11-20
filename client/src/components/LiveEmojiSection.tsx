@@ -113,7 +113,7 @@ class LiveEmojiSection extends React.Component<
 
   initializeEmojis(liveEmojis: ILiveEmojis) {
     this.chosenEmoji = liveEmojis;
-    this.instructionOut();
+    // this.instructionOut();
     this.resetPoints();
   }
 
